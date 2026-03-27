@@ -8,10 +8,12 @@ Application web de gestion des finances personnelles. PWA installable sur mobile
 |---|---|
 | Framework | Next.js 16 (App Router) |
 | Base de données | PostgreSQL sur Neon (intégration Vercel) |
+| ORM | Prisma |
 | Auth | Better Auth |
 | Emails | Resend |
 | Upload | Better Upload |
 | Déploiement | Vercel |
+| Linting/Formatting | Ultracite (preset zéro-config ESLint + Biome + Prettier) |
 | UI | Tailwind CSS v4 + shadcn/ui + Radix UI |
 | Graphiques | Recharts |
 | Police | Geist (unique sur toute l'app) |
