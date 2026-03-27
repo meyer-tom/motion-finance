@@ -4,6 +4,7 @@ async function main() {
   console.log("🌱 Seeding database...")
 
   // TODO: Ajouter les seeds ici (catégories système, utilisateurs de test, etc.)
+  await Promise.resolve()
 
   console.log("✅ Database seeded successfully!")
 }
