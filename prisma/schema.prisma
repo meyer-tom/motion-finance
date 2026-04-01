@@ -23,6 +23,8 @@ model User {
   image         String?
   createdAt     DateTime
   updatedAt     DateTime
+  firstName     String
+  lastName      String
 
   sessions      Session[]
   accounts      Account[]
