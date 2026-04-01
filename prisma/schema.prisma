@@ -10,3 +10,240 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// ========================================
+// Better Auth Models
+// ========================================
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean
+  image         String?
+  createdAt     DateTime
+  updatedAt     DateTime
+
+  sessions      Session[]
+  accounts      Account[]
+
+  // Relations métier
+  financialAccounts    FinancialAccount[]
+  categories           Category[]
+  transactions         Transaction[]
+  recurringTransactions RecurringTransaction[]
+  budgets              Budget[]
+  savingsGoals         SavingsGoal[]
+  notifications        Notification[]
+  onboardingProgress   OnboardingProgress?
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Account {
+  id                String  @id
+  accountId         String
+  providerId        String
+  userId            String
+  accessToken       String?
+  refreshToken      String?
+  idToken           String?
+  accessTokenExpiresAt DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope             String?
+  password          String?
+  createdAt         DateTime
+  updatedAt         DateTime
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime
+  updatedAt  DateTime
+
+  @@map("verification")
+}
+
+// ========================================
+// Business Models
+// ========================================
+
+model FinancialAccount {
+  id              String      @id @default(cuid())
+  userId          String
+  name            String
+  type            AccountType
+  startingBalance Decimal     @db.Decimal(12, 2)
+  color           String
+  icon            String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  user            User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions    Transaction[]          @relation("AccountTransactions")
+  transfersTo     Transaction[]          @relation("TransferDestination")
+  goals           SavingsGoal[]
+  recurring       RecurringTransaction[]
+}
+
+enum AccountType {
+  CHECKING
+  SAVINGS
+}
+
+model Category {
+  id          String        @id @default(cuid())
+  userId      String?       // null = catégorie système
+  name        String
+  icon        String
+  color       String
+  type        CategoryType
+  isSystem    Boolean       @default(false)
+  isHidden    Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  user        User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  budgets     Budget[]
+  recurring   RecurringTransaction[]
+}
+
+enum CategoryType {
+  EXPENSE
+  INCOME
+}
+
+model Transaction {
+  id            String          @id @default(cuid())
+  userId        String
+  accountId     String
+  type          TransactionType
+  amount        Decimal         @db.Decimal(12, 2)
+  date          DateTime
+  description   String?
+  categoryId    String?         // null pour les virements
+  toAccountId   String?         // non-null uniquement pour les virements
+  tags          String[]        // array PostgreSQL natif
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account       FinancialAccount @relation("AccountTransactions", fields: [accountId], references: [id])
+  toAccount     FinancialAccount? @relation("TransferDestination", fields: [toAccountId], references: [id])
+  category      Category?       @relation(fields: [categoryId], references: [id])
+}
+
+enum TransactionType {
+  EXPENSE
+  INCOME
+  TRANSFER
+}
+
+model RecurringTransaction {
+  id          String            @id @default(cuid())
+  userId      String
+  name        String
+  amount      Decimal           @db.Decimal(12, 2)
+  categoryId  String
+  accountId   String
+  frequency   RecurringFrequency
+  isActive    Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category    Category          @relation(fields: [categoryId], references: [id])
+  account     FinancialAccount  @relation(fields: [accountId], references: [id])
+}
+
+enum RecurringFrequency {
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+model Budget {
+  id          String   @id @default(cuid())
+  userId      String
+  categoryId  String
+  amount      Decimal  @db.Decimal(12, 2)
+  month       DateTime // toujours le 1er du mois à minuit UTC
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category    Category @relation(fields: [categoryId], references: [id])
+
+  @@unique([userId, categoryId, month])
+}
+
+model SavingsGoal {
+  id            String    @id @default(cuid())
+  userId        String
+  name          String
+  targetAmount  Decimal   @db.Decimal(12, 2)
+  currentAmount Decimal   @db.Decimal(12, 2) @default(0)
+  deadline      DateTime?
+  accountId     String?
+  isCompleted   Boolean   @default(false)
+  completedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account       FinancialAccount? @relation(fields: [accountId], references: [id])
+}
+
+model Notification {
+  id            String           @id @default(cuid())
+  userId        String
+  type          NotificationType
+  title         String
+  body          String
+  isRead        Boolean          @default(false)
+  relatedEntity Json?            // { type: 'budget'|'goal', id: string, threshold?: number }
+  createdAt     DateTime         @default(now())
+
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum NotificationType {
+  WARNING
+  DANGER
+  SUCCESS
+  INFO
+}
+
+model OnboardingProgress {
+  userId              String   @id
+  checklistCompleted  String[] // ['account', 'profile', 'savings', ...]
+  checklistDismissed  Boolean  @default(false)
+  tooltipsSeen        String[] // ['transactions', 'budgets', ...]
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
