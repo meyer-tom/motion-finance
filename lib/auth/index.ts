@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
 import { prisma } from "@/lib/db"
+import { sendPasswordResetEmail } from "@/lib/email"
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -10,6 +11,13 @@ export const auth = betterAuth({
     enabled: true,
     minPasswordLength: 8,
     autoSignIn: true,
+    sendResetPassword: async ({ user, url }) => {
+      await sendPasswordResetEmail({
+        to: user.email,
+        resetUrl: url,
+        userName: user.name,
+      })
+    },
   },
   session: {
     expiresIn: 60 * 60 * 24 * 30, // 30 jours
