@@ -28,7 +28,7 @@ Ce document couvre principalement la Phase 1, avec des mentions explicites des f
 
 | Rôle | Technologie choisie |
 |---|---|
-| Framework web | Next.js 15 |
+| Framework web | Next.js 16 |
 | Base de données | PostgreSQL hébergé sur Neon (intégration Vercel) |
 | Authentification | Better Auth |
 | Emails transactionnels | Resend |
@@ -45,7 +45,18 @@ Ce document couvre principalement la Phase 1, avec des mentions explicites des f
 
 L'application doit donner une impression de **modernité premium**. L'argent est un sujet qui peut être source d'anxiété — l'interface doit rassurer, motiver et rendre la gestion financière agréable.
 
-**Liquid Glass** : l'ensemble de l'interface adopte le style Liquid Glass inspiré d'Apple. Les surfaces de l'application — cards, sidebar, header, navigation, modales, menus déroulants, panneaux — sont translucides avec un effet de flou derrière elles, des reflets subtils et des bordures légèrement lumineuses. L'effet est cohérent sur toute l'application.
+**Style** : interface standard **shadcn/ui** — composants opaques classiques.
+
+**Couleurs sémantiques** (tokens CSS définis dans `globals.css`) :
+
+| Usage | Token | Valeur |
+|---|---|---|
+| Accent principal | `--color-accent` | Violet / Indigo |
+| Revenus | `--color-income` | Vert |
+| Dépenses | `--color-expense` | Rouge |
+| Virements | `--color-transfer` | Bleu ciel |
+
+Les badges `income`, `expense`, `transfer` sont disponibles nativement dans le composant `Badge`. La `Progress` bar accepte `--progress-color` en CSS var inline pour les couleurs de budgets.
 
 ### 3.2 Couleurs
 
@@ -68,9 +79,9 @@ Police unique sur toute l'application : **Geist**, moderne et très lisible, y c
 
 ### 3.5 Navigation
 
-- **Sur mobile** : barre de navigation en bas de l'écran (5 entrées maximum). Les formulaires d'ajout s'ouvrent dans un panneau qui glisse depuis le bas.
+- **Sur mobile** : barre de navigation en bas de l'écran (5 entrées maximum). Les formulaires d'ajout s'ouvrent dans un panneau qui glisse depuis le bas (Sheet).
 - **Sur desktop** : sidebar fixe à gauche.
-- Tous les menus déroulants et panneaux appliquent le style Liquid Glass avec une animation d'entrée fluide.
+- Les menus déroulants, popovers et panneaux utilisent les composants Radix standard (Dropdown, Popover, Dialog, Sheet).
 
 ### 3.6 Micro-interactions et gamification
 

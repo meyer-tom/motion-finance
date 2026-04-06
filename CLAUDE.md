@@ -18,15 +18,18 @@ Application web de gestion des finances personnelles. PWA installable sur mobile
 | Graphiques | Recharts |
 | Police | Geist (unique sur toute l'app) |
 
-## Design — Liquid Glass
+## Design
 
-Toute l'interface adopte le style **Liquid Glass** inspiré d'Apple : surfaces translucides avec flou, reflets subtils, bordures légèrement lumineuses. Cards, sidebar, header, modales, menus déroulants — tout est cohérent.
+Interface standard **shadcn/ui** — composants opaques classiques.
 
-**Couleurs sémantiques** :
-- Accent principal : Violet / Indigo
-- Revenus : Vert
-- Dépenses : Rouge
-- Virements : Bleu ciel
+**Couleurs sémantiques** (tokens CSS définis dans `globals.css`) :
+- Accent principal : `--color-accent` Violet / Indigo
+- Revenus : `--color-income` Vert
+- Dépenses : `--color-expense` Rouge
+- Virements : `--color-transfer` Bleu ciel
+
+Les badges `income`, `expense`, `transfer` sont disponibles nativement dans `Badge`.
+La Progress bar accepte `--progress-color` en CSS var inline pour les couleurs sémantiques.
 
 **Thème** : clair/sombre/automatique (suit le système par défaut). Les deux thèmes doivent être entièrement soignés.
 
@@ -87,7 +90,7 @@ Toute l'interface adopte le style **Liquid Glass** inspiré d'Apple : surfaces t
 
 ### Notifications in-app
 - Icône cloche dans le header, badge rouge non-lues
-- Panneau Liquid Glass
+- Panneau popover standard
 - Déclencheurs : budget à 80%, budget dépassé, objectif atteint, récurrente à échéance
 
 ### Paramètres

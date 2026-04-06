@@ -289,50 +289,56 @@ Configurer Better Auth avec adaptateur Prisma, stratégie email/mot de passe.
 
 > Initialisé dès le début du projet pour que tous les composants suivants utilisent directement les bons styles.
 
-### Issue 2.1 — Implémentation du style Liquid Glass
+### Issue 2.1 — Design system : tokens sémantiques et composants shadcn
 
 **Labels** : `epic:design`, `type:chore`
+**Statut** : ✅ Fermée
 
 **Dépendances** : Issue 1.1
 
+**Contexte**
+
+L'interface adopte le style standard **shadcn/ui** — composants opaques, pas d'effet translucide. Un style Liquid Glass (backdrop-filter) avait été envisagé mais abandonné : les composants Radix (Dropdown, Dialog, Popover, Sheet) s'ancrent au niveau du `<body>` via des portails et ne voient pas les gradients de la page, rendant l'effet impossible sans hacks fragiles.
+
 **Description**
-Définir les classes utilitaires CSS réutilisables pour l'effet Liquid Glass. Ces classes doivent être disponibles dès la création des premiers composants.
+
+Mettre en place les fondations visuelles réutilisables dans tout le projet :
+- Tokens CSS pour les couleurs sémantiques métier
+- Variants shadcn/ui pour les composants `Badge` et `Progress`
+- Page `/ui-demo` servant de référence visuelle et de bac à sable pour les composants et graphiques
 
 **Tâches**
-- [ ] Définir dans `globals.css` les classes utilitaires :
-  ```css
-  .glass {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  }
-  .dark .glass {
-    background: rgba(0, 0, 0, 0.2);
-    border-color: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  }
-  /* Variantes contextuelles */
-  .glass-card    { @apply glass rounded-2xl; }
-  .glass-sidebar { @apply glass rounded-none border-r border-t-0 border-b-0 border-l-0; }
-  .glass-header  { @apply glass rounded-none border-b border-t-0 border-l-0 border-r-0; }
-  .glass-sheet   { @apply glass rounded-t-2xl rounded-b-none border-b-0; }
-  .glass-popover { @apply glass rounded-xl; }
-  ```
-- [ ] Définir les tokens CSS pour les couleurs sémantiques dans `globals.css` :
-  ```css
-  :root {
-    --color-income: theme('colors.emerald.500');
-    --color-expense: theme('colors.rose.500');
-    --color-transfer: theme('colors.sky.500');
-    --color-accent: theme('colors.violet.600');
-  }
-  ```
-- [ ] Tester le rendu sur fond gradient, fond image et fond uni — les deux thèmes
-- [ ] Documenter les classes et tokens dans un commentaire de section dans `globals.css`
+
+- [x] Définir les tokens CSS sémantiques dans `globals.css` (valeurs OKLCH natives Tailwind v4, `theme()` non disponible) :
+```css
+:root {
+  --color-income:   oklch(0.713 0.194 142.5);   /* emerald-500 */
+  --color-expense:  oklch(0.641 0.237 15.34);    /* rose-500 */
+  --color-transfer: oklch(0.685 0.168 237.32);   /* sky-500 */
+  --color-accent:   oklch(0.541 0.281 293.009);  /* violet-600 */
+}
+```
+- [x] Masquer les flèches natives sur `<input type="number">` (webkit + moz, y compris au survol)
+- [x] Ajouter les variants `income`, `expense`, `transfer` au composant `Badge` via `cva` :
+```tsx
+income:   "border-transparent bg-[var(--color-income)]/15 text-[var(--color-income)]",
+expense:  "border-transparent bg-[var(--color-expense)]/15 text-[var(--color-expense)]",
+transfer: "border-transparent bg-[var(--color-transfer)]/15 text-[var(--color-transfer)]",
+```
+- [x] Adapter `Progress` pour accepter `--progress-color` via `style` inline — évite de multiplier les variants hard-codés pour les budgets
+- [x] Créer la page `/ui-demo` (Server Component) avec les sections : Buttons, Badges, Cards, Graphiques, Progress/Budgets, Inputs, Overlays
+- [x] Extraire les composants interactifs dans `_components/demo-overlays.tsx` (`"use client"`) pour éviter les erreurs d'hydratation
+- [x] Graphiques Recharts dans `_components/demo-charts.tsx` (`"use client"`) : `BarChart` revenus vs dépenses, `AreaChart` solde cumulé, `PieChart` répartition catégories
+- [x] Charger les graphiques via `next/dynamic` + `ssr: false` dans un wrapper client (`demo-charts-wrapper.tsx`)
+
+**Definition of Done**
+
+- [x] `pnpm build` passe sans erreur TypeScript
+- [x] `/ui-demo` s'affiche correctement en thème clair et sombre
+- [x] Les badges `income`, `expense`, `transfer` appliquent les couleurs sémantiques dans les deux thèmes
+- [x] La `Progress` bar change de couleur via `--progress-color` (vert / orange / rouge)
+- [x] Les trois graphiques Recharts s'affichent sans erreur d'hydratation
+- [x] `CLAUDE.md` et `motion-finance-cdc.md` mis à jour pour refléter l'abandon du Liquid Glass
 
 ---
 
