@@ -6,6 +6,7 @@ import { useState } from "react"
 import { AnimatedAmount } from "@/components/shared/animated-amount"
 import { AnimatedProgress } from "@/components/shared/animated-progress"
 import { BottomSheet } from "@/components/shared/bottom-sheet"
+import { GoalCompletionCelebration } from "@/components/shared/goal-completion-celebration"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -101,6 +102,36 @@ export function DemoAnimatedProgress() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+/* ── GoalCompletionCelebration ─────────────────────────────────────────── */
+
+export function DemoGoalCompletion() {
+  const [completed, setCompleted] = useState(false)
+
+  return (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
+        <CardTitle>GoalCompletionCelebration</CardTitle>
+        <Button
+          onClick={() => {
+            setCompleted(false)
+            // petit délai pour reset proprement l'état avant de re-déclencher
+            setTimeout(() => setCompleted(true), 50)
+          }}
+          size="sm"
+          variant="outline"
+        >
+          🎉 Déclencher
+        </Button>
+      </CardHeader>
+      <CardContent className="text-muted-foreground text-sm">
+        Clique sur le bouton pour voir les confettis, la vibration mobile et le
+        toast &quot;Objectif atteint !&quot;.
+      </CardContent>
+      <GoalCompletionCelebration isCompleted={completed} />
+    </Card>
   )
 }
 

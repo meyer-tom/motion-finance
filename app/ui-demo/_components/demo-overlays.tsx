@@ -90,7 +90,7 @@ export function DemoOverlays() {
 
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="icon">
+          <Button size="icon" variant="outline">
             <BellIcon />
           </Button>
         </PopoverTrigger>
@@ -100,7 +100,7 @@ export function DemoOverlays() {
           </PopoverHeader>
           <div className="flex flex-col gap-3 text-sm">
             <div className="flex items-start gap-2">
-              <Badge variant="expense" className="mt-0.5 shrink-0">
+              <Badge className="mt-0.5 shrink-0" variant="expense">
                 Budget
               </Badge>
               <span className="text-muted-foreground">
@@ -108,7 +108,7 @@ export function DemoOverlays() {
               </span>
             </div>
             <div className="flex items-start gap-2">
-              <Badge variant="outline" className="mt-0.5 shrink-0">
+              <Badge className="mt-0.5 shrink-0" variant="outline">
                 Objectif
               </Badge>
               <span className="text-muted-foreground">

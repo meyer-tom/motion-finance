@@ -36,14 +36,15 @@ import {
   DemoAnimatedAmount,
   DemoAnimatedProgress,
   DemoBottomSheet,
+  DemoGoalCompletion,
 } from "./_components/demo-shared"
 
 function Section({
   title,
   children,
 }: {
-  title: string
-  children: React.ReactNode
+  readonly title: string
+  readonly children: React.ReactNode
 }) {
   return (
     <section className="flex flex-col gap-4">
@@ -110,6 +111,7 @@ export default function UiDemoPage() {
               <ArrowRightLeftIcon />
               Virement
             </Badge>
+            <Badge variant="success">Complété</Badge>
           </div>
         </Section>
 
@@ -138,11 +140,11 @@ export default function UiDemoPage() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardDescription>Revenus</CardDescription>
-                  <div className="flex size-8 items-center justify-center rounded-xl bg-[var(--color-income)]/10">
-                    <ArrowUpIcon className="size-4 text-[var(--color-income)]" />
+                  <div className="flex size-8 items-center justify-center rounded-xl bg-(--color-income)/10">
+                    <ArrowUpIcon className="size-4 text-(--color-income)" />
                   </div>
                 </div>
-                <CardTitle className="text-[var(--color-income)] text-xl">
+                <CardTitle className="text-(--color-income) text-xl">
                   +4 500 €
                 </CardTitle>
               </CardHeader>
@@ -157,11 +159,11 @@ export default function UiDemoPage() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardDescription>Dépenses</CardDescription>
-                  <div className="flex size-8 items-center justify-center rounded-xl bg-[var(--color-expense)]/10">
-                    <CreditCardIcon className="size-4 text-[var(--color-expense)]" />
+                  <div className="flex size-8 items-center justify-center rounded-xl bg-(--color-expense)/10">
+                    <CreditCardIcon className="size-4 text-(--color-expense)" />
                   </div>
                 </div>
-                <CardTitle className="text-[var(--color-expense)] text-xl">
+                <CardTitle className="text-(--color-expense) text-xl">
                   −2 700 €
                 </CardTitle>
               </CardHeader>
@@ -183,12 +185,10 @@ export default function UiDemoPage() {
                 </div>
                 <div className="flex gap-3 text-muted-foreground text-xs">
                   <span className="flex items-center gap-1.5">
-                    <span className="size-2 rounded-full bg-[var(--color-income)]" />
-                    Revenus
+                    <span className="size-2 rounded-full bg-(--color-income)" /> Revenus
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <span className="size-2 rounded-full bg-[var(--color-expense)]" />
-                    Dépenses
+                    <span className="size-2 rounded-full bg-(--color-expense)" /> Dépenses
                   </span>
                 </div>
               </div>
@@ -255,15 +255,15 @@ export default function UiDemoPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-accent)]/10">
-                  <PiggyBankIcon className="size-5 text-[var(--color-accent)]" />
+                <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-accent/10">
+                  <PiggyBankIcon className="size-5 text-(--color-accent)" />
                 </div>
                 <div className="flex-1">
                   <CardTitle>Vacances 2025</CardTitle>
                   <CardDescription>1 950 € sur 3 000 €</CardDescription>
                 </div>
                 <Badge
-                  className="border-[var(--color-accent)]/30 text-[var(--color-accent)]"
+                  className="border-accent/30 text-(--color-accent)"
                   variant="outline"
                 >
                   65%
@@ -362,6 +362,11 @@ export default function UiDemoPage() {
         {/* Overlays — Client Component */}
         <Section title="Dialog · Sheet · Popover · Dropdown">
           <DemoOverlays />
+        </Section>
+
+        {/* GoalCompletionCelebration */}
+        <Section title="GoalCompletionCelebration">
+          <DemoGoalCompletion />
         </Section>
       </div>
     </div>

@@ -71,8 +71,8 @@ export function PasswordResetEmail({
 
             {/* Security notice */}
             <Text style={securityNotice}>
-              Si vous n&apos;avez pas demandé cette réinitialisation, vous pouvez
-              ignorer cet email en toute sécurité.
+              Si vous n&apos;avez pas demandé cette réinitialisation, vous
+              pouvez ignorer cet email en toute sécurité.
             </Text>
           </Section>
 

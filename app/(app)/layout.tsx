@@ -1,13 +1,22 @@
+import { headers } from "next/headers"
+import { redirect } from "next/navigation"
+// import { redirect } from "next/navigation"
 import type { ReactNode } from "react"
+import { AppShell } from "@/components/app/app-shell"
+import { auth } from "@/lib/auth"
 
-export default function AppLayout({ children }: { children: ReactNode }) {
-  return (
-    <div className="flex min-h-screen">
-      {/* TODO: Ajouter la Sidebar (issue dédiée) */}
-      <div className="flex-1">
-        {/* TODO: Ajouter le Header (issue dédiée) */}
-        <main className="p-6">{children}</main>
-      </div>
-    </div>
-  )
+export default async function AppLayout({
+  children,
+}: {
+  readonly children: ReactNode
+}) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  })
+
+  if (!session) {
+    redirect("/sign-in")
+  }
+
+  return <AppShell user={session?.user ?? null}>{children}</AppShell>
 }
