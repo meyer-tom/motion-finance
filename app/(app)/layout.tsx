@@ -14,9 +14,9 @@ export default async function AppLayout({
     headers: await headers(),
   })
 
-  if (!session) {
-    redirect("/sign-in")
-  }
+  // if (!session) {
+  //   redirect("/sign-in")
+  // }
 
   return <AppShell user={session?.user ?? null}>{children}</AppShell>
 }

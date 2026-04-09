@@ -1,10 +1,10 @@
 "use client"
 
-import { Bell, LogOut, Moon, Search, Settings, Sun } from "lucide-react"
+import { Bell, LogOut, Search, Settings } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
-import { useTheme } from "next-themes"
 
 import { BarChartSvg, UserAvatar } from "@/components/app/sidebar"
+import { ThemeToggle } from "@/components/app/theme-toggle"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -43,16 +43,11 @@ interface HeaderProps {
 
 export function Header({ user }: HeaderProps) {
   const pathname = usePathname()
-  const { resolvedTheme, setTheme } = useTheme()
   const router = useRouter()
   const title = getPageTitle(pathname)
   const displayName = user
     ? `${user.firstName} ${user.lastName}`.trim()
     : "Utilisateur"
-
-  function toggleTheme() {
-    setTheme(resolvedTheme === "dark" ? "light" : "dark")
-  }
 
   async function handleSignOut() {
     await authClient.signOut()
@@ -100,15 +95,7 @@ export function Header({ user }: HeaderProps) {
           <Bell className="h-5 w-5" />
         </Button>
 
-        <Button
-          aria-label="Basculer le thème"
-          onClick={toggleTheme}
-          size="icon"
-          variant="ghost"
-        >
-          <Sun className="h-5 w-5 rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
-        </Button>
+        <ThemeToggle />
 
         {/* Avatar — mobile uniquement */}
         <DropdownMenu>
