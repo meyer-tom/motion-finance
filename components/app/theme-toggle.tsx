@@ -31,8 +31,8 @@ export function ThemeToggle() {
       <DropdownMenuContent align="end">
         {THEMES.map(({ value, label, icon: Icon }) => (
           <DropdownMenuItem
-            key={value}
             className="gap-2"
+            key={value}
             onClick={() => setTheme(value)}
           >
             <Icon className="h-4 w-4" />

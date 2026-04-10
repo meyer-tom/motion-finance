@@ -30,7 +30,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/components/ui/sidebar"
 import type { User } from "@/lib/auth"
 import { authClient } from "@/lib/auth/client"
@@ -86,20 +85,6 @@ export function BarChartSvg({ size }: { readonly size: number }) {
 /* ── Logo section ──────────────────────────────────────────────────────────── */
 
 function SidebarLogo() {
-  const { state, isMobile } = useSidebar()
-  const isCollapsed = state === "collapsed" && !isMobile
-
-  if (isCollapsed) {
-    return (
-      /* border-b sur ce div directement — pas sur SidebarHeader — pour éviter tout décalage wrapper */
-      <div className="flex h-14 items-center justify-center border-sidebar-border border-b">
-        <div className="flex h-8 w-8 items-center justify-center rounded-sm border border-violet-600/30 bg-white shadow-sm dark:border-indigo-500/30 dark:bg-[#0f0f1a]">
-          <BarChartSvg size={18} />
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="flex h-14 items-center gap-3 border-sidebar-border border-b px-4">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border border-violet-600/30 bg-white shadow-sm dark:border-indigo-500/30 dark:bg-[#0f0f1a]">
@@ -171,8 +156,6 @@ interface AppSidebarProps {
 export function AppSidebar({ user }: AppSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const { state, isMobile } = useSidebar()
-  const isCollapsed = state === "collapsed" && !isMobile
   const displayName = user
     ? `${user.firstName} ${user.lastName}`.trim()
     : "Utilisateur"
@@ -184,14 +167,14 @@ export function AppSidebar({ user }: AppSidebarProps) {
   }
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar className="hidden min-h-svh md:flex" collapsible="none">
       <SidebarHeader className="p-0">
         <SidebarLogo />
       </SidebarHeader>
 
       <SidebarContent className="pt-3">
         <SidebarGroup className="pt-0">
-          {!isCollapsed && <SidebarGroupLabel>Navigation</SidebarGroupLabel>}
+          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarMenu>
             {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
               const isActive =

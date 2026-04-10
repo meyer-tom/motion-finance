@@ -13,7 +13,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { SidebarTrigger } from "@/components/ui/sidebar"
 import type { User } from "@/lib/auth"
 import { authClient } from "@/lib/auth/client"
 
@@ -57,40 +56,39 @@ export function Header({ user }: HeaderProps) {
 
   return (
     <header className="header-animate sticky top-0 z-40 flex h-14 items-center gap-2 border-border border-b bg-background/80 px-3 backdrop-blur-sm lg:px-4">
-      <SidebarTrigger className="-ml-1 hidden md:flex" />
-
       {/* Logo + nom — mobile uniquement */}
       <div className="flex items-center gap-2 md:hidden">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-violet-600/30 bg-white shadow-sm dark:border-indigo-500/30 dark:bg-[#0f0f1a]">
           <BarChartSvg size={18} />
         </div>
         <span className="font-extrabold text-lg text-slate-900 tracking-[-0.04em] dark:text-white">
-          Motion <span className="text-violet-700 dark:text-violet-400">Finance</span>
+          Motion{" "}
+          <span className="text-violet-700 dark:text-violet-400">Finance</span>
         </span>
       </div>
 
       <h1 className="hidden font-semibold text-base md:block">{title}</h1>
 
-      {/* Search — desktop uniquement, prend l'espace central */}
-      <button
-        className="mx-4 hidden h-9 max-w-sm flex-1 items-center justify-between rounded-lg border border-border bg-muted/40 px-3 text-muted-foreground text-sm transition-colors hover:bg-muted md:flex"
-        type="button"
-      >
-        <span className="flex items-center gap-2">
-          <Search className="h-3.5 w-3.5 shrink-0" />
-          <span>Recherche rapide…</span>
-        </span>
-        <div className="flex items-center gap-0.5">
-          <kbd className="pointer-events-none inline-flex h-5 items-center rounded border border-border bg-background px-1 font-medium font-mono text-[10px]">
-            ⌘
-          </kbd>
-          <kbd className="pointer-events-none inline-flex h-5 items-center rounded border border-border bg-background px-1 font-medium font-mono text-[10px]">
-            K
-          </kbd>
-        </div>
-      </button>
+      <div className="ml-auto flex items-center gap-2">
+        {/* Search — desktop uniquement */}
+        <button
+          className="hidden h-9 w-64 items-center justify-between rounded-lg border border-border bg-muted/40 px-3 text-muted-foreground text-sm transition-colors hover:bg-muted md:flex"
+          type="button"
+        >
+          <span className="flex items-center gap-2">
+            <Search className="h-3.5 w-3.5 shrink-0" />
+            <span>Recherche rapide…</span>
+          </span>
+          <div className="flex items-center gap-0.5">
+            <kbd className="pointer-events-none inline-flex h-5 items-center rounded border border-border bg-background px-1 font-medium font-mono text-[10px]">
+              ⌘
+            </kbd>
+            <kbd className="pointer-events-none inline-flex h-5 items-center rounded border border-border bg-background px-1 font-medium font-mono text-[10px]">
+              K
+            </kbd>
+          </div>
+        </button>
 
-      <div className="ml-auto flex items-center gap-1">
         <Button aria-label="Notifications" size="icon" variant="ghost">
           <Bell className="h-5 w-5" />
         </Button>
@@ -102,7 +100,7 @@ export function Header({ user }: HeaderProps) {
           <DropdownMenuTrigger asChild>
             <button
               aria-label={displayName}
-              className="ml-1 flex items-center rounded-full outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-ring md:hidden"
+              className="flex items-center rounded-full outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-ring md:hidden"
               type="button"
             >
               <UserAvatar size="sm" user={user} />

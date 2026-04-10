@@ -1,5 +1,4 @@
 import { headers } from "next/headers"
-import { redirect } from "next/navigation"
 // import { redirect } from "next/navigation"
 import type { ReactNode } from "react"
 import { AppShell } from "@/components/app/app-shell"

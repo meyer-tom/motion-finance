@@ -185,10 +185,12 @@ export default function UiDemoPage() {
                 </div>
                 <div className="flex gap-3 text-muted-foreground text-xs">
                   <span className="flex items-center gap-1.5">
-                    <span className="size-2 rounded-full bg-(--color-income)" /> Revenus
+                    <span className="size-2 rounded-full bg-(--color-income)" />{" "}
+                    Revenus
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <span className="size-2 rounded-full bg-(--color-expense)" /> Dépenses
+                    <span className="size-2 rounded-full bg-(--color-expense)" />{" "}
+                    Dépenses
                   </span>
                 </div>
               </div>
