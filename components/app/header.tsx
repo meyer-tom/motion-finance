@@ -50,7 +50,7 @@ export function Header({ user }: HeaderProps) {
 
   async function handleSignOut() {
     await authClient.signOut()
-    router.push("/sign-in")
+    router.push("/login")
     router.refresh()
   }
 

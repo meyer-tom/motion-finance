@@ -1,5 +1,4 @@
 import { headers } from "next/headers"
-// import { redirect } from "next/navigation"
 import type { ReactNode } from "react"
 import { AppShell } from "@/components/app/app-shell"
 import { auth } from "@/lib/auth"
@@ -13,9 +12,8 @@ export default async function AppLayout({
     headers: await headers(),
   })
 
-  // if (!session) {
-  //   redirect("/sign-in")
-  // }
+  // TODO: activer quand la session Better Auth est validée
+  // if (!session) redirect("/login")
 
   return <AppShell user={session?.user ?? null}>{children}</AppShell>
 }

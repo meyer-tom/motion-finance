@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
 import { prisma } from "@/lib/db"
-import { sendPasswordResetEmail } from "@/lib/email"
+import { sendPasswordResetEmail, sendVerificationEmail } from "@/lib/email"
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -15,6 +15,20 @@ export const auth = betterAuth({
       await sendPasswordResetEmail({
         to: user.email,
         resetUrl: url,
+        userName: user.name,
+      })
+    },
+  },
+  emailVerification: {
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
+    sendVerificationEmail: async ({ user, url }) => {
+      // Ajouter callbackURL pour rediriger vers notre page de confirmation
+      const verifyUrl = new URL(url)
+      verifyUrl.searchParams.set("callbackURL", "/verify-email")
+      await sendVerificationEmail({
+        to: user.email,
+        verifyUrl: verifyUrl.toString(),
         userName: user.name,
       })
     },
