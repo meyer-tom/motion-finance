@@ -183,12 +183,19 @@ export function AppSidebar({ user }: AppSidebarProps) {
                 <SidebarMenuItem key={href}>
                   <SidebarMenuButton
                     asChild
-                    className="h-10 [&_svg]:size-5"
+                    className={cn(
+                      "h-10 rounded-lg [&_svg]:size-5 transition-all duration-150",
+                      isActive
+                        ? "bg-primary! text-primary-foreground! font-semibold! hover:bg-primary/90! hover:text-primary-foreground! shadow-sm shadow-primary/20"
+                        : "hover:bg-primary/8 hover:text-primary"
+                    )}
                     isActive={isActive}
                     tooltip={label}
                   >
                     <Link href={href}>
-                      <Icon />
+                      <Icon
+                        className={cn(isActive ? "stroke-[2.5]" : "stroke-2")}
+                      />
                       <span className="text-sm">{label}</span>
                     </Link>
                   </SidebarMenuButton>

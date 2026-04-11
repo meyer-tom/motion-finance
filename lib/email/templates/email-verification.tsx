@@ -4,6 +4,7 @@ import {
   Container,
   Head,
   Heading,
+  Hr,
   Html,
   Link,
   Preview,
@@ -21,18 +22,25 @@ export function EmailVerification({
   userName,
 }: EmailVerificationProps) {
   return (
-    <Html>
+    <Html lang="fr">
       <Head />
-      <Preview>Vérifiez votre adresse email Motion Finance</Preview>
+      <Preview>Vérifiez votre adresse email pour activer votre compte Motion Finance</Preview>
       <Body style={main}>
         <Container style={container}>
+
           {/* Header */}
           <Section style={header}>
-            <Heading style={logo}>Motion Finance</Heading>
+            <Text style={headerLogo}>Motion Finance</Text>
           </Section>
 
-          {/* Content */}
-          <Section style={content}>
+          {/* Card */}
+          <Section style={card}>
+
+            {/* Icon */}
+            <Section style={iconContainer}>
+              <Text style={icon}>✓</Text>
+            </Section>
+
             <Heading style={title}>Vérifiez votre adresse email</Heading>
 
             <Text style={paragraph}>
@@ -40,9 +48,8 @@ export function EmailVerification({
             </Text>
 
             <Text style={paragraph}>
-              Merci de vous être inscrit sur Motion Finance. Cliquez sur le
-              bouton ci-dessous pour vérifier votre adresse email et activer
-              votre compte.
+              Merci de vous être inscrit sur Motion Finance. Cliquez sur le bouton
+              ci-dessous pour confirmer votre adresse email et accéder à votre espace.
             </Text>
 
             {/* CTA Button */}
@@ -54,14 +61,13 @@ export function EmailVerification({
 
             {/* Expiration notice */}
             <Text style={notice}>
-              Ce lien est valide pendant <strong>1 heure</strong>.
+              Ce lien expire dans <strong>1 heure</strong>.
             </Text>
 
+            <Hr style={divider} />
+
             {/* Fallback link */}
-            <Text style={paragraph}>
-              Si le bouton ne fonctionne pas, copiez et collez ce lien dans
-              votre navigateur :
-            </Text>
+            <Text style={fallbackLabel}>Lien alternatif :</Text>
             <Text style={linkText}>
               <Link href={verifyUrl} style={link}>
                 {verifyUrl}
@@ -69,21 +75,23 @@ export function EmailVerification({
             </Text>
 
             {/* Security notice */}
-            <Text style={securityNotice}>
-              Si vous n&apos;avez pas créé de compte, vous pouvez ignorer cet
-              email en toute sécurité.
-            </Text>
+            <Section style={securityBox}>
+              <Text style={securityNotice}>
+                Si vous n&apos;avez pas créé ce compte, vous pouvez ignorer cet email.
+              </Text>
+            </Section>
           </Section>
 
           {/* Footer */}
           <Section style={footer}>
+            <Text style={footerText}>Motion Finance · Gestion des finances personnelles</Text>
             <Text style={footerText}>
-              Motion Finance - Gestion des finances personnelles
-            </Text>
-            <Text style={footerText}>
-              Besoin d&apos;aide ? Contactez-nous à support@motion-finance.app
+              <Link href="mailto:support@motion-finance.app" style={footerLink}>
+                support@motion-finance.app
+              </Link>
             </Text>
           </Section>
+
         </Container>
       </Body>
     </Html>
@@ -91,122 +99,156 @@ export function EmailVerification({
 }
 
 const main = {
-  backgroundColor: "#f5f5f7",
-  fontFamily:
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  backgroundColor: "#f4f4f6",
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
 }
 
 const container = {
   margin: "0 auto",
-  padding: "40px 20px",
-  maxWidth: "600px",
+  padding: "40px 16px",
+  maxWidth: "560px",
 }
 
 const header = {
+  backgroundColor: "#4f46e5",
+  borderRadius: "12px 12px 0 0",
+  padding: "20px 32px",
   textAlign: "center" as const,
-  marginBottom: "32px",
 }
 
-const logo = {
-  fontSize: "28px",
+const headerLogo = {
+  fontSize: "22px",
   fontWeight: "700",
-  background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
-  WebkitBackgroundClip: "text",
-  WebkitTextFillColor: "transparent",
+  color: "#ffffff",
   margin: "0",
+  letterSpacing: "-0.3px",
 }
 
-const content = {
+const card = {
   backgroundColor: "#ffffff",
-  borderRadius: "16px",
-  padding: "40px",
-  border: "1px solid rgba(99, 102, 241, 0.1)",
-  boxShadow:
-    "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+  borderRadius: "0 0 12px 12px",
+  padding: "40px 40px 32px",
+  border: "1px solid #e5e7eb",
+  borderTop: "none",
+}
+
+const iconContainer = {
+  textAlign: "center" as const,
+  marginBottom: "24px",
+}
+
+const icon = {
+  display: "inline-block",
+  width: "48px",
+  height: "48px",
+  lineHeight: "48px",
+  fontSize: "22px",
+  fontWeight: "700",
+  color: "#ffffff",
+  backgroundColor: "#4f46e5",
+  borderRadius: "50%",
+  textAlign: "center" as const,
+  margin: "0 auto",
 }
 
 const title = {
-  fontSize: "24px",
-  fontWeight: "600",
-  color: "#18181b",
-  margin: "0 0 24px 0",
+  fontSize: "22px",
+  fontWeight: "700",
+  color: "#111827",
+  margin: "0 0 20px 0",
   textAlign: "center" as const,
+  letterSpacing: "-0.3px",
 }
 
 const paragraph = {
-  fontSize: "16px",
+  fontSize: "15px",
   lineHeight: "24px",
-  color: "#52525b",
-  margin: "0 0 16px 0",
+  color: "#4b5563",
+  margin: "0 0 14px 0",
 }
 
 const buttonContainer = {
   textAlign: "center" as const,
-  margin: "32px 0",
+  margin: "28px 0 20px",
 }
 
 const button = {
-  backgroundColor: "#6366f1",
-  borderRadius: "12px",
+  backgroundColor: "#4f46e5",
+  borderRadius: "8px",
   color: "#ffffff",
-  fontSize: "16px",
+  fontSize: "15px",
   fontWeight: "600",
   textDecoration: "none",
   textAlign: "center" as const,
-  padding: "14px 32px",
+  padding: "13px 28px",
   display: "inline-block",
   border: "none",
-  boxShadow: "0 4px 12px rgba(99, 102, 241, 0.3)",
 }
 
 const notice = {
-  fontSize: "14px",
-  color: "#71717a",
+  fontSize: "13px",
+  color: "#9ca3af",
   textAlign: "center" as const,
-  margin: "24px 0 16px 0",
+  margin: "0 0 24px 0",
+}
+
+const divider = {
+  borderColor: "#f3f4f6",
+  margin: "0 0 20px 0",
+}
+
+const fallbackLabel = {
+  fontSize: "13px",
+  color: "#9ca3af",
+  margin: "0 0 6px 0",
 }
 
 const linkText = {
-  fontSize: "14px",
+  fontSize: "13px",
   lineHeight: "20px",
-  color: "#52525b",
-  margin: "8px 0 24px 0",
+  margin: "0 0 24px 0",
   wordBreak: "break-all" as const,
-  backgroundColor: "#f4f4f5",
-  padding: "12px",
-  borderRadius: "8px",
-  border: "1px solid #e4e4e7",
+  backgroundColor: "#f9fafb",
+  padding: "10px 14px",
+  borderRadius: "6px",
+  border: "1px solid #e5e7eb",
 }
 
 const link = {
-  color: "#6366f1",
+  color: "#4f46e5",
   textDecoration: "none",
 }
 
-const securityNotice = {
-  fontSize: "14px",
-  lineHeight: "20px",
-  color: "#71717a",
-  textAlign: "center" as const,
-  padding: "16px",
+const securityBox = {
   backgroundColor: "#eff6ff",
   borderRadius: "8px",
-  border: "1px solid #bfdbfe",
-  margin: "24px 0 0 0",
+  border: "1px solid #dbeafe",
+  padding: "12px 16px",
+}
+
+const securityNotice = {
+  fontSize: "13px",
+  lineHeight: "20px",
+  color: "#6b7280",
+  textAlign: "center" as const,
+  margin: "0",
 }
 
 const footer = {
   textAlign: "center" as const,
-  marginTop: "40px",
-  paddingTop: "32px",
-  borderTop: "1px solid #e4e4e7",
+  paddingTop: "24px",
 }
 
 const footerText = {
   fontSize: "12px",
-  lineHeight: "16px",
-  color: "#a1a1aa",
-  margin: "4px 0",
+  lineHeight: "18px",
+  color: "#9ca3af",
+  margin: "2px 0",
+}
+
+const footerLink = {
+  color: "#9ca3af",
+  textDecoration: "underline",
 }
 
 export default EmailVerification
