@@ -2,6 +2,7 @@
 
 import {
   ChevronsUpDown,
+  LandmarkIcon,
   LayoutDashboard,
   LogOut,
   Repeat2,
@@ -103,6 +104,7 @@ function SidebarLogo() {
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/transactions", label: "Transactions", icon: Repeat2 },
+  { href: "/accounts", label: "Comptes", icon: LandmarkIcon },
   { href: "/budgets", label: "Budgets", icon: Wallet },
   { href: "/goals", label: "Objectifs", icon: Target },
 ]

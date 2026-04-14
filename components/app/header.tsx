@@ -61,9 +61,11 @@ export function Header({ user }: HeaderProps) {
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-violet-600/30 bg-white shadow-sm dark:border-indigo-500/30 dark:bg-[#0f0f1a]">
           <BarChartSvg size={18} />
         </div>
-        <span className="font-extrabold text-lg text-slate-900 tracking-[-0.04em] dark:text-white">
-          Motion{" "}
-          <span className="text-violet-700 dark:text-violet-400">Finance</span>
+        <span className="font-extrabold text-lg tracking-[-0.04em]">
+          <span className="text-slate-900 dark:text-white">Motion </span>
+          <span className="bg-gradient-to-r from-violet-600 via-violet-500 to-indigo-500 bg-clip-text text-transparent dark:from-violet-400 dark:via-violet-300 dark:to-indigo-300">
+            Finance
+          </span>
         </span>
       </div>
 
@@ -80,10 +82,10 @@ export function Header({ user }: HeaderProps) {
             <span>Recherche rapide…</span>
           </span>
           <div className="flex items-center gap-0.5">
-            <kbd className="pointer-events-none inline-flex h-5 items-center rounded border border-border bg-background px-1 font-medium font-mono text-[10px]">
+            <kbd className="pointer-events-none inline-flex h-6 items-center rounded border border-border bg-background px-1.5 font-medium text-sm">
               ⌘
             </kbd>
-            <kbd className="pointer-events-none inline-flex h-5 items-center rounded border border-border bg-background px-1 font-medium font-mono text-[10px]">
+            <kbd className="pointer-events-none inline-flex h-6 items-center rounded border border-border bg-background px-1.5 font-medium font-mono text-xs">
               K
             </kbd>
           </div>

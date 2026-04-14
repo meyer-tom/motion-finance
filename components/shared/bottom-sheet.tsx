@@ -41,7 +41,7 @@ export function BottomSheet({
           </SheetHeader>
         ) : null}
 
-        {children}
+        <div className="px-6 pb-2">{children}</div>
       </SheetContent>
     </Sheet>
   )

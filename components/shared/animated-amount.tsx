@@ -47,11 +47,24 @@ export function AnimatedAmount({
   useEffect(() => {
     const start = prevValueRef.current
     const end = value
-    const duration = 800
+    const duration = 1500
     const startTime = performance.now()
 
     if (rafRef.current !== null) {
       cancelAnimationFrame(rafRef.current)
+    }
+
+    // Flash directionnel uniquement en mode neutral (pas de variant fixe)
+    const flashColor =
+      variant === "neutral" && end !== start
+        ? end > start
+          ? "var(--color-income)"
+          : "var(--color-expense)"
+        : null
+
+    if (spanRef.current && flashColor) {
+      spanRef.current.style.transition = "none"
+      spanRef.current.style.color = flashColor
     }
 
     function tick(now: number) {
@@ -68,6 +81,12 @@ export function AnimatedAmount({
       } else {
         prevValueRef.current = end
         rafRef.current = null
+
+        // Fade retour vers la couleur neutre
+        if (spanRef.current && flashColor) {
+          spanRef.current.style.transition = "color 600ms ease-out"
+          spanRef.current.style.color = ""
+        }
       }
     }
 
@@ -78,7 +97,7 @@ export function AnimatedAmount({
         cancelAnimationFrame(rafRef.current)
       }
     }
-  }, [value, currency])
+  }, [value, currency, variant])
 
   return (
     <span
