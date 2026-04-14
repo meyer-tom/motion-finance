@@ -55,7 +55,7 @@ export function Header({ user }: HeaderProps) {
   }
 
   return (
-    <header className="header-animate sticky top-0 z-40 flex h-14 items-center gap-2 border-border border-b bg-background/80 px-3 backdrop-blur-sm lg:px-4">
+    <header className="header-animate sticky top-0 z-40 flex h-14 items-center gap-2 border-b border-sidebar-border bg-sidebar px-3 lg:px-4">
       {/* Logo + nom — mobile uniquement */}
       <div className="flex items-center gap-2 md:hidden">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-violet-600/30 bg-white shadow-sm dark:border-indigo-500/30 dark:bg-[#0f0f1a]">
@@ -63,7 +63,7 @@ export function Header({ user }: HeaderProps) {
         </div>
         <span className="font-extrabold text-lg tracking-[-0.04em]">
           <span className="text-slate-900 dark:text-white">Motion </span>
-          <span className="bg-gradient-to-r from-violet-600 via-violet-500 to-indigo-500 bg-clip-text text-transparent dark:from-violet-400 dark:via-violet-300 dark:to-indigo-300">
+          <span className="text-violet-700 dark:text-violet-400">
             Finance
           </span>
         </span>
@@ -74,7 +74,7 @@ export function Header({ user }: HeaderProps) {
       <div className="ml-auto flex items-center gap-2">
         {/* Search — desktop uniquement */}
         <button
-          className="hidden h-9 w-64 items-center justify-between rounded-lg border border-border bg-muted/40 px-3 text-muted-foreground text-sm transition-colors hover:bg-muted md:flex"
+          className="hidden h-9 w-64 items-center justify-between rounded-lg border border-border bg-background px-3 text-muted-foreground text-sm transition-colors hover:bg-background/80 md:flex"
           type="button"
         >
           <span className="flex items-center gap-2">
