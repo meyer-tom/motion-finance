@@ -174,10 +174,8 @@ async function main() {
     },
   ]
 
-  await prisma.category.createMany({
-    data: systemCategories,
-    skipDuplicates: true,
-  })
+  await prisma.category.deleteMany({ where: { isSystem: true } })
+  await prisma.category.createMany({ data: systemCategories })
 
   console.log(`✅ Created ${systemCategories.length} system categories`)
   console.log("✅ Database seeded successfully!")
