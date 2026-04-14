@@ -55,12 +55,10 @@ export function AnimatedAmount({
     }
 
     // Flash directionnel uniquement en mode neutral (pas de variant fixe)
-    const flashColor =
-      variant === "neutral" && end !== start
-        ? end > start
-          ? "var(--color-income)"
-          : "var(--color-expense)"
-        : null
+    let flashColor: string | null = null
+    if (variant === "neutral" && end !== start) {
+      flashColor = end > start ? "var(--color-income)" : "var(--color-expense)"
+    }
 
     if (spanRef.current && flashColor) {
       spanRef.current.style.transition = "none"

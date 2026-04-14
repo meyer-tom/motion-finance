@@ -52,7 +52,10 @@ const ICON_MAP: Record<string, React.ElementType> = {
   Banknote,
 }
 
-const TYPE_CONFIG: Record<"CHECKING" | "SAVINGS", { label: string; className: string }> = {
+const TYPE_CONFIG: Record<
+  "CHECKING" | "SAVINGS",
+  { label: string; className: string }
+> = {
   CHECKING: {
     label: "Courant",
     className: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
@@ -166,8 +169,8 @@ export function AccountCard({ account, onEdit }: AccountCardProps) {
           <DialogHeader>
             <DialogTitle>Supprimer « {account.name} » ?</DialogTitle>
             <DialogDescription>
-              Toutes les transactions liées à ce compte seront définitivement supprimées.
-              Cette action est irréversible.
+              Toutes les transactions liées à ce compte seront définitivement
+              supprimées. Cette action est irréversible.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

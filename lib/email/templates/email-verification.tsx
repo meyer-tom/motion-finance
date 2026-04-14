@@ -24,10 +24,11 @@ export function EmailVerification({
   return (
     <Html lang="fr">
       <Head />
-      <Preview>Vérifiez votre adresse email pour activer votre compte Motion Finance</Preview>
+      <Preview>
+        Vérifiez votre adresse email pour activer votre compte Motion Finance
+      </Preview>
       <Body style={main}>
         <Container style={container}>
-
           {/* Header */}
           <Section style={header}>
             <Text style={headerLogo}>Motion Finance</Text>
@@ -35,7 +36,6 @@ export function EmailVerification({
 
           {/* Card */}
           <Section style={card}>
-
             {/* Icon */}
             <Section style={iconContainer}>
               <Text style={icon}>✓</Text>
@@ -48,8 +48,9 @@ export function EmailVerification({
             </Text>
 
             <Text style={paragraph}>
-              Merci de vous être inscrit sur Motion Finance. Cliquez sur le bouton
-              ci-dessous pour confirmer votre adresse email et accéder à votre espace.
+              Merci de vous être inscrit sur Motion Finance. Cliquez sur le
+              bouton ci-dessous pour confirmer votre adresse email et accéder à
+              votre espace.
             </Text>
 
             {/* CTA Button */}
@@ -77,21 +78,23 @@ export function EmailVerification({
             {/* Security notice */}
             <Section style={securityBox}>
               <Text style={securityNotice}>
-                Si vous n&apos;avez pas créé ce compte, vous pouvez ignorer cet email.
+                Si vous n&apos;avez pas créé ce compte, vous pouvez ignorer cet
+                email.
               </Text>
             </Section>
           </Section>
 
           {/* Footer */}
           <Section style={footer}>
-            <Text style={footerText}>Motion Finance · Gestion des finances personnelles</Text>
+            <Text style={footerText}>
+              Motion Finance · Gestion des finances personnelles
+            </Text>
             <Text style={footerText}>
               <Link href="mailto:support@motion-finance.app" style={footerLink}>
                 support@motion-finance.app
               </Link>
             </Text>
           </Section>
-
         </Container>
       </Body>
     </Html>
@@ -100,7 +103,8 @@ export function EmailVerification({
 
 const main = {
   backgroundColor: "#f4f4f6",
-  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  fontFamily:
+    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
 }
 
 const container = {

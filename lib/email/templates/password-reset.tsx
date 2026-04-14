@@ -29,7 +29,6 @@ export function PasswordResetEmail({
       </Preview>
       <Body style={main}>
         <Container style={container}>
-
           {/* Header */}
           <Section style={header}>
             <Text style={headerLogo}>Motion Finance</Text>
@@ -37,7 +36,6 @@ export function PasswordResetEmail({
 
           {/* Card */}
           <Section style={card}>
-
             {/* Icon */}
             <Section style={iconContainer}>
               <Text style={icon}>🔑</Text>
@@ -79,22 +77,23 @@ export function PasswordResetEmail({
             {/* Security notice */}
             <Section style={securityBox}>
               <Text style={securityNotice}>
-                Si vous n&apos;avez pas demandé cette réinitialisation, ignorez cet
-                email. Votre mot de passe ne sera pas modifié.
+                Si vous n&apos;avez pas demandé cette réinitialisation, ignorez
+                cet email. Votre mot de passe ne sera pas modifié.
               </Text>
             </Section>
           </Section>
 
           {/* Footer */}
           <Section style={footer}>
-            <Text style={footerText}>Motion Finance · Gestion des finances personnelles</Text>
+            <Text style={footerText}>
+              Motion Finance · Gestion des finances personnelles
+            </Text>
             <Text style={footerText}>
               <Link href="mailto:support@motion-finance.app" style={footerLink}>
                 support@motion-finance.app
               </Link>
             </Text>
           </Section>
-
         </Container>
       </Body>
     </Html>
@@ -103,7 +102,8 @@ export function PasswordResetEmail({
 
 const main = {
   backgroundColor: "#f4f4f6",
-  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  fontFamily:
+    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
 }
 
 const container = {

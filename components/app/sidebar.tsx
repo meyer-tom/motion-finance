@@ -169,7 +169,10 @@ export function AppSidebar({ user }: AppSidebarProps) {
   }
 
   return (
-    <Sidebar className="hidden min-h-svh md:flex border-r border-sidebar-border" collapsible="none">
+    <Sidebar
+      className="hidden min-h-svh border-sidebar-border border-r md:flex"
+      collapsible="none"
+    >
       <SidebarHeader className="p-0">
         <SidebarLogo />
       </SidebarHeader>
@@ -186,9 +189,9 @@ export function AppSidebar({ user }: AppSidebarProps) {
                   <SidebarMenuButton
                     asChild
                     className={cn(
-                      "h-10 rounded-lg [&_svg]:size-5 transition-all duration-150",
+                      "h-10 rounded-lg transition-all duration-150 [&_svg]:size-5",
                       isActive
-                        ? "bg-primary! text-primary-foreground! font-semibold! hover:bg-primary/90! hover:text-primary-foreground! shadow-sm shadow-primary/20"
+                        ? "bg-primary! font-semibold! text-primary-foreground! shadow-primary/20 shadow-sm hover:bg-primary/90! hover:text-primary-foreground!"
                         : "hover:bg-primary/8 hover:text-primary"
                     )}
                     isActive={isActive}

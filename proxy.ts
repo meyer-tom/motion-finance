@@ -10,7 +10,7 @@ export function proxy(request: NextRequest) {
     pathname.startsWith("/login") || pathname.startsWith("/register")
 
   // Si pas de session et route protégée → redirection /login
-  if (!sessionToken && !isPublicRoute && !isAuthRoute) {
+  if (!(sessionToken || isPublicRoute || isAuthRoute)) {
     return NextResponse.redirect(new URL("/login", request.url))
   }
 

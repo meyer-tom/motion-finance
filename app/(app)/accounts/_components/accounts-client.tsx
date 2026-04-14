@@ -3,8 +3,8 @@
 import { Plus } from "lucide-react"
 import { useState } from "react"
 import { AccountCard } from "@/components/accounts/account-card"
-import { AccountFormModal } from "@/components/accounts/account-form-modal"
 import type { AccountEditValues } from "@/components/accounts/account-form-modal"
+import { AccountFormModal } from "@/components/accounts/account-form-modal"
 import { Button } from "@/components/ui/button"
 
 const GRID_COLS = {
@@ -14,12 +14,12 @@ const GRID_COLS = {
 } as const
 
 interface Account {
+  balance: number
+  color: string
+  icon: string
   id: string
   name: string
   type: "CHECKING" | "SAVINGS"
-  color: string
-  icon: string
-  balance: number
 }
 
 interface AccountsClientProps {
@@ -28,7 +28,9 @@ interface AccountsClientProps {
 
 export function AccountsClient({ accounts }: AccountsClientProps) {
   const [modalOpen, setModalOpen] = useState(false)
-  const [editValues, setEditValues] = useState<AccountEditValues | undefined>(undefined)
+  const [editValues, setEditValues] = useState<AccountEditValues | undefined>(
+    undefined
+  )
 
   function handleEdit(values: AccountEditValues) {
     setEditValues(values)
@@ -37,7 +39,9 @@ export function AccountsClient({ accounts }: AccountsClientProps) {
 
   function handleOpenChange(open: boolean) {
     setModalOpen(open)
-    if (!open) setEditValues(undefined)
+    if (!open) {
+      setEditValues(undefined)
+    }
   }
 
   return (
@@ -64,9 +68,15 @@ export function AccountsClient({ accounts }: AccountsClientProps) {
       </div>
 
       {accounts.length > 0 ? (
-        <div className={`grid gap-2 ${GRID_COLS[Math.min(accounts.length, 3) as 1 | 2 | 3]}`}>
+        <div
+          className={`grid gap-2 ${GRID_COLS[Math.min(accounts.length, 3) as 1 | 2 | 3]}`}
+        >
           {accounts.map((account) => (
-            <AccountCard account={account} key={account.id} onEdit={handleEdit} />
+            <AccountCard
+              account={account}
+              key={account.id}
+              onEdit={handleEdit}
+            />
           ))}
         </div>
       ) : (

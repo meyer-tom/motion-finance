@@ -37,12 +37,12 @@ import {
 } from "@/components/ui/select"
 import { createAccount, updateAccount } from "@/lib/actions/accounts"
 import { useIsMobile } from "@/lib/hooks/use-is-mobile"
+import { cn } from "@/lib/utils"
 import {
-  createAccountSchema,
   type CreateAccountInput,
+  createAccountSchema,
   type UpdateAccountInput,
 } from "@/lib/validations/accounts"
-import { cn } from "@/lib/utils"
 
 /* ── Constantes ────────────────────────────────────────────────────────────── */
 
@@ -75,17 +75,17 @@ const ICONS = [
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
 export interface AccountEditValues {
+  color: string
+  icon: string
   id: string
   name: string
   type: "CHECKING" | "SAVINGS"
-  color: string
-  icon: string
 }
 
 export interface AccountFormModalProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
   initialValues?: AccountEditValues
+  onOpenChange: (open: boolean) => void
+  open: boolean
 }
 
 /* ── Form body (partagé entre Dialog et BottomSheet) ───────────────────────── */
@@ -145,11 +145,10 @@ function AccountFormBody({
     onSuccess()
   }
 
+  const submitLabel = isEdit ? "Enregistrer" : "Créer le compte"
+
   return (
-    <form
-      className="flex flex-col gap-5"
-      onSubmit={handleSubmit(onSubmit)}
-    >
+    <form className="flex flex-col gap-5" onSubmit={handleSubmit(onSubmit)}>
       {/* Nom */}
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="account-name">Nom du compte</Label>
@@ -248,11 +247,7 @@ function AccountFormBody({
 
       {/* Submit */}
       <Button className="mt-1 w-full" disabled={isSubmitting} type="submit">
-        {isSubmitting
-          ? "Enregistrement…"
-          : isEdit
-            ? "Enregistrer"
-            : "Créer le compte"}
+        {isSubmitting ? "Enregistrement…" : submitLabel}
       </Button>
     </form>
   )
