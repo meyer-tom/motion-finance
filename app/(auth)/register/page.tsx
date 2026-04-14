@@ -1,6 +1,6 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { MailCheck } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
@@ -29,7 +29,7 @@ export default function RegisterPage() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<RegisterInput>({
-    resolver: zodResolver(registerSchema),
+    resolver: standardSchemaResolver(registerSchema),
   })
 
   async function onSubmit(data: RegisterInput) {

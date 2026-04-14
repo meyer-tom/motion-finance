@@ -1,6 +1,6 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import {
   Banknote,
   Briefcase,
@@ -107,7 +107,7 @@ function AccountFormBody({
     reset,
     formState: { errors, isSubmitting },
   } = useForm<CreateAccountInput>({
-    resolver: zodResolver(createAccountSchema),
+    resolver: standardSchemaResolver(createAccountSchema),
     defaultValues: {
       name: initialValues?.name ?? "",
       type: initialValues?.type ?? "CHECKING",
