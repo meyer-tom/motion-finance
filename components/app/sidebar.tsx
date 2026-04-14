@@ -170,7 +170,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
   return (
     <Sidebar
-      className="hidden min-h-svh border-sidebar-border border-r md:flex"
+      className="sticky top-0 hidden h-svh shrink-0 border-sidebar-border border-r md:flex"
       collapsible="none"
     >
       <SidebarHeader className="p-0">
