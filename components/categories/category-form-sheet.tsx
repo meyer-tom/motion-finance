@@ -1,38 +1,6 @@
 "use client"
 
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import {
-  BookOpen,
-  Briefcase,
-  Building2,
-  Car,
-  Coffee,
-  Dumbbell,
-  Film,
-  Gamepad2,
-  Gift,
-  Globe,
-  GraduationCap,
-  Headphones,
-  Heart,
-  Home,
-  Laptop,
-  MoreHorizontal,
-  Music,
-  Phone,
-  Plane,
-  PlusCircle,
-  RefreshCw,
-  RotateCcw,
-  ShoppingBag,
-  ShoppingCart,
-  Star,
-  Tag,
-  TrendingUp,
-  UtensilsCrossed,
-  Wallet,
-  Zap,
-} from "lucide-react"
 import { useEffect } from "react"
 import { useForm, useWatch } from "react-hook-form"
 import { BottomSheet } from "@/components/shared/bottom-sheet"
@@ -56,6 +24,7 @@ import {
 import { createCategory, updateCategory } from "@/lib/actions/categories"
 import { useIsMobile } from "@/lib/hooks/use-is-mobile"
 import { cn } from "@/lib/utils"
+import { CATEGORY_ICONS } from "@/lib/utils/category-icons"
 import {
   type CreateCategoryInput,
   createCategorySchema,
@@ -72,39 +41,6 @@ const PALETTE = [
   "#dc2626",
   "#db2777",
   "#64748b",
-]
-
-const ICONS = [
-  { key: "ShoppingCart", component: ShoppingCart },
-  { key: "UtensilsCrossed", component: UtensilsCrossed },
-  { key: "Car", component: Car },
-  { key: "Home", component: Home },
-  { key: "Heart", component: Heart },
-  { key: "Gamepad2", component: Gamepad2 },
-  { key: "ShoppingBag", component: ShoppingBag },
-  { key: "RefreshCw", component: RefreshCw },
-  { key: "GraduationCap", component: GraduationCap },
-  { key: "Dumbbell", component: Dumbbell },
-  { key: "Plane", component: Plane },
-  { key: "Gift", component: Gift },
-  { key: "Briefcase", component: Briefcase },
-  { key: "Laptop", component: Laptop },
-  { key: "RotateCcw", component: RotateCcw },
-  { key: "TrendingUp", component: TrendingUp },
-  { key: "PlusCircle", component: PlusCircle },
-  { key: "MoreHorizontal", component: MoreHorizontal },
-  { key: "Coffee", component: Coffee },
-  { key: "Music", component: Music },
-  { key: "Film", component: Film },
-  { key: "Globe", component: Globe },
-  { key: "Star", component: Star },
-  { key: "Tag", component: Tag },
-  { key: "Zap", component: Zap },
-  { key: "Wallet", component: Wallet },
-  { key: "Building2", component: Building2 },
-  { key: "BookOpen", component: BookOpen },
-  { key: "Headphones", component: Headphones },
-  { key: "Phone", component: Phone },
 ]
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
@@ -242,7 +178,7 @@ function CategoryFormBody({
       <div className="flex flex-col gap-1.5">
         <Label>Icône</Label>
         <div className="grid grid-cols-6 gap-2">
-          {ICONS.map(({ key, component: Icon }) => (
+          {CATEGORY_ICONS.map(({ key, component: Icon }) => (
             <button
               aria-label={key}
               className={cn(

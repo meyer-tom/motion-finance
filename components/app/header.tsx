@@ -1,6 +1,6 @@
 "use client"
 
-import { Bell, LogOut, Search, Settings } from "lucide-react"
+import { Bell, LogOut, Plus, Search, Settings } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
 
 import { BarChartSvg, UserAvatar } from "@/components/app/sidebar"
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import type { User } from "@/lib/auth"
 import { authClient } from "@/lib/auth/client"
+import { useTransactionForm } from "@/lib/context/transaction-form-context"
 
 const PAGE_TITLES: Record<string, string> = {
   "/dashboard": "Dashboard",
@@ -43,6 +44,7 @@ interface HeaderProps {
 export function Header({ user }: HeaderProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const { openForm } = useTransactionForm()
   const title = getPageTitle(pathname)
   const displayName = user
     ? `${user.firstName} ${user.lastName}`.trim()
@@ -70,6 +72,16 @@ export function Header({ user }: HeaderProps) {
       <h1 className="hidden font-semibold text-base md:block">{title}</h1>
 
       <div className="ml-auto flex items-center gap-2">
+        {/* Bouton + — desktop uniquement */}
+        <Button
+          className="hidden gap-1.5 md:flex"
+          onClick={() => openForm()}
+          size="sm"
+          type="button"
+        >
+          <Plus className="h-4 w-4" />
+          Nouvelle transaction
+        </Button>
         {/* Search — desktop uniquement */}
         <button
           className="hidden h-9 w-64 items-center justify-between rounded-lg border border-border bg-background px-3 text-muted-foreground text-sm transition-colors hover:bg-background/80 md:flex"
