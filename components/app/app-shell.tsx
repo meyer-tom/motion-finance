@@ -20,6 +20,7 @@ interface AppShellProps {
   readonly categories: CategoryOption[]
   readonly children: ReactNode
   readonly user: User | null
+  readonly usedTags: string[]
 }
 
 export function AppShell({
@@ -27,23 +28,24 @@ export function AppShell({
   categories,
   children,
   user,
+  usedTags,
 }: AppShellProps) {
   return (
     <TransactionFormProvider>
       <SidebarProvider>
         <AppSidebar user={user} />
-        <SidebarInset>
+        <SidebarInset className="min-w-0 overflow-x-hidden">
           <Header user={user} />
           {/* pb sur mobile pour laisser la place à la bottom nav (56px + safe area) */}
-          <main className="flex-1 p-4 pb-[calc(1rem+56px+env(safe-area-inset-bottom))] md:p-6 md:pb-6">
+          <div className="p-4 pb-[calc(1rem+56px+env(safe-area-inset-bottom))] md:p-6 md:pb-6">
             {children}
-          </main>
+          </div>
           <BottomNav />
         </SidebarInset>
       </SidebarProvider>
       {/* Suspense requis car TransactionFormProvider utilise useSearchParams */}
       <Suspense>
-        <TransactionFormSheet accounts={accounts} categories={categories} />
+        <TransactionFormSheet accounts={accounts} categories={categories} usedTags={usedTags} />
       </Suspense>
     </TransactionFormProvider>
   )

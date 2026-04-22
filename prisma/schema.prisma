@@ -99,6 +99,7 @@ model FinancialAccount {
   startingBalance Decimal     @db.Decimal(12, 2)
   color           String
   icon            String
+  order           Int         @default(0)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
@@ -144,6 +145,7 @@ model Transaction {
   type          TransactionType
   amount        Decimal         @db.Decimal(12, 2)
   date          DateTime
+  title         String          @default("")
   description   String?
   categoryId    String?         // null pour les virements
   toAccountId   String?         // non-null uniquement pour les virements

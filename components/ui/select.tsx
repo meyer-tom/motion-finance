@@ -35,7 +35,7 @@ function SelectTrigger({
         "placeholder:text-muted-foreground",
         "focus:border-ring focus:ring-[3px] focus:ring-ring/50",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        "[&>span]:line-clamp-1",
+        "[&>span]:truncate",
         className
       )}
       data-slot="select-trigger"

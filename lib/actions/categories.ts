@@ -9,6 +9,8 @@ import {
   createCategorySchema,
   type UpdateCategoryInput,
   updateCategorySchema,
+  type UpdateSystemCategoryAppearanceInput,
+  updateSystemCategoryAppearanceSchema,
 } from "@/lib/validations/categories"
 
 async function requireAuth() {
@@ -131,6 +133,30 @@ export async function updateCategory(id: string, data: UpdateCategoryInput) {
       color: parsed.data.color,
       icon: parsed.data.icon,
     },
+  })
+
+  revalidatePath("/settings")
+}
+
+export async function updateSystemCategoryAppearance(
+  id: string,
+  data: UpdateSystemCategoryAppearanceInput
+) {
+  await requireAuth()
+
+  const parsed = updateSystemCategoryAppearanceSchema.safeParse(data)
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0].message)
+  }
+
+  const existing = await prisma.category.findUnique({ where: { id } })
+  if (!existing?.isSystem) {
+    throw new Error("Catégorie introuvable")
+  }
+
+  await prisma.category.update({
+    where: { id },
+    data: { color: parsed.data.color, icon: parsed.data.icon },
   })
 
   revalidatePath("/settings")

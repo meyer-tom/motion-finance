@@ -10,6 +10,7 @@ import {
   CreditCard,
   Dumbbell,
   EllipsisVertical,
+  Pencil,
   Film,
   Gamepad2,
   Gift,
@@ -158,6 +159,7 @@ function Switch({
 
 function SystemCategoryRow({ category }: { category: Category }) {
   const [isPending, startTransition] = useTransition()
+  const [editOpen, setEditOpen] = useState(false)
   const Icon = ICON_MAP[category.icon] ?? Tag
   const c = category.color
 
@@ -167,28 +169,54 @@ function SystemCategoryRow({ category }: { category: Category }) {
     })
   }
 
+  const editValues: CategoryEditValues = {
+    id: category.id,
+    name: category.name,
+    type: category.type,
+    color: category.color,
+    icon: category.icon,
+  }
+
   return (
-    <div
-      className={cn(
-        "flex items-center gap-3 px-4 py-2.5 transition-opacity",
-        category.isHidden && "opacity-40"
-      )}
-    >
+    <>
       <div
-        className="flex size-7 shrink-0 items-center justify-center rounded-md"
-        style={{ backgroundColor: `${c}18` }}
+        className={cn(
+          "flex items-center gap-3 px-4 py-2.5 transition-opacity",
+          category.isHidden && "opacity-40"
+        )}
       >
-        <Icon className="size-3.5" style={{ color: c }} />
+        <div
+          className="flex size-7 shrink-0 items-center justify-center rounded-md"
+          style={{ backgroundColor: `${c}18` }}
+        >
+          <Icon className="size-3.5" style={{ color: c }} />
+        </div>
+
+        <span className="min-w-0 flex-1 truncate text-sm">{category.name}</span>
+
+        <button
+          aria-label={`Modifier ${category.name}`}
+          className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+          onClick={() => setEditOpen(true)}
+          type="button"
+        >
+          <Pencil className="size-3.5" />
+        </button>
+
+        <Switch
+          checked={!category.isHidden}
+          disabled={isPending}
+          onChange={handleToggle}
+        />
       </div>
 
-      <span className="min-w-0 flex-1 truncate text-sm">{category.name}</span>
-
-      <Switch
-        checked={!category.isHidden}
-        disabled={isPending}
-        onChange={handleToggle}
+      <CategoryFormSheet
+        initialValues={editValues}
+        isSystem
+        onOpenChange={setEditOpen}
+        open={editOpen}
       />
-    </div>
+    </>
   )
 }
 

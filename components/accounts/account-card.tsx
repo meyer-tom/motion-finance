@@ -8,6 +8,7 @@ import {
   CreditCard,
   DollarSign,
   EllipsisVertical,
+  GripVertical,
   Home,
   Landmark,
   PiggyBank,
@@ -15,6 +16,7 @@ import {
   TrendingUp,
   Wallet,
 } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 import { AnimatedAmount } from "@/components/shared/animated-amount"
 import { Button } from "@/components/ui/button"
@@ -35,6 +37,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { deleteAccount } from "@/lib/actions/accounts"
+import { cn } from "@/lib/utils"
 import type { AccountEditValues } from "./account-form-modal"
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -75,12 +78,21 @@ interface AccountCardProps {
     icon: string
     balance: number
   }
+  // biome-ignore lint/suspicious/noExplicitAny: listeners proviennent de @dnd-kit/core
+  dragListeners?: Record<string, any>
+  isDragging?: boolean
   onEdit: (values: AccountEditValues) => void
 }
 
-export function AccountCard({ account, onEdit }: AccountCardProps) {
+export function AccountCard({
+  account,
+  onEdit,
+  dragListeners,
+  isDragging,
+}: AccountCardProps) {
   const [isPending, startTransition] = useTransition()
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const router = useRouter()
 
   const IconComponent = ICON_MAP[account.icon] ?? Wallet
   const c = account.color
@@ -95,12 +107,28 @@ export function AccountCard({ account, onEdit }: AccountCardProps) {
   return (
     <>
       <Card
-        className="transition-shadow hover:shadow-sm"
+        className={cn(
+          "group cursor-pointer transition-all duration-200 hover:shadow-sm",
+          isDragging && "opacity-50 shadow-lg ring-2 ring-primary/30"
+        )}
+        onClick={() => router.push(`/transactions?accountId=${account.id}`)}
         style={{ borderColor: `${c}30` }}
       >
         <CardContent className="p-4">
-          {/* Ligne 1 : icône + nom + actions */}
+          {/* Ligne 1 : grip + icône + nom + menu */}
           <div className="flex items-center gap-2.5">
+            {dragListeners && (
+              <button
+                aria-label="Réorganiser ce compte"
+                className="cursor-grab touch-none text-muted-foreground/25 transition-colors duration-150 active:cursor-grabbing group-hover:text-muted-foreground/50"
+                onClick={(e) => e.stopPropagation()}
+                type="button"
+                {...dragListeners}
+              >
+                <GripVertical className="size-3.5" />
+              </button>
+            )}
+
             <div
               className="flex size-8 shrink-0 items-center justify-center rounded-lg"
               style={{ backgroundColor: `${c}18` }}
@@ -108,28 +136,27 @@ export function AccountCard({ account, onEdit }: AccountCardProps) {
               <IconComponent className="size-4" style={{ color: c }} />
             </div>
 
-            <p className="min-w-0 flex-1 truncate text-muted-foreground text-xs">
+            <p className="min-w-0 flex-1 truncate font-medium text-sm">
               {account.name}
             </p>
-
-            <span
-              className={`shrink-0 rounded-full px-2 py-0.5 font-medium text-xs ${TYPE_CONFIG[account.type].className}`}
-            >
-              {TYPE_CONFIG[account.type].label}
-            </span>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   aria-label="Options du compte"
-                  className="-mr-1.5 size-6 text-muted-foreground/60 hover:text-foreground"
+                  className="-mr-1.5 size-7 text-muted-foreground/50 hover:text-foreground"
+                  onClick={(e) => e.stopPropagation()}
+                  onPointerDown={(e) => e.stopPropagation()}
                   size="icon"
                   variant="ghost"
                 >
                   <EllipsisVertical className="size-3.5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent
+                align="end"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <DropdownMenuItem
                   onSelect={() =>
                     onEdit({
@@ -154,12 +181,23 @@ export function AccountCard({ account, onEdit }: AccountCardProps) {
             </DropdownMenu>
           </div>
 
-          {/* Ligne 2 : solde */}
-          <AnimatedAmount
-            className="mt-2 font-semibold text-base"
-            currency="EUR"
-            value={account.balance}
-          />
+          {/* Ligne 2 : montant + badge type */}
+          <div className="mt-3 flex items-center gap-2">
+            <AnimatedAmount
+              className="flex-1 font-bold text-lg tabular-nums"
+              currency="EUR"
+              value={account.balance}
+            />
+
+            <span
+              className={cn(
+                "shrink-0 rounded-full px-2 py-0.5 font-medium text-[11px]",
+                TYPE_CONFIG[account.type].className
+              )}
+            >
+              {TYPE_CONFIG[account.type].label}
+            </span>
+          </div>
         </CardContent>
       </Card>
 

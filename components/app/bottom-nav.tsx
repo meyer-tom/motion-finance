@@ -29,16 +29,26 @@ export function BottomNav() {
           return (
             <Link
               className={cn(
-                "flex flex-1 flex-col items-center justify-center gap-1 py-3 font-medium text-[10px] transition-colors",
-                isActive
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
+                "flex flex-1 flex-col items-center justify-center gap-0.5 py-2 transition-colors duration-150",
+                isActive ? "text-primary" : "text-muted-foreground"
               )}
               href={href}
               key={href}
             >
-              <Icon className={cn("h-5 w-5", isActive && "stroke-[2.5]")} />
-              <span>{label}</span>
+              <span
+                className={cn(
+                  "flex h-8 items-center justify-center rounded-full px-4 transition-all duration-200",
+                  isActive ? "bg-primary/12" : ""
+                )}
+              >
+                <Icon
+                  className={cn(
+                    "size-[22px]",
+                    isActive ? "stroke-[2.5]" : "stroke-2"
+                  )}
+                />
+              </span>
+              <span className="font-medium text-[11px]">{label}</span>
             </Link>
           )
         })}
@@ -47,14 +57,11 @@ export function BottomNav() {
         <div className="flex flex-1 items-center justify-center py-2">
           <button
             aria-label="Ajouter une transaction"
-            className="flex h-12 w-12 items-center justify-center rounded-full bg-primary shadow-lg shadow-primary/30 transition-transform active:scale-95"
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-primary shadow-md shadow-primary/30 ring-4 ring-primary/10 transition-all duration-150 active:scale-95"
             onClick={() => openForm()}
             type="button"
           >
-            <Plus
-              className="h-6 w-6 text-primary-foreground"
-              strokeWidth={2.5}
-            />
+            <Plus className="h-6 w-6 text-primary-foreground" strokeWidth={2.5} />
           </button>
         </div>
 
@@ -64,16 +71,26 @@ export function BottomNav() {
           return (
             <Link
               className={cn(
-                "flex flex-1 flex-col items-center justify-center gap-1 py-3 font-medium text-[10px] transition-colors",
-                isActive
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
+                "flex flex-1 flex-col items-center justify-center gap-0.5 py-2 transition-colors duration-150",
+                isActive ? "text-primary" : "text-muted-foreground"
               )}
               href={href}
               key={href}
             >
-              <Icon className={cn("h-5 w-5", isActive && "stroke-[2.5]")} />
-              <span>{label}</span>
+              <span
+                className={cn(
+                  "flex h-8 items-center justify-center rounded-full px-4 transition-all duration-200",
+                  isActive ? "bg-primary/12" : ""
+                )}
+              >
+                <Icon
+                  className={cn(
+                    "size-[22px]",
+                    isActive ? "stroke-[2.5]" : "stroke-2"
+                  )}
+                />
+              </span>
+              <span className="font-medium text-[11px]">{label}</span>
             </Link>
           )
         })}

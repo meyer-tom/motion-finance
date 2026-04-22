@@ -56,7 +56,7 @@ export async function getAccounts() {
 
   const accounts = await prisma.financialAccount.findMany({
     where: { userId: user.id },
-    orderBy: { createdAt: "asc" },
+    orderBy: { order: "asc" },
   })
 
   return Promise.all(
@@ -82,6 +82,10 @@ export async function createAccount(data: CreateAccountInput) {
     throw new Error(parsed.error.issues[0].message)
   }
 
+  const count = await prisma.financialAccount.count({
+    where: { userId: user.id },
+  })
+
   const account = await prisma.financialAccount.create({
     data: {
       userId: user.id,
@@ -90,6 +94,7 @@ export async function createAccount(data: CreateAccountInput) {
       startingBalance: parsed.data.startingBalance,
       color: parsed.data.color,
       icon: parsed.data.icon,
+      order: count,
     },
   })
 
@@ -135,6 +140,22 @@ export async function updateAccount(id: string, data: UpdateAccountInput) {
     color: account.color,
     icon: account.icon,
   }
+}
+
+export async function reorderAccounts(orderedIds: string[]) {
+  const user = await requireAuth()
+
+  await prisma.$transaction(
+    orderedIds.map((id, index) =>
+      prisma.financialAccount.updateMany({
+        where: { id, userId: user.id },
+        data: { order: index },
+      })
+    )
+  )
+
+  revalidatePath("/accounts")
+  revalidatePath("/dashboard")
 }
 
 export async function deleteAccount(id: string) {

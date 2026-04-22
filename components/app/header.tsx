@@ -1,6 +1,7 @@
 "use client"
 
-import { Bell, LogOut, Plus, Search, Settings } from "lucide-react"
+import { Bell, LogOut, Search, Settings } from "lucide-react"
+import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 
 import { BarChartSvg, UserAvatar } from "@/components/app/sidebar"
@@ -15,11 +16,11 @@ import {
 } from "@/components/ui/dropdown-menu"
 import type { User } from "@/lib/auth"
 import { authClient } from "@/lib/auth/client"
-import { useTransactionForm } from "@/lib/context/transaction-form-context"
 
 const PAGE_TITLES: Record<string, string> = {
   "/dashboard": "Dashboard",
   "/transactions": "Transactions",
+  "/accounts": "Comptes",
   "/budgets": "Budgets",
   "/goals": "Objectifs",
   "/settings": "Paramètres",
@@ -44,7 +45,6 @@ interface HeaderProps {
 export function Header({ user }: HeaderProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const { openForm } = useTransactionForm()
   const title = getPageTitle(pathname)
   const displayName = user
     ? `${user.firstName} ${user.lastName}`.trim()
@@ -58,56 +58,41 @@ export function Header({ user }: HeaderProps) {
 
   return (
     <header className="header-animate sticky top-0 z-40 flex h-14 items-center gap-2 border-sidebar-border border-b bg-sidebar px-3 lg:px-4">
-      {/* Logo + nom — mobile uniquement */}
-      <div className="flex items-center gap-2 md:hidden">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-violet-600/30 bg-white shadow-sm dark:border-indigo-500/30 dark:bg-[#0f0f1a]">
-          <BarChartSvg size={18} />
+      {/* Mobile : icône logo + titre de la page courante */}
+      <div className="flex items-center gap-2.5 md:hidden">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-violet-600/20 bg-white shadow-sm dark:border-indigo-500/20 dark:bg-[#0f0f1a]">
+          <BarChartSvg size={16} />
         </div>
-        <span className="font-extrabold text-lg tracking-[-0.04em]">
-          <span className="text-slate-900 dark:text-white">Motion </span>
-          <span className="text-violet-700 dark:text-violet-400">Finance</span>
-        </span>
+        <h1 className="font-semibold text-base tracking-tight">{title}</h1>
       </div>
 
+      {/* Desktop : titre de la page */}
       <h1 className="hidden font-semibold text-base md:block">{title}</h1>
 
-      <div className="ml-auto flex items-center gap-2">
-        {/* Bouton + — desktop uniquement */}
-        <Button
-          className="hidden gap-1.5 md:flex"
-          onClick={() => openForm()}
-          size="sm"
-          type="button"
-        >
-          <Plus className="h-4 w-4" />
-          Nouvelle transaction
-        </Button>
-        {/* Search — desktop uniquement */}
+      <div className="ml-auto flex items-center gap-1.5">
+        {/* Recherche — desktop uniquement */}
         <button
-          className="hidden h-9 w-64 items-center justify-between rounded-lg border border-border bg-background px-3 text-muted-foreground text-sm transition-colors hover:bg-background/80 md:flex"
+          className="hidden h-9 w-60 items-center justify-between rounded-lg border border-border bg-background/60 px-3 text-muted-foreground text-sm transition-colors hover:bg-background md:flex"
           type="button"
         >
           <span className="flex items-center gap-2">
             <Search className="h-3.5 w-3.5 shrink-0" />
             <span>Recherche rapide…</span>
           </span>
-          <div className="flex items-center gap-0.5">
-            <kbd className="pointer-events-none inline-flex h-6 items-center rounded border border-border bg-background px-1.5 font-medium text-sm">
-              ⌘
-            </kbd>
-            <kbd className="pointer-events-none inline-flex h-6 items-center rounded border border-border bg-background px-1.5 font-medium font-mono text-xs">
-              K
-            </kbd>
-          </div>
+          <kbd className="pointer-events-none inline-flex h-5 items-center rounded border border-border bg-muted px-1 font-medium text-[11px] text-muted-foreground">
+            ⌘K
+          </kbd>
         </button>
 
+        {/* Notifications */}
         <Button aria-label="Notifications" size="icon" variant="ghost">
-          <Bell className="h-5 w-5" />
+          <Bell className="h-[18px] w-[18px]" />
         </Button>
 
+        {/* Thème */}
         <ThemeToggle />
 
-        {/* Avatar — mobile uniquement */}
+        {/* Avatar + menu — mobile uniquement */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
@@ -119,13 +104,18 @@ export function Header({ user }: HeaderProps) {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            <div className="px-3 py-2 font-medium text-sm">{displayName}</div>
+            <div className="px-3 py-2">
+              <p className="font-medium text-sm">{displayName}</p>
+              <p className="truncate text-muted-foreground text-xs">
+                {user?.email ?? ""}
+              </p>
+            </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <a href="/settings">
+              <Link href="/settings">
                 <Settings className="h-4 w-4" />
                 Paramètres
-              </a>
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

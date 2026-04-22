@@ -115,6 +115,7 @@ export default function LoginPage() {
       <CardContent>
         <form
           className="flex flex-col gap-4"
+          method="post"
           noValidate
           onSubmit={handleSubmit(onSubmit)}
         >

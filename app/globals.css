@@ -169,15 +169,47 @@
   animation: bottom-nav-slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* ── Scrollbar invisible dans les modales et bottom sheets ─────────────────── */
+[data-slot="dialog-content"],
+[data-slot="sheet-content"] {
+  scrollbar-width: none;
+}
+
+[data-slot="dialog-content"]::-webkit-scrollbar,
+[data-slot="sheet-content"]::-webkit-scrollbar {
+  display: none;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    -webkit-tap-highlight-color: transparent;
   }
   body {
     @apply bg-background text-foreground;
+    overscroll-behavior: none;
   }
   html {
     @apply font-sans;
+  }
+  /* Désactive le double-tap zoom et le délai 300ms sur les éléments interactifs */
+  button,
+  a,
+  [role="button"],
+  [role="link"],
+  label,
+  input,
+  select,
+  textarea {
+    touch-action: manipulation;
+  }
+  /* Empêche le zoom iOS au focus sur les inputs (font-size < 16px déclenche l'auto-zoom) */
+  @media (max-width: 767px) {
+    input:not([type="checkbox"]):not([type="radio"]),
+    select,
+    textarea {
+      font-size: 16px;
+    }
   }
   /* Masquer les flèches des inputs number — y compris au survol */
   input[type="number"]::-webkit-inner-spin-button,

@@ -1,8 +1,11 @@
 import { headers } from "next/headers"
+import { redirect } from "next/navigation"
 import type { ReactNode } from "react"
 import { AppShell } from "@/components/app/app-shell"
+import { QueryProvider } from "@/components/providers/query-provider"
 import { getAccounts } from "@/lib/actions/accounts"
 import { getCategoriesForUser } from "@/lib/actions/categories"
+import { getUsedTags } from "@/lib/actions/transactions"
 import { auth } from "@/lib/auth"
 
 export default async function AppLayout({
@@ -14,23 +17,29 @@ export default async function AppLayout({
     headers: await headers(),
   })
 
-  // TODO: activer quand la session Better Auth est validée
-  // if (!session) redirect("/login")
+  if (!session) {
+    // Passe par le Route Handler pour supprimer les cookies stales avant la redirection
+    redirect("/api/clear-session")
+  }
 
-  const userId = session?.user.id ?? ""
+  const userId = session.user.id
 
-  const [accounts, categories] = await Promise.all([
-    userId ? getAccounts() : Promise.resolve([]),
-    userId ? getCategoriesForUser(userId) : Promise.resolve([]),
+  const [accounts, categories, usedTags] = await Promise.all([
+    getAccounts(),
+    getCategoriesForUser(userId),
+    getUsedTags(),
   ])
 
   return (
-    <AppShell
-      accounts={accounts}
-      categories={categories}
-      user={session?.user ?? null}
-    >
-      {children}
-    </AppShell>
+    <QueryProvider>
+      <AppShell
+        accounts={accounts}
+        categories={categories}
+        user={session.user}
+        usedTags={usedTags}
+      >
+        {children}
+      </AppShell>
+    </QueryProvider>
   )
 }

@@ -1,7 +1,6 @@
 "use client"
 
 import {
-  ChevronsUpDown,
   LandmarkIcon,
   LayoutDashboard,
   LogOut,
@@ -15,21 +14,11 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import type { User } from "@/lib/auth"
@@ -83,23 +72,7 @@ export function BarChartSvg({ size }: { readonly size: number }) {
   )
 }
 
-/* ── Logo section ──────────────────────────────────────────────────────────── */
-
-function SidebarLogo() {
-  return (
-    <div className="flex h-14 items-center gap-3 border-sidebar-border border-b px-4">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border border-violet-600/30 bg-white shadow-sm dark:border-indigo-500/30 dark:bg-[#0f0f1a]">
-        <BarChartSvg size={24} />
-      </div>
-      <span className="font-extrabold text-2xl text-slate-900 tracking-[-0.04em] dark:text-white">
-        Motion{" "}
-        <span className="text-violet-700 dark:text-violet-400">Finance</span>
-      </span>
-    </div>
-  )
-}
-
-/* ── Nav items ─────────────────────────────────────────────────────────────── */
+/* ── Navigation items ──────────────────────────────────────────────────────── */
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -107,6 +80,7 @@ const NAV_ITEMS = [
   { href: "/accounts", label: "Comptes", icon: LandmarkIcon },
   { href: "/budgets", label: "Budgets", icon: Wallet },
   { href: "/goals", label: "Objectifs", icon: Target },
+  { href: "/settings", label: "Paramètres", icon: Settings },
 ]
 
 /* ── User avatar ───────────────────────────────────────────────────────────── */
@@ -173,89 +147,70 @@ export function AppSidebar({ user }: AppSidebarProps) {
       className="sticky top-0 hidden h-svh shrink-0 border-sidebar-border border-r md:flex"
       collapsible="none"
     >
+      {/* Logo */}
       <SidebarHeader className="p-0">
-        <SidebarLogo />
+        <div className="flex h-14 items-center gap-3 border-sidebar-border border-b px-4">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-violet-600/20 bg-white shadow-sm dark:border-indigo-500/20 dark:bg-[#0f0f1a]">
+            <BarChartSvg size={22} />
+          </div>
+          <span className="font-extrabold text-xl text-slate-900 tracking-[-0.04em] dark:text-white">
+            Motion{" "}
+            <span className="text-violet-700 dark:text-violet-400">Finance</span>
+          </span>
+        </div>
       </SidebarHeader>
 
-      <SidebarContent className="pt-3">
-        <SidebarGroup className="pt-0">
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-          <SidebarMenu>
-            {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-              const isActive =
-                pathname === href || pathname.startsWith(`${href}/`)
-              return (
-                <SidebarMenuItem key={href}>
-                  <SidebarMenuButton
-                    asChild
+      {/* Navigation */}
+      <SidebarContent className="px-3 pt-4">
+        <SidebarMenu className="gap-1">
+          {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+            const isActive =
+              pathname === href || pathname.startsWith(`${href}/`)
+            return (
+              <SidebarMenuItem key={href}>
+                <Link
+                  className={cn(
+                    "flex h-9 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium transition-all duration-150",
+                    isActive
+                      ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                      : "text-foreground/60 hover:bg-primary/10 hover:text-primary"
+                  )}
+                  href={href}
+                >
+                  <Icon
                     className={cn(
-                      "h-10 rounded-lg transition-all duration-150 [&_svg]:size-5",
-                      isActive
-                        ? "bg-primary! font-semibold! text-primary-foreground! shadow-primary/20 shadow-sm hover:bg-primary/90! hover:text-primary-foreground!"
-                        : "hover:bg-primary/8 hover:text-primary"
+                      "size-[18px]",
+                      isActive ? "stroke-[2.5]" : "stroke-[1.75]"
                     )}
-                    isActive={isActive}
-                    tooltip={label}
-                  >
-                    <Link href={href}>
-                      <Icon
-                        className={cn(isActive ? "stroke-[2.5]" : "stroke-2")}
-                      />
-                      <span className="text-sm">{label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )
-            })}
-          </SidebarMenu>
-        </SidebarGroup>
+                  />
+                  <span>{label}</span>
+                </Link>
+              </SidebarMenuItem>
+            )
+          })}
+        </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter className="border-sidebar-border border-t p-2">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton
-                  className="data-[state=open]:bg-sidebar-accent"
-                  size="lg"
-                  tooltip={displayName}
-                >
-                  <UserAvatar user={user} />
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">
-                      {displayName}
-                    </span>
-                    <span className="truncate text-muted-foreground text-xs">
-                      {user?.email ?? ""}
-                    </span>
-                  </div>
-                  <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-40" />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="start"
-                className="w-[--radix-dropdown-menu-trigger-width] min-w-48"
-                side="top"
-              >
-                <DropdownMenuItem asChild>
-                  <Link href="/settings">
-                    <Settings className="h-4 w-4" />
-                    Paramètres
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="cursor-pointer text-rose-600 data-highlighted:bg-rose-50 data-highlighted:text-rose-600 dark:text-rose-400 dark:data-highlighted:bg-rose-950/60 dark:data-highlighted:text-rose-400 [&_svg]:text-rose-600 dark:[&_svg]:text-rose-400"
-                  onClick={handleSignOut}
-                >
-                  <LogOut className="h-4 w-4" />
-                  Déconnexion
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-        </SidebarMenu>
+      {/* Footer — utilisateur */}
+      <SidebarFooter className="border-sidebar-border border-t p-3">
+        <div className="flex items-center gap-3 rounded-lg px-2 py-2">
+          <UserAvatar user={user} />
+          <div className="grid min-w-0 flex-1 text-left leading-tight">
+            <span className="truncate font-semibold text-sm">{displayName}</span>
+            <span className="truncate text-muted-foreground text-xs">
+              {user?.email ?? ""}
+            </span>
+          </div>
+          <button
+            aria-label="Déconnexion"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+            onClick={handleSignOut}
+            title="Déconnexion"
+            type="button"
+          >
+            <LogOut className="size-4" />
+          </button>
+        </div>
       </SidebarFooter>
     </Sidebar>
   )

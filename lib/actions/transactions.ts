@@ -25,13 +25,39 @@ function buildWhereClause(userId: string, filters: TransactionFilters) {
   return {
     userId,
     ...(filters.type ? { type: filters.type } : {}),
-    ...(filters.accountId ? { accountId: filters.accountId } : {}),
-    ...(filters.categoryId ? { categoryId: filters.categoryId } : {}),
+    ...(filters.accountIds?.length
+      ? {
+          OR: [
+            { accountId: { in: filters.accountIds } },
+            { toAccountId: { in: filters.accountIds } },
+          ],
+        }
+      : {}),
+    ...(filters.categoryIds?.length
+      ? { categoryId: { in: filters.categoryIds } }
+      : {}),
+    ...(filters.amountMin !== undefined || filters.amountMax !== undefined
+      ? {
+          amount: {
+            ...(filters.amountMin === undefined
+              ? {}
+              : { gte: filters.amountMin }),
+            ...(filters.amountMax === undefined
+              ? {}
+              : { lte: filters.amountMax }),
+          },
+        }
+      : {}),
     ...(filters.dateFrom || filters.dateTo
       ? {
           date: {
             ...(filters.dateFrom ? { gte: filters.dateFrom } : {}),
-            ...(filters.dateTo ? { lte: filters.dateTo } : {}),
+            ...(filters.dateTo
+              ? {
+                  // +1 jour pour inclure toute la journée (lt exclusif)
+                  lt: new Date(filters.dateTo.getTime() + 24 * 60 * 60 * 1000),
+                }
+              : {}),
           },
         }
       : {}),
@@ -43,6 +69,7 @@ function buildWhereClause(userId: string, filters: TransactionFilters) {
           },
         }
       : {}),
+    ...(filters.tags?.length ? { tags: { hasSome: filters.tags } } : {}),
   }
 }
 
@@ -157,6 +184,7 @@ export async function createTransaction(data: TransactionInput) {
     data: {
       userId: user.id,
       type: parsed.data.type,
+      title: parsed.data.title,
       amount: parsed.data.amount,
       date: parsed.data.date,
       accountId: parsed.data.accountId,
@@ -165,6 +193,7 @@ export async function createTransaction(data: TransactionInput) {
       description: parsed.data.description,
       tags: parsed.data.tags,
     },
+    select: { id: true },
   })
 
   if (parsed.data.type === "EXPENSE" && parsed.data.categoryId) {
@@ -194,6 +223,7 @@ export async function updateTransaction(id: string, data: TransactionInput) {
     where: { id },
     data: {
       type: parsed.data.type,
+      title: parsed.data.title,
       amount: parsed.data.amount,
       date: parsed.data.date,
       accountId: parsed.data.accountId,
@@ -202,6 +232,7 @@ export async function updateTransaction(id: string, data: TransactionInput) {
       description: parsed.data.description,
       tags: parsed.data.tags,
     },
+    select: { id: true },
   })
 
   if (parsed.data.type === "EXPENSE" && parsed.data.categoryId) {
@@ -226,6 +257,24 @@ export async function deleteTransaction(id: string) {
 
   revalidatePath("/transactions")
   revalidatePath("/dashboard")
+}
+
+export async function getUsedTags(): Promise<string[]> {
+  const user = await requireAuth()
+
+  const rows = await prisma.transaction.findMany({
+    where: { userId: user.id, tags: { isEmpty: false } },
+    select: { tags: true },
+  })
+
+  const set = new Set<string>()
+  for (const row of rows) {
+    for (const tag of row.tags) {
+      set.add(tag)
+    }
+  }
+
+  return [...set].sort((a, b) => a.localeCompare(b, "fr"))
 }
 
 export async function getTransactions(rawFilters: TransactionFilters = {}) {
@@ -258,8 +307,16 @@ export async function getTransactions(rawFilters: TransactionFilters = {}) {
 
   return {
     items: page.map((tx) => ({
-      ...tx,
+      id: tx.id,
+      type: tx.type,
+      title: tx.title,
       amount: Number(tx.amount),
+      date: tx.date,
+      description: tx.description,
+      tags: tx.tags,
+      category: tx.category,
+      account: tx.account,
+      toAccount: tx.toAccount,
     })),
     nextCursor,
     hasMore,

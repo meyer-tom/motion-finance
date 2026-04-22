@@ -8,6 +8,10 @@ const cuid = (message: string) => z.string().regex(cuidRegex, message)
 export const transactionSchema = z
   .object({
     type: z.enum(["EXPENSE", "INCOME", "TRANSFER"]),
+    title: z
+      .string()
+      .min(1, "Le titre est requis")
+      .max(100, "100 caractères maximum"),
     amount: z
       .number()
       .positive("Le montant doit être positif")
@@ -51,11 +55,14 @@ export const transactionSchema = z
 
 export const transactionFiltersSchema = z.object({
   type: z.enum(["EXPENSE", "INCOME", "TRANSFER"]).optional(),
-  accountId: cuid("Compte invalide").optional(),
-  categoryId: cuid("Catégorie invalide").optional(),
+  accountIds: z.array(cuid("Compte invalide")).optional(),
+  categoryIds: z.array(cuid("Catégorie invalide")).optional(),
+  amountMin: z.number().nonnegative().optional(),
+  amountMax: z.number().positive().optional(),
   dateFrom: z.coerce.date().optional(),
   dateTo: z.coerce.date().optional(),
   search: z.string().max(100).optional(),
+  tags: z.array(z.string().max(30)).optional(),
   cursor: cuid("Curseur invalide").optional(),
 })
 

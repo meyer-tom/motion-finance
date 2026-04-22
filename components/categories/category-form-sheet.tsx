@@ -21,7 +21,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { createCategory, updateCategory } from "@/lib/actions/categories"
+import {
+  createCategory,
+  updateCategory,
+  updateSystemCategoryAppearance,
+} from "@/lib/actions/categories"
 import { useIsMobile } from "@/lib/hooks/use-is-mobile"
 import { cn } from "@/lib/utils"
 import { CATEGORY_ICONS } from "@/lib/utils/category-icons"
@@ -55,6 +59,7 @@ export interface CategoryEditValues {
 
 export interface CategoryFormSheetProps {
   initialValues?: CategoryEditValues
+  isSystem?: boolean
   onOpenChange: (open: boolean) => void
   open: boolean
 }
@@ -63,10 +68,12 @@ export interface CategoryFormSheetProps {
 
 function CategoryFormBody({
   isEdit,
+  isSystem,
   initialValues,
   onSuccess,
 }: {
   isEdit: boolean
+  isSystem?: boolean
   initialValues?: CategoryEditValues
   onSuccess: () => void
 }) {
@@ -105,7 +112,14 @@ function CategoryFormBody({
   async function onSubmit(data: CreateCategoryInput) {
     try {
       if (isEdit && initialValues?.id) {
-        await updateCategory(initialValues.id, data)
+        if (isSystem) {
+          await updateSystemCategoryAppearance(initialValues.id, {
+            color: data.color,
+            icon: data.icon,
+          })
+        } else {
+          await updateCategory(initialValues.id, data)
+        }
       } else {
         await createCategory(data)
       }
@@ -123,10 +137,16 @@ function CategoryFormBody({
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="cat-name">Nom</Label>
         <Input
+          disabled={isSystem}
           id="cat-name"
           placeholder="Ex : Courses bio"
           {...register("name")}
         />
+        {isSystem ? (
+          <p className="text-muted-foreground text-xs">
+            Le nom des catégories système ne peut pas être modifié.
+          </p>
+        ) : null}
         {errors.name ? (
           <p className="text-destructive text-xs">{errors.name.message}</p>
         ) : null}
@@ -137,6 +157,7 @@ function CategoryFormBody({
         <Label htmlFor="cat-type">Type</Label>
         <Select
           defaultValue={initialValues?.type ?? "EXPENSE"}
+          disabled={isSystem}
           onValueChange={(v) => setValue("type", v as "EXPENSE" | "INCOME")}
         >
           <SelectTrigger id="cat-type">
@@ -211,12 +232,15 @@ export function CategoryFormSheet({
   open,
   onOpenChange,
   initialValues,
+  isSystem,
 }: CategoryFormSheetProps) {
   const isMobile = useIsMobile()
   const isEdit = Boolean(initialValues?.id)
   const title = isEdit ? "Modifier la catégorie" : "Nouvelle catégorie"
   const description = isEdit
-    ? "Modifiez les informations de votre catégorie."
+    ? isSystem
+      ? "Personnalisez la couleur et l'icône de cette catégorie."
+      : "Modifiez les informations de votre catégorie."
     : "Créez une catégorie personnalisée."
 
   function handleSuccess() {
@@ -234,6 +258,7 @@ export function CategoryFormSheet({
         <CategoryFormBody
           initialValues={initialValues}
           isEdit={isEdit}
+          isSystem={isSystem}
           onSuccess={handleSuccess}
         />
       </BottomSheet>
@@ -250,6 +275,7 @@ export function CategoryFormSheet({
         <CategoryFormBody
           initialValues={initialValues}
           isEdit={isEdit}
+          isSystem={isSystem}
           onSuccess={handleSuccess}
         />
       </DialogContent>

@@ -1,7 +1,8 @@
 "use client"
 
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { ArrowRightLeft, Minus, Plus, X } from "lucide-react"
+import { useQueryClient } from "@tanstack/react-query"
+import { ArrowRightLeft, Calendar, Minus, Plus, Trash2, X } from "lucide-react"
 import { useEffect, useRef, useState, useTransition } from "react"
 import { type Resolver, useForm, useWatch } from "react-hook-form"
 import { BottomSheet } from "@/components/shared/bottom-sheet"
@@ -10,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
@@ -25,6 +27,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   createTransaction,
+  deleteTransaction,
   updateTransaction,
 } from "@/lib/actions/transactions"
 import { useTransactionForm } from "@/lib/context/transaction-form-context"
@@ -39,25 +42,26 @@ import {
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
 export interface AccountOption {
+  balance: number
+  color: string
+  icon: string
   id: string
   name: string
   type: "CHECKING" | "SAVINGS"
-  color: string
-  icon: string
-  balance: number
 }
 
 export interface CategoryOption {
+  color: string
+  icon: string
   id: string
   name: string
-  icon: string
-  color: string
   type: "EXPENSE" | "INCOME"
 }
 
 interface TransactionFormSheetProps {
   accounts: AccountOption[]
   categories: CategoryOption[]
+  usedTags: string[]
 }
 
 /* ── Constantes ────────────────────────────────────────────────────────────── */
@@ -101,8 +105,12 @@ function formatDateInput(date: Date): string {
 }
 
 function getSubmitLabel(isPending: boolean, isEdit: boolean) {
-  if (isPending) { return "Enregistrement…" }
-  if (isEdit) { return "Enregistrer la transaction" }
+  if (isPending) {
+    return "Enregistrement…"
+  }
+  if (isEdit) {
+    return "Enregistrer la transaction"
+  }
   return "Ajouter la transaction"
 }
 
@@ -135,7 +143,7 @@ function TypeSegmentedControl({
             "relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 font-medium text-sm transition-colors",
             selectedType === value
               ? "text-foreground"
-              : "text-muted-foreground hover:text-foreground/70",
+              : "text-muted-foreground hover:text-foreground/70"
           )}
           key={value}
           onClick={() => onTypeChange(value)}
@@ -151,38 +159,28 @@ function TypeSegmentedControl({
   )
 }
 
-function AccountOption_({ account }: { account: AccountOption }) {
-  return (
-    <SelectItem value={account.id}>
-      <span className="flex items-center gap-2">
-        <span
-          className="inline-block size-2.5 rounded-full"
-          style={{ backgroundColor: account.color }}
-        />
-        {account.name}
-      </span>
-    </SelectItem>
-  )
-}
+/* ── Sous-composants ────────────────────────────────────────────────────────── */
 
 function AccountSelects({
   accounts,
   selectedType,
   defaultAccountId,
+  defaultToAccountId,
+  selectedAccountId,
   onAccountChange,
   onToAccountChange,
   accountError,
   toAccountError,
-  selectedAccountId,
 }: {
   accounts: AccountOption[]
   selectedType: TransactionType
   defaultAccountId: string
+  defaultToAccountId?: string
+  selectedAccountId: string
   onAccountChange: (v: string) => void
   onToAccountChange: (v: string) => void
   accountError?: string
   toAccountError?: string
-  selectedAccountId: string
 }) {
   const availableToAccounts = accounts.filter((a) => a.id !== selectedAccountId)
   const label = selectedType === "TRANSFER" ? "Compte source" : "Compte"
@@ -199,7 +197,27 @@ function AccountSelects({
             <SelectValue placeholder="Sélectionner un compte" />
           </SelectTrigger>
           <SelectContent>
-            {accounts.map((a) => <AccountOption_ account={a} key={a.id} />)}
+            {accounts.map((account) => (
+              <SelectItem key={account.id} value={account.id}>
+                <span className="flex items-center gap-2">
+                  <span
+                    className="inline-block size-2.5 rounded-full"
+                    style={{ backgroundColor: account.color }}
+                  />
+                  {account.name}
+                  <span
+                    className={cn(
+                      "ml-1 rounded-full px-1.5 py-0.5 font-medium text-[10px]",
+                      account.type === "CHECKING"
+                        ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                        : "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                    )}
+                  >
+                    {account.type === "CHECKING" ? "Courant" : "Épargne"}
+                  </span>
+                </span>
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         {accountError ? (
@@ -210,13 +228,24 @@ function AccountSelects({
       {selectedType === "TRANSFER" ? (
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="tx-to-account">Compte destination</Label>
-          <Select onValueChange={onToAccountChange}>
+          <Select
+            defaultValue={defaultToAccountId || undefined}
+            onValueChange={onToAccountChange}
+          >
             <SelectTrigger id="tx-to-account">
               <SelectValue placeholder="Sélectionner un compte" />
             </SelectTrigger>
             <SelectContent>
-              {availableToAccounts.map((a) => (
-                <AccountOption_ account={a} key={a.id} />
+              {availableToAccounts.map((account) => (
+                <SelectItem key={account.id} value={account.id}>
+                  <span className="flex items-center gap-2">
+                    <span
+                      className="inline-block size-2.5 rounded-full"
+                      style={{ backgroundColor: account.color }}
+                    />
+                    {account.name}
+                  </span>
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -229,69 +258,75 @@ function AccountSelects({
   )
 }
 
-/* ── Sous-composants ────────────────────────────────────────────────────────── */
-
 function CategoryGrid({
   categories,
   selectedCategoryId,
   onSelect,
   error,
+  cols = 4,
+  scrollable = false,
 }: {
   categories: CategoryOption[]
   selectedCategoryId: string | null | undefined
   onSelect: (id: string | null) => void
   error?: string
+  cols?: 4 | 5 | 6
+  scrollable?: boolean
 }) {
+  let colsClass = "grid-cols-4"
+  if (cols === 5) colsClass = "grid-cols-5"
+  if (cols === 6) colsClass = "grid-cols-6"
+
+  const items = categories.map((cat) => {
+    const Icon = getCategoryIcon(cat.icon)
+    const isSelected = selectedCategoryId === cat.id
+    return (
+      <button
+        className={cn(
+          "flex flex-col items-center gap-1 rounded-xl border p-2 transition-all",
+          scrollable && "w-[68px] shrink-0",
+          isSelected
+            ? "border-transparent shadow-sm"
+            : "border-border hover:border-border/80 hover:bg-muted/50"
+        )}
+        key={cat.id}
+        onClick={() => onSelect(isSelected ? null : cat.id)}
+        style={
+          isSelected
+            ? { backgroundColor: `${cat.color}18`, borderColor: `${cat.color}40` }
+            : {}
+        }
+        type="button"
+      >
+        <div
+          className="flex size-8 items-center justify-center rounded-lg"
+          style={{ backgroundColor: isSelected ? `${cat.color}20` : "transparent" }}
+        >
+          <Icon
+            className="size-4"
+            style={{ color: isSelected ? cat.color : undefined }}
+          />
+        </div>
+        <span
+          className="w-full truncate text-center text-[10px] leading-tight"
+          style={{ color: isSelected ? cat.color : undefined }}
+        >
+          {cat.name}
+        </span>
+      </button>
+    )
+  })
+
   return (
     <div className="flex flex-col gap-1.5">
       <Label>Catégorie</Label>
-      <div className="grid grid-cols-4 gap-2">
-        {categories.map((cat) => {
-          const Icon = getCategoryIcon(cat.icon)
-          const isSelected = selectedCategoryId === cat.id
-          return (
-            <button
-              className={cn(
-                "flex flex-col items-center gap-1 rounded-xl border p-2 transition-all",
-                isSelected
-                  ? "border-transparent shadow-sm"
-                  : "border-border hover:border-border/80 hover:bg-muted/50"
-              )}
-              key={cat.id}
-              onClick={() => onSelect(isSelected ? null : cat.id)}
-              style={
-                isSelected
-                  ? {
-                      backgroundColor: `${cat.color}18`,
-                      borderColor: `${cat.color}40`,
-                    }
-                  : {}
-              }
-              type="button"
-            >
-              <div
-                className="flex size-8 items-center justify-center rounded-lg"
-                style={{
-                  backgroundColor: isSelected
-                    ? `${cat.color}20`
-                    : "transparent",
-                }}
-              >
-                <Icon
-                  className="size-4"
-                  style={{ color: isSelected ? cat.color : undefined }}
-                />
-              </div>
-              <span
-                className="w-full truncate text-center text-[10px] leading-tight"
-                style={{ color: isSelected ? cat.color : undefined }}
-              >
-                {cat.name}
-              </span>
-            </button>
-          )
-        })}
-      </div>
+      {scrollable ? (
+        <div className="flex gap-2 overflow-x-auto pb-1 [touch-action:pan-x] overscroll-x-contain">
+          {items}
+        </div>
+      ) : (
+        <div className={`grid ${colsClass} gap-2`}>{items}</div>
+      )}
       {error ? <p className="text-destructive text-xs">{error}</p> : null}
     </div>
   )
@@ -300,21 +335,32 @@ function CategoryGrid({
 function TagsInput({
   tags,
   onTagsChange,
+  suggestions = [],
   error,
 }: {
   tags: string[]
   onTagsChange: (tags: string[]) => void
+  suggestions?: string[]
   error?: string
 }) {
   const [tagInput, setTagInput] = useState("")
+  const [showSuggestions, setShowSuggestions] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
-  function addTag() {
-    const trimmed = tagInput.trim().replace(TRAILING_COMMA_RE, "")
+  const filteredSuggestions = suggestions.filter(
+    (s) =>
+      !tags.includes(s) &&
+      (tagInput === "" || s.toLowerCase().includes(tagInput.toLowerCase()))
+  )
+
+  function addTag(value?: string) {
+    const trimmed = (value ?? tagInput).trim().replace(TRAILING_COMMA_RE, "")
     if (trimmed && !tags.includes(trimmed) && tags.length < 10) {
       onTagsChange([...tags, trimmed])
     }
     setTagInput("")
+    inputRef.current?.focus()
   }
 
   function removeTag(tag: string) {
@@ -327,50 +373,222 @@ function TagsInput({
       addTag()
     } else if (e.key === "Backspace" && tagInput === "") {
       onTagsChange(tags.slice(0, -1))
+    } else if (e.key === "Escape") {
+      setShowSuggestions(false)
     }
   }
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-1.5" ref={containerRef}>
       <Label htmlFor="tx-tags">
         Tags{" "}
         <span className="font-normal text-muted-foreground">(optionnel)</span>
       </Label>
-      {/* label[htmlFor] permet de cliquer n'importe où dans le conteneur pour focus l'input */}
-      <label
-        className="flex min-h-10 cursor-text flex-wrap items-center gap-1.5 rounded-md border border-input bg-background px-3 py-2 focus-within:ring-2 focus-within:ring-ring/50"
-        htmlFor="tx-tags"
-      >
-        {tags.map((tag) => (
-          <Badge className="gap-1 text-xs" key={tag} variant="outline">
-            {tag}
-            <button
-              aria-label={`Supprimer le tag ${tag}`}
-              className="ml-0.5 rounded-full hover:text-destructive"
-              onClick={(e) => {
-                e.preventDefault()
-                removeTag(tag)
-              }}
-              type="button"
-            >
-              <X className="size-3" />
-            </button>
-          </Badge>
-        ))}
-        <input
-          className="min-w-20 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-          id="tx-tags"
-          onBlur={addTag}
-          onChange={(e) => setTagInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={
-            tags.length === 0 ? "Entrée ou virgule pour ajouter…" : ""
-          }
-          ref={inputRef}
-          value={tagInput}
-        />
-      </label>
+      <div className="relative">
+        {/* label[htmlFor] permet de cliquer n'importe où dans le conteneur pour focus l'input */}
+        <label
+          className="flex min-h-10 cursor-text flex-wrap items-center gap-1.5 rounded-md border border-input bg-background px-3 py-2 focus-within:ring-2 focus-within:ring-ring/50"
+          htmlFor="tx-tags"
+        >
+          {tags.map((tag) => (
+            <Badge className="gap-1 text-xs" key={tag} variant="outline">
+              {tag}
+              <button
+                aria-label={`Supprimer le tag ${tag}`}
+                className="ml-0.5 rounded-full hover:text-destructive"
+                onClick={(e) => {
+                  e.preventDefault()
+                  removeTag(tag)
+                }}
+                type="button"
+              >
+                <X className="size-3" />
+              </button>
+            </Badge>
+          ))}
+          <input
+            className="min-w-20 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            id="tx-tags"
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+            onChange={(e) => {
+              setTagInput(e.target.value)
+              setShowSuggestions(true)
+            }}
+            onFocus={() => setShowSuggestions(true)}
+            onKeyDown={handleKeyDown}
+            placeholder={
+              tags.length === 0 ? "Entrée ou virgule pour ajouter…" : ""
+            }
+            ref={inputRef}
+            value={tagInput}
+          />
+        </label>
+
+        {/* Dropdown suggestions */}
+        {showSuggestions && filteredSuggestions.length > 0 ? (
+          <div className="absolute top-full left-0 z-50 mt-1 w-full rounded-md border border-border bg-popover shadow-md">
+            <div className="flex flex-wrap gap-1.5 p-2">
+              {filteredSuggestions.map((s) => (
+                <button
+                  className="rounded-md border border-border bg-muted px-2 py-0.5 text-xs transition-colors hover:border-primary hover:bg-primary/10 hover:text-primary"
+                  key={s}
+                  onMouseDown={(e) => {
+                    e.preventDefault()
+                    addTag(s)
+                  }}
+                  type="button"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </div>
       {error ? <p className="text-destructive text-xs">{error}</p> : null}
+    </div>
+  )
+}
+
+function SuggestionsRow() {
+  return (
+    <div>
+      <p className="mb-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
+        Suggestions
+      </p>
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        {[1, 2, 3].map((i) => (
+          <Skeleton className="h-14 w-28 shrink-0 rounded-xl" key={i} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function DateInput({
+  initialDate,
+  onChange,
+  error,
+}: {
+  initialDate: Date
+  onChange: (isoDate: string) => void
+  error?: string
+}) {
+  function toDisplay(d: Date) {
+    return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`
+  }
+
+  const [display, setDisplay] = useState(() => toDisplay(initialDate))
+  const [isoValue, setIsoValue] = useState(() => formatDateInput(initialDate))
+  const hiddenRef = useRef<HTMLInputElement>(null)
+
+  function handleTextChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const digits = e.target.value.replace(/\D/g, "").slice(0, 8)
+    let formatted = digits
+    if (digits.length > 4) {
+      formatted = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`
+    } else if (digits.length > 2) {
+      formatted = `${digits.slice(0, 2)}/${digits.slice(2)}`
+    }
+    setDisplay(formatted)
+
+    if (digits.length === 8) {
+      const d = parseInt(digits.slice(0, 2), 10)
+      const m = parseInt(digits.slice(2, 4), 10)
+      const y = parseInt(digits.slice(4, 8), 10)
+      const date = new Date(y, m - 1, d)
+      if (date.getDate() === d && date.getMonth() === m - 1 && date.getFullYear() === y) {
+        const iso = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`
+        setIsoValue(iso)
+        onChange(iso)
+      }
+    }
+  }
+
+  function handleHiddenChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const iso = e.target.value
+    if (!iso) return
+    const [y, m, d] = iso.split("-").map(Number)
+    setDisplay(`${String(d).padStart(2, "0")}/${String(m).padStart(2, "0")}/${y}`)
+    setIsoValue(iso)
+    onChange(iso)
+  }
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label htmlFor="tx-date">Date</Label>
+      <div className="relative">
+        <Input
+          id="tx-date"
+          inputMode="numeric"
+          maxLength={10}
+          onChange={handleTextChange}
+          placeholder="JJ/MM/AAAA"
+          value={display}
+        />
+        {/* Bouton calendrier avec input date invisible superposé — showPicker() non supporté iOS */}
+        <div className="absolute top-1/2 right-3 -translate-y-1/2">
+          <Calendar aria-hidden className="size-4 text-muted-foreground" />
+          <input
+            aria-label="Ouvrir le calendrier"
+            className="absolute inset-0 cursor-pointer opacity-0"
+            onChange={handleHiddenChange}
+            ref={hiddenRef}
+            type="date"
+            value={isoValue}
+          />
+        </div>
+      </div>
+      {error ? <p className="text-destructive text-xs">{error}</p> : null}
+    </div>
+  )
+}
+
+function AmountDateRow({
+  wide,
+  amountDisplay,
+  onAmountChange,
+  amountError,
+  initialDate,
+  onDateChange,
+  dateError,
+}: {
+  wide: boolean
+  amountDisplay: string
+  onAmountChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  amountError?: string
+  initialDate: Date
+  onDateChange: (isoDate: string) => void
+  dateError?: string
+}) {
+  return (
+    <div className={wide ? "grid grid-cols-2 gap-4" : "flex flex-col gap-3"}>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="tx-amount">Montant (€)</Label>
+        <div className="relative">
+          <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground text-sm">
+            €
+          </span>
+          <Input
+            className="pl-7 font-semibold"
+            id="tx-amount"
+            inputMode="decimal"
+            onChange={onAmountChange}
+            placeholder="0,00"
+            type="text"
+            value={amountDisplay}
+          />
+        </div>
+        {amountError ? (
+          <p className="text-destructive text-xs">{amountError}</p>
+        ) : null}
+      </div>
+
+      <DateInput
+        error={dateError}
+        initialDate={initialDate}
+        onChange={onDateChange}
+      />
     </div>
   )
 }
@@ -380,18 +598,23 @@ function TagsInput({
 function TransactionFormBody({
   accounts,
   categories,
+  usedTags,
   onSuccess,
+  wide = false,
 }: {
   accounts: AccountOption[]
   categories: CategoryOption[]
+  usedTags: string[]
   onSuccess: () => void
+  wide?: boolean
 }) {
-  const { initialValues } = useTransactionForm()
+  const { initialValues, closeForm } = useTransactionForm()
+  const queryClient = useQueryClient()
   const isEdit = Boolean(initialValues?.id)
 
   const defaultAccountId =
     initialValues?.accountId ??
-    (accounts.length === 1 ? (accounts[0]?.id ?? "") : "")
+    (accounts.find((a) => a.type === "CHECKING")?.id ?? accounts[0]?.id ?? "")
 
   const {
     handleSubmit,
@@ -408,6 +631,7 @@ function TransactionFormBody({
     mode: "onChange",
     defaultValues: {
       type: initialValues?.type ?? "EXPENSE",
+      title: initialValues?.title ?? "",
       amount: initialValues?.amount,
       date: initialValues?.date ?? new Date(),
       accountId: defaultAccountId,
@@ -428,15 +652,29 @@ function TransactionFormBody({
   )
 
   const [isPending, startTransition] = useTransition()
+  const [isDeletePending, startDeleteTransition] = useTransition()
+  const [deleteConfirm, setDeleteConfirm] = useState(false)
+
+  function handleDelete() {
+    const id = initialValues?.id
+    if (!id) return
+    startDeleteTransition(async () => {
+      await deleteTransaction(id)
+      closeForm()
+      queryClient.invalidateQueries({ queryKey: ["transactions"] })
+      window.dispatchEvent(new CustomEvent("transaction:mutated"))
+    })
+  }
 
   // Reset quand initialValues change (réouverture du formulaire)
   useEffect(() => {
     const newAccountId =
       initialValues?.accountId ??
-      (accounts.length === 1 ? (accounts[0]?.id ?? "") : "")
+      (accounts.find((a) => a.type === "CHECKING")?.id ?? accounts[0]?.id ?? "")
 
     reset({
       type: initialValues?.type ?? "EXPENSE",
+      title: initialValues?.title ?? "",
       amount: initialValues?.amount,
       date: initialValues?.date ?? new Date(),
       accountId: newAccountId,
@@ -491,22 +729,10 @@ function TransactionFormBody({
   const activeTypeColor =
     TRANSACTION_TYPES[typeIndex]?.color ?? "var(--color-expense)"
 
-  const availableToAccounts = accounts.filter((a) => a.id !== selectedAccountId)
-
-  function getSubmitLabel() {
-    if (isPending) {
-      return "Enregistrement…"
-    }
-    if (isEdit) {
-      return "Enregistrer la transaction"
-    }
-    return "Ajouter la transaction"
-  }
-
   /* ── Render ───────────────────────────────────────────────────────────── */
 
   return (
-    <form className="flex flex-col gap-5" onSubmit={handleSubmit(onSubmit)}>
+    <form className="flex flex-col gap-3" onSubmit={handleSubmit(onSubmit)}>
       {/* ── Segmented control type ── */}
       <TypeSegmentedControl
         activeTypeColor={activeTypeColor}
@@ -520,103 +746,91 @@ function TransactionFormBody({
       />
 
       {/* ── Suggestions (stub Issue 8.2) ── */}
-      {isEdit ? null : (
-        <div>
-          <p className="mb-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
-            Suggestions
-          </p>
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {[1, 2, 3].map((i) => (
-              <Skeleton className="h-14 w-28 shrink-0 rounded-xl" key={i} />
-            ))}
-          </div>
-        </div>
-      )}
+      {isEdit ? null : <SuggestionsRow />}
 
-      {/* ── Montant ── */}
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="tx-amount">Montant (€)</Label>
-        <div className="relative">
-          <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground text-sm">
-            €
-          </span>
+      {/* ── Titre + Compte source (même ligne sur sm+) ── */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="tx-title">Titre</Label>
           <Input
-            className="pl-7 font-semibold text-lg"
-            id="tx-amount"
-            inputMode="decimal"
-            onChange={handleAmountChange}
-            placeholder="0,00"
-            type="text"
-            value={amountDisplay}
-          />
-        </div>
-        {errors.amount ? (
-          <p className="text-destructive text-xs">{errors.amount.message}</p>
-        ) : null}
-      </div>
-
-      {/* ── Date ── */}
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="tx-date">Date</Label>
-        <Input
-          defaultValue={formatDateInput(
-            initialValues?.date instanceof Date
-              ? initialValues.date
-              : new Date()
-          )}
-          id="tx-date"
-          onChange={(e) => {
-            if (e.target.value) {
-              setValue("date", parseLocalDate(e.target.value), {
-                shouldValidate: true,
-              })
+            defaultValue={initialValues?.title ?? ""}
+            id="tx-title"
+            onChange={(e) =>
+              setValue("title", e.target.value, { shouldValidate: true })
             }
-          }}
-          type="date"
-        />
-        {errors.date ? (
-          <p className="text-destructive text-xs">{errors.date.message}</p>
-        ) : null}
+            placeholder="Ex : Courses"
+          />
+          {errors.title ? (
+            <p className="text-destructive text-xs">{errors.title.message}</p>
+          ) : null}
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="tx-account">
+            {selectedType === "TRANSFER" ? "Compte source" : "Compte"}
+          </Label>
+          <Select
+            defaultValue={defaultAccountId || undefined}
+            onValueChange={(v) =>
+              setValue("accountId", v, { shouldValidate: true })
+            }
+          >
+            <SelectTrigger id="tx-account">
+              <SelectValue placeholder="Sélectionner" />
+            </SelectTrigger>
+            <SelectContent>
+              {accounts.map((account) => (
+                <SelectItem key={account.id} value={account.id}>
+                  <span className="flex items-center gap-2">
+                    <span
+                      className="inline-block size-2.5 rounded-full"
+                      style={{ backgroundColor: account.color }}
+                    />
+                    {account.name}
+                    <span
+                      className={cn(
+                        "ml-1 rounded-full px-1.5 py-0.5 font-medium text-[10px]",
+                        account.type === "CHECKING"
+                          ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                          : "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                      )}
+                    >
+                      {account.type === "CHECKING" ? "Courant" : "Épargne"}
+                    </span>
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.accountId ? (
+            <p className="text-destructive text-xs">
+              {errors.accountId.message}
+            </p>
+          ) : null}
+        </div>
       </div>
 
-      {/* ── Compte source ── */}
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="tx-account">
-          {selectedType === "TRANSFER" ? "Compte source" : "Compte"}
-        </Label>
-        <Select
-          defaultValue={defaultAccountId || undefined}
-          onValueChange={(v) =>
-            setValue("accountId", v, { shouldValidate: true })
-          }
-        >
-          <SelectTrigger id="tx-account">
-            <SelectValue placeholder="Sélectionner un compte" />
-          </SelectTrigger>
-          <SelectContent>
-            {accounts.map((account) => (
-              <SelectItem key={account.id} value={account.id}>
-                <span className="flex items-center gap-2">
-                  <span
-                    className="inline-block size-2.5 rounded-full"
-                    style={{ backgroundColor: account.color }}
-                  />
-                  {account.name}
-                </span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {errors.accountId ? (
-          <p className="text-destructive text-xs">{errors.accountId.message}</p>
-        ) : null}
-      </div>
+      {/* ── Montant + Date ── */}
+      <AmountDateRow
+        amountDisplay={amountDisplay}
+        amountError={errors.amount?.message}
+        dateError={errors.date?.message}
+        initialDate={
+          initialValues?.date instanceof Date ? initialValues.date : new Date()
+        }
+        onAmountChange={handleAmountChange}
+        onDateChange={(isoDate) => {
+          setValue("date", parseLocalDate(isoDate), { shouldValidate: true })
+        }}
+        wide={wide}
+      />
 
-      {/* ── Compte destination (TRANSFER uniquement) ── */}
+      {/* ── Compte destination (virements uniquement) ── */}
       {selectedType === "TRANSFER" ? (
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="tx-to-account">Compte destination</Label>
           <Select
+            defaultValue={initialValues?.toAccountId ?? undefined}
             onValueChange={(v) =>
               setValue("toAccountId", v, { shouldValidate: true })
             }
@@ -625,17 +839,29 @@ function TransactionFormBody({
               <SelectValue placeholder="Sélectionner un compte" />
             </SelectTrigger>
             <SelectContent>
-              {availableToAccounts.map((account) => (
-                <SelectItem key={account.id} value={account.id}>
-                  <span className="flex items-center gap-2">
-                    <span
-                      className="inline-block size-2.5 rounded-full"
-                      style={{ backgroundColor: account.color }}
-                    />
-                    {account.name}
-                  </span>
-                </SelectItem>
-              ))}
+              {accounts
+                .filter((a) => a.id !== selectedAccountId)
+                .map((account) => (
+                  <SelectItem key={account.id} value={account.id}>
+                    <span className="flex items-center gap-2">
+                      <span
+                        className="inline-block size-2.5 rounded-full"
+                        style={{ backgroundColor: account.color }}
+                      />
+                      {account.name}
+                      <span
+                        className={cn(
+                          "ml-1 rounded-full px-1.5 py-0.5 font-medium text-[10px]",
+                          account.type === "CHECKING"
+                            ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                            : "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                        )}
+                      >
+                        {account.type === "CHECKING" ? "Courant" : "Épargne"}
+                      </span>
+                    </span>
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
           {errors.toAccountId ? (
@@ -650,18 +876,20 @@ function TransactionFormBody({
       {selectedType === "TRANSFER" ? null : (
         <CategoryGrid
           categories={filteredCategories}
+          cols={wide ? 6 : 4}
           error={errors.categoryId?.message}
           onSelect={(id) =>
             setValue("categoryId", id, { shouldValidate: true })
           }
+          scrollable={!wide}
           selectedCategoryId={selectedCategoryId}
         />
       )}
 
-      {/* ── Description ── */}
+      {/* ── Note (optionnel) ── */}
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="tx-description">
-          Description{" "}
+          Note{" "}
           <span className="font-normal text-muted-foreground">(optionnel)</span>
         </Label>
         <Input
@@ -670,7 +898,7 @@ function TransactionFormBody({
           onChange={(e) =>
             setValue("description", e.target.value, { shouldValidate: true })
           }
-          placeholder="Ex : Courses Leclerc"
+          placeholder="Informations complémentaires…"
         />
         {errors.description ? (
           <p className="text-destructive text-xs">
@@ -683,6 +911,7 @@ function TransactionFormBody({
       <TagsInput
         error={errors.tags?.message}
         onTagsChange={(t) => setValue("tags", t, { shouldValidate: true })}
+        suggestions={usedTags}
         tags={currentTags}
       />
 
@@ -703,8 +932,42 @@ function TransactionFormBody({
         }}
         type="submit"
       >
-        {getSubmitLabel()}
+        {getSubmitLabel(isPending, isEdit)}
       </Button>
+
+      {/* ── Supprimer (édition uniquement) ── */}
+      {isEdit ? (
+        deleteConfirm ? (
+          <div className="flex gap-2">
+            <Button
+              className="flex-1"
+              disabled={isDeletePending}
+              onClick={handleDelete}
+              type="button"
+              variant="destructive"
+            >
+              {isDeletePending ? "Suppression…" : "Confirmer"}
+            </Button>
+            <Button
+              onClick={() => setDeleteConfirm(false)}
+              type="button"
+              variant="ghost"
+            >
+              Annuler
+            </Button>
+          </div>
+        ) : (
+          <Button
+            className="w-full text-destructive hover:text-destructive"
+            onClick={() => setDeleteConfirm(true)}
+            type="button"
+            variant="ghost"
+          >
+            <Trash2 className="mr-2 size-4" />
+            Supprimer la transaction
+          </Button>
+        )
+      ) : null}
     </form>
   )
 }
@@ -714,24 +977,20 @@ function TransactionFormBody({
 export function TransactionFormSheet({
   accounts,
   categories,
+  usedTags,
 }: TransactionFormSheetProps) {
   const { open, initialValues, closeForm } = useTransactionForm()
   const isMobile = useIsMobile()
+  const queryClient = useQueryClient()
 
   const isEdit = Boolean(initialValues?.id)
   const title = isEdit ? "Modifier la transaction" : "Nouvelle transaction"
 
   function handleSuccess() {
     closeForm()
+    queryClient.invalidateQueries({ queryKey: ["transactions"] })
+    window.dispatchEvent(new CustomEvent("transaction:mutated"))
   }
-
-  const body = (
-    <TransactionFormBody
-      accounts={accounts}
-      categories={categories}
-      onSuccess={handleSuccess}
-    />
-  )
 
   if (isMobile) {
     return (
@@ -744,7 +1003,12 @@ export function TransactionFormSheet({
         open={open}
         title={title}
       >
-        {body}
+        <TransactionFormBody
+          accounts={accounts}
+          categories={categories}
+          onSuccess={handleSuccess}
+          usedTags={usedTags}
+        />
       </BottomSheet>
     )
   }
@@ -758,11 +1022,20 @@ export function TransactionFormSheet({
       }}
       open={open}
     >
-      <DialogContent className="flex max-h-[90dvh] max-w-md flex-col overflow-y-auto">
-        <DialogHeader className="shrink-0">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
+        <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
+          <DialogDescription className="sr-only">
+            Formulaire de transaction
+          </DialogDescription>
         </DialogHeader>
-        {body}
+        <TransactionFormBody
+          accounts={accounts}
+          categories={categories}
+          onSuccess={handleSuccess}
+          usedTags={usedTags}
+          wide
+        />
       </DialogContent>
     </Dialog>
   )
