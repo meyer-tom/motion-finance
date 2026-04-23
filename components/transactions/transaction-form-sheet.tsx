@@ -1,11 +1,15 @@
 "use client"
 
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { ArrowRightLeft, Calendar, Minus, Plus, Trash2, X } from "lucide-react"
 import { useEffect, useRef, useState, useTransition } from "react"
 import { type Resolver, useForm, useWatch } from "react-hook-form"
 import { BottomSheet } from "@/components/shared/bottom-sheet"
+import {
+  type RecurringSuggestionItem,
+  RecurringSuggestions,
+} from "@/components/transactions/recurring-suggestions"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -24,7 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Skeleton } from "@/components/ui/skeleton"
+import { getSuggestedRecurring } from "@/lib/actions/recurring-transactions"
 import {
   createTransaction,
   deleteTransaction,
@@ -450,20 +454,6 @@ function TagsInput({
   )
 }
 
-function SuggestionsRow() {
-  return (
-    <div>
-      <p className="mb-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
-        Suggestions
-      </p>
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {[1, 2, 3].map((i) => (
-          <Skeleton className="h-14 w-28 shrink-0 rounded-xl" key={i} />
-        ))}
-      </div>
-    </div>
-  )
-}
 
 function DateInput({
   initialDate,
@@ -643,6 +633,8 @@ function TransactionFormBody({
   })
 
   const selectedType = useWatch({ control, name: "type" })
+  const selectedTitle = useWatch({ control, name: "title" })
+  const selectedDescription = useWatch({ control, name: "description" })
   const selectedCategoryId = useWatch({ control, name: "categoryId" })
   const selectedAccountId = useWatch({ control, name: "accountId" })
   const currentTags = useWatch({ control, name: "tags" }) ?? []
@@ -650,6 +642,12 @@ function TransactionFormBody({
   const [amountDisplay, setAmountDisplay] = useState(
     initialValues?.amount == null ? "" : String(initialValues.amount)
   )
+
+  const { data: suggestions = [], isLoading: isSuggestionsLoading } = useQuery({
+    queryKey: ["recurring-suggestions"],
+    queryFn: () => getSuggestedRecurring(),
+    staleTime: 5 * 60 * 1000,
+  })
 
   const [isPending, startTransition] = useTransition()
   const [isDeletePending, startDeleteTransition] = useTransition()
@@ -664,6 +662,20 @@ function TransactionFormBody({
       queryClient.invalidateQueries({ queryKey: ["transactions"] })
       window.dispatchEvent(new CustomEvent("transaction:mutated"))
     })
+  }
+
+  function handleApplySuggestion(s: RecurringSuggestionItem) {
+    setValue("type", s.type, { shouldValidate: true })
+    setValue("title", s.name, { shouldValidate: true })
+    setValue("amount", s.amount, { shouldValidate: true })
+    setAmountDisplay(String(s.amount))
+    setValue("accountId", s.accountId, { shouldValidate: true })
+    setValue("categoryId", s.categoryId ?? null, { shouldValidate: true })
+    setValue(
+      "toAccountId",
+      s.type === "TRANSFER" ? (s.toAccountId ?? null) : null
+    )
+    setValue("description", s.description ?? "", { shouldValidate: true })
   }
 
   // Reset quand initialValues change (réouverture du formulaire)
@@ -745,20 +757,26 @@ function TransactionFormBody({
         typeIndex={typeIndex}
       />
 
-      {/* ── Suggestions (stub Issue 8.2) ── */}
-      {isEdit ? null : <SuggestionsRow />}
+      {/* ── Suggestions récurrentes ── */}
+      {isEdit ? null : (
+        <RecurringSuggestions
+          isLoading={isSuggestionsLoading}
+          onApply={handleApplySuggestion}
+          suggestions={suggestions}
+        />
+      )}
 
       {/* ── Titre + Compte source (même ligne sur sm+) ── */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="tx-title">Titre</Label>
           <Input
-            defaultValue={initialValues?.title ?? ""}
             id="tx-title"
             onChange={(e) =>
               setValue("title", e.target.value, { shouldValidate: true })
             }
             placeholder="Ex : Courses"
+            value={selectedTitle ?? ""}
           />
           {errors.title ? (
             <p className="text-destructive text-xs">{errors.title.message}</p>
@@ -770,10 +788,10 @@ function TransactionFormBody({
             {selectedType === "TRANSFER" ? "Compte source" : "Compte"}
           </Label>
           <Select
-            defaultValue={defaultAccountId || undefined}
             onValueChange={(v) =>
               setValue("accountId", v, { shouldValidate: true })
             }
+            value={selectedAccountId || undefined}
           >
             <SelectTrigger id="tx-account">
               <SelectValue placeholder="Sélectionner" />
@@ -893,8 +911,8 @@ function TransactionFormBody({
           <span className="font-normal text-muted-foreground">(optionnel)</span>
         </Label>
         <Input
-          defaultValue={initialValues?.description ?? ""}
           id="tx-description"
+          value={selectedDescription ?? ""}
           onChange={(e) =>
             setValue("description", e.target.value, { shouldValidate: true })
           }

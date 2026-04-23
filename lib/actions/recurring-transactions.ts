@@ -155,3 +155,81 @@ export async function toggleRecurring(id: string) {
 
   revalidatePath("/settings")
 }
+
+function addFrequency(date: Date, frequency: string): Date {
+  const d = new Date(date)
+  switch (frequency) {
+    case "WEEKLY":
+      d.setDate(d.getDate() + 7)
+      break
+    case "MONTHLY":
+      d.setMonth(d.getMonth() + 1)
+      break
+    case "QUARTERLY":
+      d.setMonth(d.getMonth() + 3)
+      break
+    case "YEARLY":
+      d.setFullYear(d.getFullYear() + 1)
+      break
+  }
+  return d
+}
+
+export async function getSuggestedRecurring() {
+  const user = await requireAuth()
+  const currentDate = new Date()
+
+  const recurrings = await prisma.recurringTransaction.findMany({
+    where: { userId: user.id, isActive: true },
+    include: {
+      category: { select: { id: true, name: true, icon: true, color: true } },
+      account: {
+        select: { id: true, name: true, color: true, icon: true, type: true },
+      },
+      toAccount: {
+        select: { id: true, name: true, color: true, icon: true, type: true },
+      },
+    },
+  })
+
+  const withDistances = await Promise.all(
+    recurrings.map(async (r) => {
+      const lastTx = await prisma.transaction.findFirst({
+        where: {
+          userId: user.id,
+          type: r.type,
+          accountId: r.accountId,
+          ...(r.categoryId ? { categoryId: r.categoryId } : {}),
+        },
+        orderBy: { date: "desc" },
+        select: { date: true },
+      })
+
+      const baseDate = lastTx?.date ?? r.createdAt
+      const nextExpected = addFrequency(baseDate, r.frequency)
+      const distanceMs = Math.abs(
+        nextExpected.getTime() - currentDate.getTime()
+      )
+
+      return {
+        id: r.id,
+        name: r.name,
+        type: r.type,
+        amount: Number(r.amount),
+        description: r.description,
+        categoryId: r.categoryId,
+        accountId: r.accountId,
+        toAccountId: r.toAccountId,
+        frequency: r.frequency,
+        category: r.category,
+        account: r.account,
+        toAccount: r.toAccount,
+        distanceMs,
+      }
+    })
+  )
+
+  return withDistances
+    .sort((a, b) => a.distanceMs - b.distanceMs)
+    .map(({ distanceMs, ...r }) => r)
+}
