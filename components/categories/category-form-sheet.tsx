@@ -60,6 +60,7 @@ export interface CategoryEditValues {
 export interface CategoryFormSheetProps {
   initialValues?: CategoryEditValues
   isSystem?: boolean
+  onDelete?: () => void
   onOpenChange: (open: boolean) => void
   open: boolean
 }
@@ -70,11 +71,13 @@ function CategoryFormBody({
   isEdit,
   isSystem,
   initialValues,
+  onDelete,
   onSuccess,
 }: {
   isEdit: boolean
   isSystem?: boolean
   initialValues?: CategoryEditValues
+  onDelete?: () => void
   onSuccess: () => void
 }) {
   const {
@@ -222,6 +225,18 @@ function CategoryFormBody({
       <Button className="mt-1 w-full" disabled={isSubmitting} type="submit">
         {isSubmitting ? "Enregistrement…" : submitLabel}
       </Button>
+
+      {isEdit && !isSystem && onDelete ? (
+        <Button
+          className="w-full"
+          disabled={isSubmitting}
+          onClick={onDelete}
+          type="button"
+          variant="ghost"
+        >
+          <span className="text-destructive">Supprimer cette catégorie</span>
+        </Button>
+      ) : null}
     </form>
   )
 }
@@ -233,15 +248,22 @@ export function CategoryFormSheet({
   onOpenChange,
   initialValues,
   isSystem,
+  onDelete,
 }: CategoryFormSheetProps) {
   const isMobile = useIsMobile()
   const isEdit = Boolean(initialValues?.id)
   const title = isEdit ? "Modifier la catégorie" : "Nouvelle catégorie"
-  const description = isEdit
-    ? isSystem
-      ? "Personnalisez la couleur et l'icône de cette catégorie."
-      : "Modifiez les informations de votre catégorie."
-    : "Créez une catégorie personnalisée."
+
+  function getDescription() {
+    if (!isEdit) {
+      return "Créez une catégorie personnalisée."
+    }
+    if (isSystem) {
+      return "Personnalisez la couleur et l'icône de cette catégorie."
+    }
+    return "Modifiez les informations de votre catégorie."
+  }
+  const description = getDescription()
 
   function handleSuccess() {
     onOpenChange(false)
@@ -259,6 +281,7 @@ export function CategoryFormSheet({
           initialValues={initialValues}
           isEdit={isEdit}
           isSystem={isSystem}
+          onDelete={onDelete}
           onSuccess={handleSuccess}
         />
       </BottomSheet>
@@ -276,6 +299,7 @@ export function CategoryFormSheet({
           initialValues={initialValues}
           isEdit={isEdit}
           isSystem={isSystem}
+          onDelete={onDelete}
           onSuccess={handleSuccess}
         />
       </DialogContent>

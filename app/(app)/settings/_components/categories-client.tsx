@@ -10,7 +10,6 @@ import {
   CreditCard,
   Dumbbell,
   EllipsisVertical,
-  Pencil,
   Film,
   Gamepad2,
   Gift,
@@ -23,6 +22,7 @@ import {
   Laptop,
   MoreHorizontal,
   Music,
+  Pencil,
   Phone,
   PiggyBank,
   Plane,
@@ -64,6 +64,7 @@ import {
   getTransactionCountForCategory,
   toggleCategoryVisibility,
 } from "@/lib/actions/categories"
+import { useIsMobile } from "@/lib/hooks/use-is-mobile"
 import { cn } from "@/lib/utils"
 
 /* ── Icon map ──────────────────────────────────────────────────────────────── */
@@ -160,6 +161,7 @@ function Switch({
 function SystemCategoryRow({ category }: { category: Category }) {
   const [isPending, startTransition] = useTransition()
   const [editOpen, setEditOpen] = useState(false)
+  const isMobile = useIsMobile()
   const Icon = ICON_MAP[category.icon] ?? Tag
   const c = category.color
 
@@ -185,23 +187,34 @@ function SystemCategoryRow({ category }: { category: Category }) {
           category.isHidden && "opacity-40"
         )}
       >
-        <div
-          className="flex size-7 shrink-0 items-center justify-center rounded-md"
-          style={{ backgroundColor: `${c}18` }}
-        >
-          <Icon className="size-3.5" style={{ color: c }} />
-        </div>
-
-        <span className="min-w-0 flex-1 truncate text-sm">{category.name}</span>
-
+        {/* Zone cliquable : icône + nom */}
         <button
-          aria-label={`Modifier ${category.name}`}
-          className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+          className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left"
           onClick={() => setEditOpen(true)}
           type="button"
         >
-          <Pencil className="size-3.5" />
+          <div
+            className="flex size-7 shrink-0 items-center justify-center rounded-md"
+            style={{ backgroundColor: `${c}18` }}
+          >
+            <Icon className="size-3.5" style={{ color: c }} />
+          </div>
+          <span className="min-w-0 flex-1 truncate text-sm">
+            {category.name}
+          </span>
         </button>
+
+        {/* Crayon desktop uniquement */}
+        {isMobile ? null : (
+          <button
+            aria-label={`Modifier ${category.name}`}
+            className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+            onClick={() => setEditOpen(true)}
+            type="button"
+          >
+            <Pencil className="size-3.5" />
+          </button>
+        )}
 
         <Switch
           checked={!category.isHidden}
@@ -251,35 +264,33 @@ function SystemCategoryGroup({
 
 function UserCategoryRow({
   category,
+  onDelete,
   onEdit,
 }: {
   category: Category
+  onDelete: (id: string, name: string) => void
   onEdit: (values: CategoryEditValues) => void
 }) {
-  const [isPending, startTransition] = useTransition()
-  const [deleteOpen, setDeleteOpen] = useState(false)
-  const [txCount, setTxCount] = useState<number | null>(null)
+  const isMobile = useIsMobile()
   const Icon = ICON_MAP[category.icon] ?? Tag
   const c = category.color
 
-  function handleDeleteClick() {
-    startTransition(async () => {
-      const count = await getTransactionCountForCategory(category.id)
-      setTxCount(count)
-      setDeleteOpen(true)
-    })
-  }
-
-  function handleConfirmDelete() {
-    startTransition(async () => {
-      await deleteCategory(category.id)
-      setDeleteOpen(false)
-    })
+  const editValues: CategoryEditValues = {
+    color: category.color,
+    icon: category.icon,
+    id: category.id,
+    name: category.name,
+    type: category.type,
   }
 
   return (
-    <>
-      <div className="flex items-center gap-3 px-4 py-2.5">
+    <div className="flex items-center gap-3 px-4 py-2.5">
+      {/* Zone cliquable : icône + nom + badge */}
+      <button
+        className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left"
+        onClick={() => onEdit(editValues)}
+        type="button"
+      >
         <div
           className="flex size-7 shrink-0 items-center justify-center rounded-md"
           style={{ backgroundColor: `${c}18` }}
@@ -292,7 +303,10 @@ function UserCategoryRow({
         <Badge variant={category.type === "EXPENSE" ? "expense" : "income"}>
           {category.type === "EXPENSE" ? "Dépense" : "Revenu"}
         </Badge>
+      </button>
 
+      {/* Dropdown desktop uniquement */}
+      {isMobile ? null : (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -305,69 +319,20 @@ function UserCategoryRow({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              onSelect={() =>
-                onEdit({
-                  color: category.color,
-                  icon: category.icon,
-                  id: category.id,
-                  name: category.name,
-                  type: category.type,
-                })
-              }
-            >
+            <DropdownMenuItem onSelect={() => onEdit(editValues)}>
               Modifier
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
-              disabled={isPending}
-              onSelect={handleDeleteClick}
+              onSelect={() => onDelete(category.id, category.name)}
             >
               Supprimer
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
-
-      <Dialog onOpenChange={setDeleteOpen} open={deleteOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Supprimer « {category.name} » ?</DialogTitle>
-            <DialogDescription>
-              {txCount !== null && txCount > 0 ? (
-                <>
-                  Cette catégorie est utilisée par{" "}
-                  <strong>
-                    {txCount} transaction{txCount > 1 ? "s" : ""}
-                  </strong>
-                  . Ces transactions perdront leur catégorie. Cette action est
-                  irréversible.
-                </>
-              ) : (
-                "Cette catégorie sera définitivement supprimée. Cette action est irréversible."
-              )}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              disabled={isPending}
-              onClick={() => setDeleteOpen(false)}
-              variant="outline"
-            >
-              Annuler
-            </Button>
-            <Button
-              disabled={isPending}
-              onClick={handleConfirmDelete}
-              variant="destructive"
-            >
-              {isPending ? "Suppression…" : "Supprimer définitivement"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+      )}
+    </div>
   )
 }
 
@@ -381,6 +346,25 @@ export function CategoriesClient({
   const [editValues, setEditValues] = useState<CategoryEditValues | undefined>(
     undefined
   )
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string
+    name: string
+    txCount: number | null
+  } | null>(null)
+  const [isPending, startTransition] = useTransition()
+
+  function getDeleteDescription() {
+    if (!deleteTarget) {
+      return ""
+    }
+    if (deleteTarget.txCount === null) {
+      return "Vérification en cours…"
+    }
+    if (deleteTarget.txCount > 0) {
+      return null // JSX rendu inline
+    }
+    return "Cette catégorie sera définitivement supprimée. Cette action est irréversible."
+  }
 
   const expenseCategories = systemCategories.filter((c) => c.type === "EXPENSE")
   const incomeCategories = systemCategories.filter((c) => c.type === "INCOME")
@@ -395,6 +379,40 @@ export function CategoriesClient({
     if (!open) {
       setEditValues(undefined)
     }
+  }
+
+  function triggerDelete(id: string, name: string) {
+    setSheetOpen(false)
+    setEditValues(undefined)
+    setDeleteTarget({ id, name, txCount: null })
+    getTransactionCountForCategory(id).then((count) => {
+      setDeleteTarget((prev) =>
+        prev?.id === id ? { ...prev, txCount: count } : prev
+      )
+    })
+  }
+
+  // Déclenché depuis le bouton delete dans le form sheet
+  function handleDeleteRequest() {
+    if (!editValues) {
+      return
+    }
+    triggerDelete(editValues.id, editValues.name)
+  }
+
+  // Déclenché depuis le dropdown desktop
+  function handleDeleteFromRow(id: string, name: string) {
+    triggerDelete(id, name)
+  }
+
+  function handleConfirmDelete() {
+    if (!deleteTarget) {
+      return
+    }
+    startTransition(async () => {
+      await deleteCategory(deleteTarget.id)
+      setDeleteTarget(null)
+    })
   }
 
   return (
@@ -441,6 +459,7 @@ export function CategoriesClient({
               <UserCategoryRow
                 category={cat}
                 key={cat.id}
+                onDelete={handleDeleteFromRow}
                 onEdit={handleEdit}
               />
             ))}
@@ -467,9 +486,58 @@ export function CategoriesClient({
 
       <CategoryFormSheet
         initialValues={editValues}
+        onDelete={handleDeleteRequest}
         onOpenChange={handleOpenChange}
         open={sheetOpen}
       />
+
+      <Dialog
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteTarget(null)
+          }
+        }}
+        open={Boolean(deleteTarget)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Supprimer « {deleteTarget?.name} » ?</DialogTitle>
+            <DialogDescription>
+              {deleteTarget?.txCount !== null &&
+              deleteTarget?.txCount &&
+              deleteTarget.txCount > 0 ? (
+                <>
+                  Cette catégorie est utilisée par{" "}
+                  <strong>
+                    {deleteTarget.txCount} transaction
+                    {deleteTarget.txCount > 1 ? "s" : ""}
+                  </strong>
+                  . Ces transactions perdront leur catégorie. Cette action est
+                  irréversible.
+                </>
+              ) : (
+                getDeleteDescription()
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              disabled={isPending}
+              onClick={() => setDeleteTarget(null)}
+              variant="outline"
+            >
+              Annuler
+            </Button>
+            <Button
+              disabled={isPending || deleteTarget?.txCount === null}
+              onClick={handleConfirmDelete}
+              variant="destructive"
+            >
+              {isPending ? "Suppression…" : "Supprimer définitivement"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

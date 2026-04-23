@@ -29,6 +29,7 @@ export function BottomSheet({
   const startYRef = useRef(0)
   const startXRef = useRef(0)
   const gestureDirRef = useRef<"h" | "v" | null>(null)
+  const startedOnHandleRef = useRef(false)
   const panelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -46,7 +47,9 @@ export function BottomSheet({
   }, [open])
 
   useEffect(() => {
-    if (!open) return
+    if (!open) {
+      return
+    }
     // iOS requires position:fixed to actually lock body scroll
     const scrollY = window.scrollY
     document.body.style.position = "fixed"
@@ -61,15 +64,27 @@ export function BottomSheet({
   }, [open])
 
   useEffect(() => {
-    if (!open) return
+    if (!open) {
+      return
+    }
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onOpenChange(false)
+      if (e.key === "Escape") {
+        onOpenChange(false)
+      }
     }
     document.addEventListener("keydown", onKey)
     return () => document.removeEventListener("keydown", onKey)
   }, [open, onOpenChange])
 
   function handleTouchStart(e: React.TouchEvent) {
+    startYRef.current = e.touches[0].clientY
+    startXRef.current = e.touches[0].clientX
+    gestureDirRef.current = null
+    startedOnHandleRef.current = false
+  }
+
+  function handleHandleTouchStart(e: React.TouchEvent) {
+    startedOnHandleRef.current = true
     startYRef.current = e.touches[0].clientY
     startXRef.current = e.touches[0].clientX
     gestureDirRef.current = null
@@ -81,14 +96,20 @@ export function BottomSheet({
 
     // Verrouille la direction au premier mouvement significatif
     if (gestureDirRef.current === null) {
-      if (Math.abs(deltaX) < 5 && Math.abs(deltaY) < 5) return
+      if (Math.abs(deltaX) < 5 && Math.abs(deltaY) < 5) {
+        return
+      }
       gestureDirRef.current = Math.abs(deltaX) > Math.abs(deltaY) ? "h" : "v"
     }
 
-    if (gestureDirRef.current === "h") return
+    if (gestureDirRef.current === "h") {
+      return
+    }
 
     const scrolledToTop = (panelRef.current?.scrollTop ?? 0) === 0
-    if (deltaY > 0 && scrolledToTop) setDragY(deltaY)
+    if (deltaY > 0 && (scrolledToTop || startedOnHandleRef.current)) {
+      setDragY(deltaY)
+    }
   }
 
   function handleTouchEnd() {
@@ -99,7 +120,9 @@ export function BottomSheet({
     }
   }
 
-  if (!mounted) return null
+  if (!mounted) {
+    return null
+  }
 
   const isDragging = dragY > 0
   const sheetY = visible ? (isDragging ? dragY : 0) : "100%"
@@ -122,18 +145,21 @@ export function BottomSheet({
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-black/80"
+        onClick={() => onOpenChange(false)}
         style={{
           opacity: backdropOpacity,
           transition: isDragging ? "none" : `opacity 0.35s ${SPRING}`,
         }}
-        onClick={() => onOpenChange(false)}
       />
 
       {/* Panel — scrollable container, no flex needed */}
       <div
-        ref={panelRef}
         aria-modal="true"
         className="absolute inset-x-0 bottom-0 max-h-[90dvh] rounded-t-2xl border-t bg-popover text-popover-foreground text-sm shadow-lg"
+        onTouchEnd={handleTouchEnd}
+        onTouchMove={handleTouchMove}
+        onTouchStart={handleTouchStart}
+        ref={panelRef}
         style={{
           overflowX: "hidden",
           overflowY: isDragging ? "hidden" : "auto",
@@ -143,14 +169,11 @@ export function BottomSheet({
           transition: isDragging ? "none" : `transform 0.35s ${SPRING}`,
           willChange: "transform",
         }}
-        onTouchEnd={handleTouchEnd}
-        onTouchMove={handleTouchMove}
-        onTouchStart={handleTouchStart}
       >
         {/* Handle — sticky so it stays visible while scrolling content */}
         <div
-          className="sticky top-0 z-10 bg-popover py-2 select-none"
-          onTouchStart={handleTouchStart}
+          className="sticky top-0 z-10 select-none bg-popover py-2"
+          onTouchStart={handleHandleTouchStart}
         >
           <div className="mx-auto h-1 w-10 rounded-full bg-muted-foreground/30" />
         </div>
@@ -173,9 +196,7 @@ export function BottomSheet({
           </div>
         ) : null}
 
-        <div className="px-6">
-          {children}
-        </div>
+        <div className="px-6">{children}</div>
       </div>
     </div>,
     document.body
