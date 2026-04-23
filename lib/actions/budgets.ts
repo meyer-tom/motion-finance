@@ -1,20 +1,20 @@
 "use server"
 
+import { Prisma } from "@prisma/client"
 import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
-import { Prisma } from "@prisma/client"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import { type BudgetInput, budgetSchema } from "@/lib/validations/budgets"
 
-export type BudgetWithSpending = {
-  id: string
-  categoryId: string
-  category: { name: string; icon: string; color: string }
+export interface BudgetWithSpending {
   amount: number
-  spent: number
-  percentage: number
+  category: { name: string; icon: string; color: string }
+  categoryId: string
+  id: string
   month: Date
+  percentage: number
+  spent: number
 }
 
 async function requireAuth() {
@@ -118,6 +118,54 @@ export async function deleteBudget(id: string) {
 
   revalidatePath("/budgets")
   revalidatePath("/dashboard")
+}
+
+export async function copyBudgetsFromMonth(
+  fromMonth: Date,
+  toMonth: Date
+): Promise<number> {
+  const user = await requireAuth()
+
+  const from = normalizeMonth(fromMonth)
+  const to = normalizeMonth(toMonth)
+
+  const [sourceBudgets, existingBudgets] = await Promise.all([
+    prisma.budget.findMany({
+      where: { userId: user.id, month: from },
+    }),
+    prisma.budget.findMany({
+      where: { userId: user.id, month: to },
+      select: { categoryId: true },
+    }),
+  ])
+
+  if (sourceBudgets.length === 0) {
+    return 0
+  }
+
+  const existingCategoryIds = new Set(existingBudgets.map((b) => b.categoryId))
+  const toCreate = sourceBudgets.filter(
+    (b) => !existingCategoryIds.has(b.categoryId)
+  )
+
+  if (toCreate.length === 0) {
+    return 0
+  }
+
+  await prisma.budget.createMany({
+    data: toCreate.map((b) => ({
+      userId: user.id,
+      categoryId: b.categoryId,
+      amount: b.amount,
+      month: to,
+    })),
+    skipDuplicates: true,
+  })
+
+  revalidatePath("/budgets")
+  revalidatePath("/dashboard")
+
+  return toCreate.length
 }
 
 export async function getBudgetsWithSpending(

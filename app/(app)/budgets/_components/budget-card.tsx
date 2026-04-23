@@ -1,6 +1,7 @@
 "use client"
 
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import Link from "next/link"
 import { useTransition } from "react"
 import { AnimatedProgress } from "@/components/shared/animated-progress"
 import { Badge } from "@/components/ui/badge"
@@ -12,15 +13,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { deleteBudget } from "@/lib/actions/budgets"
 import type { BudgetWithSpending } from "@/lib/actions/budgets"
-import { getCategoryIcon } from "@/lib/utils/category-icons"
+import { deleteBudget } from "@/lib/actions/budgets"
 import { cn } from "@/lib/utils"
+import { getCategoryIcon } from "@/lib/utils/category-icons"
 
 interface BudgetCardProps {
   budget: BudgetWithSpending
-  onEdit: (budget: BudgetWithSpending) => void
   onDeleted: () => void
+  onEdit: (budget: BudgetWithSpending) => void
 }
 
 function formatAmount(value: number): string {
@@ -34,9 +35,30 @@ function formatAmount(value: number): string {
 function percentageBadgeVariant(
   percentage: number
 ): "success" | "outline" | "destructive" {
-  if (percentage >= 100) return "destructive"
-  if (percentage >= 80) return "outline"
+  if (percentage >= 100) {
+    return "destructive"
+  }
+  if (percentage >= 80) {
+    return "outline"
+  }
   return "success"
+}
+
+function buildTransactionsUrl(budget: BudgetWithSpending): string {
+  const year = budget.month.getUTCFullYear()
+  const month = budget.month.getUTCMonth()
+  const mm = String(month + 1).padStart(2, "0")
+  const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate()
+  const dateFrom = `${year}-${mm}-01`
+  const dateTo = `${year}-${mm}-${String(lastDay).padStart(2, "0")}`
+
+  const params = new URLSearchParams({
+    type: "EXPENSE",
+    categoryId: budget.categoryId,
+    dateFrom,
+    dateTo,
+  })
+  return `/transactions?${params.toString()}`
 }
 
 export function BudgetCard({ budget, onEdit, onDeleted }: BudgetCardProps) {
@@ -54,13 +76,22 @@ export function BudgetCard({ budget, onEdit, onDeleted }: BudgetCardProps) {
   return (
     <div
       className={cn(
-        "rounded-xl border bg-card p-4 space-y-3 transition-opacity",
-        isPending && "opacity-50 pointer-events-none"
+        "group relative space-y-3 rounded-xl border bg-card p-4 transition-all",
+        "hover:border-border/80 hover:bg-accent/5 hover:shadow-sm",
+        isPending && "pointer-events-none opacity-50"
       )}
     >
+      {/* Lien couvrant toute la card */}
+      <Link
+        aria-label={`Voir les transactions ${budget.category.name}`}
+        className="absolute inset-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        href={buildTransactionsUrl(budget)}
+      />
+
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
+        {/* Côté gauche — pointer-events-none : les clics traversent vers le Link */}
+        <div className="pointer-events-none flex min-w-0 items-center gap-2">
           <span
             className="flex size-8 shrink-0 items-center justify-center rounded-lg"
             style={{ backgroundColor: `${budget.category.color}20` }}
@@ -75,7 +106,8 @@ export function BudgetCard({ budget, onEdit, onDeleted }: BudgetCardProps) {
           </span>
         </div>
 
-        <div className="flex items-center gap-1 shrink-0">
+        {/* Côté droit — pointer-events-auto + z-10 pour passer au-dessus du Link */}
+        <div className="pointer-events-auto relative z-10 flex shrink-0 items-center gap-1">
           <Badge variant={percentageBadgeVariant(budget.percentage)}>
             {budget.percentage}%
           </Badge>
@@ -109,11 +141,13 @@ export function BudgetCard({ budget, onEdit, onDeleted }: BudgetCardProps) {
         </div>
       </div>
 
-      {/* Progress bar */}
-      <AnimatedProgress value={capped} variant="auto" />
+      {/* Progress bar — pointer-events-none : clics traversent vers le Link */}
+      <div className="pointer-events-none">
+        <AnimatedProgress value={capped} variant="auto" />
+      </div>
 
-      {/* Amounts */}
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
+      {/* Amounts — pointer-events-none : clics traversent vers le Link */}
+      <div className="pointer-events-none flex items-center justify-between text-muted-foreground text-xs">
         <span>
           Dépensé :{" "}
           <span

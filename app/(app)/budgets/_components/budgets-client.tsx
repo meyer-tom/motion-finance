@@ -1,24 +1,50 @@
 "use client"
 
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { ChevronLeft, ChevronRight, Plus, Wallet } from "lucide-react"
-import { useCallback, useState } from "react"
+import {
+  CalendarCheck,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  Wallet,
+} from "lucide-react"
+import { useCallback, useState, useTransition } from "react"
 import { Button } from "@/components/ui/button"
-import { getBudgetsWithSpending } from "@/lib/actions/budgets"
 import type { BudgetWithSpending } from "@/lib/actions/budgets"
-import type { BudgetCategoryOption } from "./budget-form-sheet"
+import {
+  copyBudgetsFromMonth,
+  getBudgetsWithSpending,
+} from "@/lib/actions/budgets"
 import { BudgetCard } from "./budget-card"
+import type { BudgetCategoryOption } from "./budget-form-sheet"
 import { BudgetFormSheet } from "./budget-form-sheet"
 import { BudgetListSkeleton } from "./budget-skeletons"
 
 const MONTH_LABELS = [
-  "Janvier", "Février", "Mars", "Avril",
-  "Mai", "Juin", "Juillet", "Août",
-  "Septembre", "Octobre", "Novembre", "Décembre",
+  "Janvier",
+  "Février",
+  "Mars",
+  "Avril",
+  "Mai",
+  "Juin",
+  "Juillet",
+  "Août",
+  "Septembre",
+  "Octobre",
+  "Novembre",
+  "Décembre",
 ]
 
 function startOfMonth(date: Date): Date {
   return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1))
+}
+
+function prevMonthOf(date: Date): Date {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() - 1, 1))
+}
+
+function monthLabel(date: Date): string {
+  return `${MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCFullYear()}`
 }
 
 interface BudgetsClientProps {
@@ -38,6 +64,8 @@ export function BudgetsClient({
   const [editBudget, setEditBudget] = useState<BudgetWithSpending | null>(null)
 
   const monthKey = month.toISOString()
+  const prevMonth = prevMonthOf(month)
+  const prevMonthKey = prevMonth.toISOString()
 
   const { data: budgets, isLoading } = useQuery({
     queryKey: ["budgets", monthKey],
@@ -48,16 +76,28 @@ export function BudgetsClient({
         : undefined,
   })
 
+  const currentIsEmpty = !isLoading && (budgets?.length ?? 0) === 0
+
+  const { data: prevBudgets } = useQuery({
+    queryKey: ["budgets", prevMonthKey],
+    queryFn: () => getBudgetsWithSpending(prevMonth),
+    enabled: currentIsEmpty,
+  })
+
   const invalidate = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["budgets", monthKey] })
   }, [queryClient, monthKey])
 
-  function prevMonth() {
-    setMonth((m) => new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth() - 1, 1)))
+  function prevMonthNav() {
+    setMonth(
+      (m) => new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth() - 1, 1))
+    )
   }
 
-  function nextMonth() {
-    setMonth((m) => new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth() + 1, 1)))
+  function nextMonthNav() {
+    setMonth(
+      (m) => new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth() + 1, 1))
+    )
   }
 
   function openCreate() {
@@ -70,7 +110,7 @@ export function BudgetsClient({
     setFormOpen(true)
   }
 
-  const monthLabel = `${MONTH_LABELS[month.getUTCMonth()]} ${month.getUTCFullYear()}`
+  const showReconduction = currentIsEmpty && (prevBudgets?.length ?? 0) > 0
 
   return (
     <div className="flex flex-col gap-4 pb-24 md:pb-8">
@@ -87,29 +127,31 @@ export function BudgetsClient({
       <div className="flex items-center justify-between rounded-lg border bg-card px-2 py-1.5">
         <Button
           aria-label="Mois précédent"
-          onClick={prevMonth}
+          className="size-8"
+          onClick={prevMonthNav}
           size="icon"
           variant="ghost"
-          className="size-8"
         >
           <ChevronLeft className="size-4" />
         </Button>
-        <span className="font-medium text-sm tabular-nums">{monthLabel}</span>
+        <span className="font-medium text-sm tabular-nums">
+          {monthLabel(month)}
+        </span>
         <Button
           aria-label="Mois suivant"
-          onClick={nextMonth}
+          className="size-8"
+          onClick={nextMonthNav}
           size="icon"
           variant="ghost"
-          className="size-8"
         >
           <ChevronRight className="size-4" />
         </Button>
       </div>
 
       {/* Contenu */}
-      {isLoading ? (
-        <BudgetListSkeleton />
-      ) : budgets && budgets.length > 0 ? (
+      {isLoading && <BudgetListSkeleton />}
+
+      {!isLoading && budgets && budgets.length > 0 && (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {budgets.map((budget) => (
             <BudgetCard
@@ -120,8 +162,25 @@ export function BudgetsClient({
             />
           ))}
         </div>
-      ) : (
-        <EmptyBudgets onAdd={openCreate} />
+      )}
+
+      {!isLoading && (budgets?.length ?? 0) === 0 && (
+        <div className="flex flex-col gap-3">
+          {showReconduction && (
+            <ReconductionBanner
+              count={prevBudgets?.length ?? 0}
+              fromMonth={prevMonth}
+              onSuccess={() => {
+                queryClient.invalidateQueries({
+                  queryKey: ["budgets", prevMonthKey],
+                })
+                invalidate()
+              }}
+              toMonth={month}
+            />
+          )}
+          <EmptyBudgets onAdd={openCreate} />
+        </div>
       )}
 
       <BudgetFormSheet
@@ -132,6 +191,55 @@ export function BudgetsClient({
         onSuccess={invalidate}
         open={formOpen}
       />
+    </div>
+  )
+}
+
+function ReconductionBanner({
+  count,
+  fromMonth,
+  toMonth,
+  onSuccess,
+}: {
+  count: number
+  fromMonth: Date
+  toMonth: Date
+  onSuccess: () => void
+}) {
+  const [isPending, startTransition] = useTransition()
+
+  function handleCopy() {
+    startTransition(async () => {
+      await copyBudgetsFromMonth(fromMonth, toMonth)
+      onSuccess()
+    })
+  }
+
+  return (
+    <div className="flex items-center justify-between gap-4 rounded-lg border bg-card p-4">
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+          <CalendarCheck className="size-4 text-muted-foreground" />
+        </span>
+        <div className="min-w-0">
+          <p className="font-medium text-sm">
+            Reprendre les budgets de {monthLabel(fromMonth)}
+          </p>
+          <p className="truncate text-muted-foreground text-xs">
+            {count} budget{count > 1 ? "s" : ""} disponible
+            {count > 1 ? "s" : ""}
+          </p>
+        </div>
+      </div>
+      <Button
+        className="shrink-0"
+        disabled={isPending}
+        onClick={handleCopy}
+        size="sm"
+        variant="outline"
+      >
+        {isPending ? "Copie…" : "Reprendre"}
+      </Button>
     </div>
   )
 }
