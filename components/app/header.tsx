@@ -1,12 +1,12 @@
 "use client"
 
-import { Bell, LogOut, Search, Settings } from "lucide-react"
+import { LogOut, Search, Settings } from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 
 import { BarChartSvg, UserAvatar } from "@/components/app/sidebar"
+import { NotificationPopover } from "@/components/app/notification-popover"
 import { ThemeToggle } from "@/components/app/theme-toggle"
-import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -85,9 +85,7 @@ export function Header({ user }: HeaderProps) {
         </button>
 
         {/* Notifications */}
-        <Button aria-label="Notifications" size="icon" variant="ghost">
-          <Bell className="h-[18px] w-[18px]" />
-        </Button>
+        <NotificationPopover />
 
         {/* Thème */}
         <ThemeToggle />

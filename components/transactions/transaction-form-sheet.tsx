@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { toast } from "sonner"
 import { getSuggestedRecurring } from "@/lib/actions/recurring-transactions"
 import {
   createTransaction,
@@ -660,6 +661,8 @@ function TransactionFormBody({
       await deleteTransaction(id)
       closeForm()
       queryClient.invalidateQueries({ queryKey: ["transactions"] })
+      queryClient.invalidateQueries({ queryKey: ["budgets"] })
+      queryClient.invalidateQueries({ queryKey: ["notifications"] })
       window.dispatchEvent(new CustomEvent("transaction:mutated"))
     })
   }
@@ -716,12 +719,20 @@ function TransactionFormBody({
   function onSubmit(data: TransactionInput) {
     startTransition(async () => {
       try {
-        if (isEdit && initialValues?.id) {
-          await updateTransaction(initialValues.id, data)
-        } else {
-          await createTransaction(data)
-        }
+        const result =
+          isEdit && initialValues?.id
+            ? await updateTransaction(initialValues.id, data)
+            : await createTransaction(data)
+
         onSuccess()
+
+        for (const alert of result.alerts) {
+          if (alert.type === "DANGER") {
+            toast.error(alert.title, { description: alert.body })
+          } else {
+            toast.warning(alert.title, { description: alert.body })
+          }
+        }
       } catch (err) {
         setError("root", {
           message:
@@ -1007,6 +1018,8 @@ export function TransactionFormSheet({
   function handleSuccess() {
     closeForm()
     queryClient.invalidateQueries({ queryKey: ["transactions"] })
+    queryClient.invalidateQueries({ queryKey: ["budgets"] })
+    queryClient.invalidateQueries({ queryKey: ["notifications"] })
     window.dispatchEvent(new CustomEvent("transaction:mutated"))
   }
 

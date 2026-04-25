@@ -233,6 +233,7 @@ model Notification {
   title         String
   body          String
   isRead        Boolean          @default(false)
+  isDismissed   Boolean          @default(false)
   relatedEntity Json?            // { type: 'budget'|'goal', id: string, threshold?: number }
   createdAt     DateTime         @default(now())
 

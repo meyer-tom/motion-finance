@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/db"
+import { checkBudgetAlerts } from "@/lib/actions/budgets"
 import {
   type TransactionFilters,
   type TransactionInput,
@@ -73,101 +74,6 @@ function buildWhereClause(userId: string, filters: TransactionFilters) {
   }
 }
 
-/**
- * Vérifie les seuils budgétaires après création/modification d'une transaction EXPENSE.
- * Crée une notification si le seuil 80% ou 100% est franchi.
- * Déduplication : une seule notif par (userId, categoryId, mois, seuil).
- */
-async function checkBudgetAlerts(userId: string, categoryId: string) {
-  const now = new Date()
-  const monthStart = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)
-  )
-  const monthEnd = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)
-  )
-
-  const [budget, spentResult] = await Promise.all([
-    prisma.budget.findUnique({
-      where: {
-        userId_categoryId_month: { userId, categoryId, month: monthStart },
-      },
-    }),
-    prisma.transaction.aggregate({
-      where: {
-        userId,
-        categoryId,
-        type: "EXPENSE", // TRANSFER exclu — règle absolue
-        date: { gte: monthStart, lt: monthEnd },
-      },
-      _sum: { amount: true },
-    }),
-  ])
-
-  if (!budget) {
-    return
-  }
-
-  const budgetAmount = Number(budget.amount)
-  const spent = Number(spentResult._sum.amount ?? 0)
-  const ratio = spent / budgetAmount
-
-  // Déterminer le seuil franchi (100% prioritaire sur 80%)
-  let threshold: 80 | 100 | null = null
-  if (ratio >= 1) {
-    threshold = 100
-  } else if (ratio >= 0.8) {
-    threshold = 80
-  }
-
-  if (!threshold) {
-    return
-  }
-
-  const notificationType = threshold === 100 ? "DANGER" : "WARNING"
-
-  // Déduplication + fetch catégorie en parallèle
-  const [existing, category] = await Promise.all([
-    prisma.notification.findFirst({
-      where: {
-        userId,
-        type: notificationType,
-        relatedEntity: {
-          path: ["categoryId"],
-          equals: categoryId,
-        },
-        createdAt: { gte: monthStart, lt: monthEnd },
-      },
-    }),
-    prisma.category.findUnique({
-      where: { id: categoryId },
-      select: { name: true },
-    }),
-  ])
-
-  if (existing) {
-    return
-  }
-
-  const categoryName = category?.name ?? "cette catégorie"
-
-  await prisma.notification.create({
-    data: {
-      userId,
-      type: notificationType,
-      title:
-        threshold === 100
-          ? `Budget dépassé — ${categoryName}`
-          : `Budget à 80% — ${categoryName}`,
-      body:
-        threshold === 100
-          ? `Vous avez dépassé votre budget pour ${categoryName} ce mois-ci.`
-          : `Vous avez atteint 80% de votre budget pour ${categoryName} ce mois-ci.`,
-      relatedEntity: { type: "budget", id: budget.id, categoryId, threshold },
-    },
-  })
-}
-
 // ─────────────────────────────────────────────
 // Server Actions
 // ─────────────────────────────────────────────
@@ -196,14 +102,14 @@ export async function createTransaction(data: TransactionInput) {
     select: { id: true },
   })
 
-  if (parsed.data.type === "EXPENSE" && parsed.data.categoryId) {
-    await checkBudgetAlerts(user.id, parsed.data.categoryId)
-  }
+  const alerts =
+    parsed.data.type === "EXPENSE" ? await checkBudgetAlerts(user.id) : []
 
   revalidatePath("/transactions")
   revalidatePath("/dashboard")
+  revalidatePath("/budgets")
 
-  return tx
+  return { id: tx.id, alerts }
 }
 
 export async function updateTransaction(id: string, data: TransactionInput) {
@@ -235,14 +141,16 @@ export async function updateTransaction(id: string, data: TransactionInput) {
     select: { id: true },
   })
 
-  if (parsed.data.type === "EXPENSE" && parsed.data.categoryId) {
-    await checkBudgetAlerts(user.id, parsed.data.categoryId)
-  }
+  const alerts =
+    parsed.data.type === "EXPENSE" || existing.type === "EXPENSE"
+      ? await checkBudgetAlerts(user.id)
+      : []
 
   revalidatePath("/transactions")
   revalidatePath("/dashboard")
+  revalidatePath("/budgets")
 
-  return tx
+  return { id: tx.id, alerts }
 }
 
 export async function deleteTransaction(id: string) {
@@ -255,8 +163,13 @@ export async function deleteTransaction(id: string) {
 
   await prisma.transaction.delete({ where: { id } })
 
+  if (existing.type === "EXPENSE") {
+    await checkBudgetAlerts(user.id)
+  }
+
   revalidatePath("/transactions")
   revalidatePath("/dashboard")
+  revalidatePath("/budgets")
 }
 
 export async function getUsedTags(): Promise<string[]> {

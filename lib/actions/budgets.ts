@@ -7,6 +7,137 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import { type BudgetInput, budgetSchema } from "@/lib/validations/budgets"
 
+export type BudgetAlert = {
+  title: string
+  body: string
+  type: "WARNING" | "DANGER"
+}
+
+type BudgetEntity = { type: string; id: string; threshold: number }
+
+type ToCreateItem = {
+  userId: string
+  type: "WARNING" | "DANGER"
+  title: string
+  body: string
+  relatedEntity: BudgetEntity
+}
+
+async function evaluateBudgets(userId: string): Promise<{
+  toCreate: ToCreateItem[]
+  toDelete: string[]
+}> {
+  const now = new Date()
+  const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
+  const monthEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1))
+
+  const budgets = await prisma.budget.findMany({
+    where: { userId, month: monthStart },
+    include: { category: { select: { name: true } } },
+  })
+
+  if (budgets.length === 0) return { toCreate: [], toDelete: [] }
+
+  const categoryIds = budgets.map((b) => b.categoryId)
+
+  const [spending, existingNotifications] = await Promise.all([
+    prisma.transaction.groupBy({
+      by: ["categoryId"],
+      where: {
+        userId,
+        type: "EXPENSE",
+        date: { gte: monthStart, lt: monthEnd },
+        categoryId: { in: categoryIds },
+      },
+      _sum: { amount: true },
+    }),
+    prisma.notification.findMany({
+      where: {
+        userId,
+        createdAt: { gte: monthStart, lt: monthEnd },
+        relatedEntity: { path: ["type"], equals: "budget" },
+      },
+      select: { id: true, relatedEntity: true },
+    }),
+    // Nettoyage mensuel automatique
+    prisma.notification.deleteMany({
+      where: {
+        userId,
+        relatedEntity: { path: ["type"], equals: "budget" },
+        createdAt: { lt: monthStart },
+      },
+    }),
+  ])
+
+  const spendingMap = new Map(
+    spending.map((s) => [s.categoryId, Number(s._sum.amount ?? 0)])
+  )
+
+  const existingMap = new Map<string, string>()
+  for (const n of existingNotifications) {
+    if (n.relatedEntity) {
+      const e = n.relatedEntity as BudgetEntity
+      existingMap.set(`${e.id}:${e.threshold}`, n.id)
+    }
+  }
+
+  const toCreate: ToCreateItem[] = []
+  const toDelete: string[] = []
+
+  for (const budget of budgets) {
+    const budgetAmount = Number(budget.amount)
+    if (budgetAmount <= 0) continue
+
+    const spent = spendingMap.get(budget.categoryId) ?? 0
+    const ratio = spent / budgetAmount
+
+    for (const threshold of [80, 100] as const) {
+      const key = `${budget.id}:${threshold}`
+      const existingId = existingMap.get(key)
+      const isActive = threshold === 100 ? ratio >= 1 : ratio >= 0.8
+
+      if (isActive && !existingId) {
+        const isOver = threshold === 100
+        toCreate.push({
+          userId,
+          type: isOver ? "DANGER" : "WARNING",
+          title: isOver
+            ? `Budget dépassé — ${budget.category.name}`
+            : `Budget à 80% — ${budget.category.name}`,
+          body: isOver
+            ? `Vous avez dépassé votre budget pour ${budget.category.name} ce mois-ci.`
+            : `Vous avez atteint 80% de votre budget pour ${budget.category.name} ce mois-ci.`,
+          relatedEntity: { type: "budget", id: budget.id, threshold },
+        })
+      } else if (!isActive && existingId) {
+        toDelete.push(existingId)
+      }
+    }
+  }
+
+  return { toCreate, toDelete }
+}
+
+/**
+ * Crée les nouvelles alertes budget ET supprime les obsolètes.
+ * À appeler uniquement sur createTransaction.
+ */
+export async function checkBudgetAlerts(userId: string): Promise<BudgetAlert[]> {
+  const { toCreate, toDelete } = await evaluateBudgets(userId)
+
+  await Promise.all([
+    toCreate.length > 0
+      ? prisma.notification.createMany({ data: toCreate })
+      : Promise.resolve(),
+    toDelete.length > 0
+      ? prisma.notification.deleteMany({ where: { id: { in: toDelete } } })
+      : Promise.resolve(),
+  ])
+
+  return toCreate.map((n) => ({ title: n.title, body: n.body, type: n.type }))
+}
+
+
 export interface BudgetWithSpending {
   amount: number
   category: { name: string; icon: string; color: string }
