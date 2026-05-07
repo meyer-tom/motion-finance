@@ -56,10 +56,27 @@ export async function markAllNotificationsAsRead() {
 export async function deleteNotification(id: string) {
   const user = await requireAuth()
 
-  await prisma.notification.updateMany({
+  const notification = await prisma.notification.findFirst({
     where: { id, userId: user.id },
-    data: { isDismissed: true },
+    select: { relatedEntity: true },
   })
+
+  if (!notification) {
+    return
+  }
+
+  const entity = notification.relatedEntity as { type?: string } | null
+
+  // Hard delete pour les objectifs : l'état ne peut pas revenir en arrière
+  // Soft delete pour les budgets : l'alerte peut réapparaître le mois suivant
+  if (entity?.type === "goal") {
+    await prisma.notification.delete({ where: { id } })
+  } else {
+    await prisma.notification.updateMany({
+      where: { id, userId: user.id },
+      data: { isDismissed: true },
+    })
+  }
 }
 
 export async function deleteAllNotifications() {
