@@ -80,8 +80,7 @@ export function GoalsClient({ initialGoals }: GoalsClientProps) {
   return (
     <div className="flex flex-col gap-4 pb-24 md:pb-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="font-semibold text-xl">Objectifs</h1>
+      <div className="flex items-center justify-end">
         <Button className="gap-1.5" onClick={openCreate} size="sm">
           <Plus className="size-4" />
           <span className="hidden sm:inline">Nouveau</span>

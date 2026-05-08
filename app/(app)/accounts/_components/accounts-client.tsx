@@ -140,14 +140,11 @@ export function AccountsClient({
   return (
     <>
       <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="font-bold text-xl">Mes comptes</h1>
-          <p className="text-muted-foreground text-sm">
-            {accounts.length === 0
-              ? "Aucun compte pour le moment."
-              : `${accounts.length} compte${accounts.length > 1 ? "s" : ""}`}
-          </p>
-        </div>
+        <p className="text-muted-foreground text-sm">
+          {accounts.length === 0
+            ? "Aucun compte pour le moment."
+            : `${accounts.length} compte${accounts.length > 1 ? "s" : ""}`}
+        </p>
         <Button
           onClick={() => {
             setEditValues(undefined)

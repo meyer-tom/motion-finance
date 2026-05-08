@@ -230,8 +230,7 @@ export function TransactionsClient({
   return (
     <div className="flex flex-col gap-4 pb-24 md:pb-8">
       {/* En-tête */}
-      <div className="flex items-center justify-between">
-        <h1 className="font-semibold text-xl">Transactions</h1>
+      <div className="flex items-center justify-end">
         <Button className="gap-1.5" onClick={() => openForm()} size="sm">
           <Plus className="size-4" />
           <span className="hidden sm:inline">Nouvelle</span>

@@ -61,7 +61,6 @@ export default async function SettingsPage() {
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-8">
       <div>
-        <h1 className="font-bold text-xl">Paramètres</h1>
         <p className="text-muted-foreground text-sm">
           Gérez vos catégories de dépenses et de revenus.
         </p>
