@@ -3,18 +3,11 @@ import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { getDashboardData } from "@/lib/actions/dashboard"
+import { getServerCurrency } from "@/lib/actions/settings"
+import { formatAmount } from "@/lib/utils/format"
 
 interface Props {
   periodKey: string
-}
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: "EUR",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value)
 }
 
 function formatDeadline(iso: string) {
@@ -25,7 +18,10 @@ function formatDeadline(iso: string) {
 }
 
 export async function GoalsSection({ periodKey }: Props) {
-  const data = await getDashboardData(periodKey)
+  const [data, currency] = await Promise.all([
+    getDashboardData(periodKey),
+    getServerCurrency(),
+  ])
   const { goals } = data
 
   if (goals.length === 0) {
@@ -85,9 +81,9 @@ export async function GoalsSection({ periodKey }: Props) {
               />
               <div className="flex items-center justify-between text-muted-foreground text-xs">
                 <span className="tabular-nums">
-                  {formatCurrency(goal.currentAmount)}
+                  {formatAmount(goal.currentAmount, currency)}
                   <span className="mx-1 opacity-50">/</span>
-                  {formatCurrency(goal.targetAmount)}
+                  {formatAmount(goal.targetAmount, currency)}
                 </span>
                 {goal.deadline && (
                   <span>→ {formatDeadline(goal.deadline)}</span>

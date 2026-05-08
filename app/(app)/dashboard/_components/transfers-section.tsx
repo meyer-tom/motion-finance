@@ -1,19 +1,12 @@
 import { ArrowRight } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { DashboardData } from "@/lib/actions/dashboard"
+import { formatAmount } from "@/lib/utils/format"
 
 interface Props {
+  currency: string
   periodKey: string
   transfers: DashboardData["transfers"]
-}
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: "EUR",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value)
 }
 
 function formatDate(iso: string) {
@@ -39,7 +32,7 @@ function getPeriodLabel(periodKey: string) {
   return "ce mois"
 }
 
-export function TransfersSection({ periodKey, transfers }: Props) {
+export function TransfersSection({ currency, periodKey, transfers }: Props) {
   return (
     <Card className="flex min-h-[220px] flex-col">
       <CardHeader className="flex flex-row items-center justify-between pb-3">
@@ -51,7 +44,7 @@ export function TransfersSection({ periodKey, transfers }: Props) {
         </div>
         {transfers.total > 0 && (
           <span className="font-semibold text-sm tabular-nums">
-            {formatCurrency(transfers.total)}
+            {formatAmount(transfers.total, currency)}
           </span>
         )}
       </CardHeader>
@@ -82,7 +75,7 @@ export function TransfersSection({ periodKey, transfers }: Props) {
                   </div>
                 </div>
                 <span className="shrink-0 font-medium text-[var(--color-transfer)] text-sm tabular-nums">
-                  {formatCurrency(t.amount)}
+                  {formatAmount(t.amount, currency)}
                 </span>
               </li>
             ))}

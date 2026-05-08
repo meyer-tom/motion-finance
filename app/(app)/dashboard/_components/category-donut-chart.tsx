@@ -1,6 +1,8 @@
 "use client"
 
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts"
+import { useCurrency } from "@/lib/context/currency-context"
+import { formatAmount } from "@/lib/utils/format"
 import { getCategoryIcon } from "@/lib/utils/category-icons"
 
 interface CategoryItem {
@@ -22,20 +24,13 @@ interface TooltipItem {
   payload: ChartEntry
 }
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: "EUR",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value)
-}
-
 function CustomTooltip({
   active,
+  currency,
   payload,
 }: {
   active?: boolean
+  currency: string
   payload?: TooltipItem[]
 }) {
   if (!(active && payload?.length)) {
@@ -53,13 +48,14 @@ function CustomTooltip({
         <span>{entry.categoryName}</span>
       </div>
       <p className="mt-0.5 text-muted-foreground text-xs">
-        {formatCurrency(entry.total)} · {entry.percentage.toFixed(1)}%
+        {formatAmount(entry.total, currency)} · {entry.percentage.toFixed(1)}%
       </p>
     </div>
   )
 }
 
 export function CategoryDonutChart({ categoryBreakdown }: Props) {
+  const { currency } = useCurrency()
   if (categoryBreakdown.length === 0) {
     return (
       <div className="flex h-40 items-center justify-center text-muted-foreground text-sm">
@@ -93,7 +89,7 @@ export function CategoryDonutChart({ categoryBreakdown }: Props) {
               <Cell fill={entry.fill} key={entry.categoryName} />
             ))}
           </Pie>
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip currency={currency} />} />
         </PieChart>
       </ResponsiveContainer>
 
@@ -116,7 +112,7 @@ export function CategoryDonutChart({ categoryBreakdown }: Props) {
                 </span>
               </div>
               <span className="shrink-0 font-medium text-xs tabular-nums">
-                {formatCurrency(entry.total)}
+                {formatAmount(entry.total, currency)}
               </span>
             </li>
           )

@@ -37,6 +37,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { deleteAccount } from "@/lib/actions/accounts"
+import { useCurrency } from "@/lib/context/currency-context"
 import { cn } from "@/lib/utils"
 import type { AccountEditValues } from "./account-form-modal"
 
@@ -93,6 +94,7 @@ export function AccountCard({
   const [isPending, startTransition] = useTransition()
   const [deleteOpen, setDeleteOpen] = useState(false)
   const router = useRouter()
+  const { currency } = useCurrency()
 
   const IconComponent = ICON_MAP[account.icon] ?? Wallet
   const c = account.color
@@ -185,7 +187,7 @@ export function AccountCard({
           <div className="mt-3 flex items-center gap-2">
             <AnimatedAmount
               className="flex-1 font-bold text-lg tabular-nums"
-              currency="EUR"
+              currency={currency}
               value={account.balance}
             />
 

@@ -1,4 +1,5 @@
 import { Resend } from "resend"
+import { EmailChange } from "./templates/email-change"
 import { EmailVerification } from "./templates/email-verification"
 import { PasswordResetEmail } from "./templates/password-reset"
 
@@ -41,6 +42,38 @@ export async function sendVerificationEmail({
     }
 
     console.log(`[Email] Email de vérification envoyé à ${to}`)
+  } catch (error) {
+    console.error("[Email] Erreur inattendue lors de l'envoi:", error)
+  }
+}
+
+interface SendEmailChangeVerificationParams {
+  newEmail: string
+  to: string
+  userName?: string
+  verifyUrl: string
+}
+
+export async function sendEmailChangeVerification({
+  to,
+  verifyUrl,
+  userName,
+  newEmail,
+}: SendEmailChangeVerificationParams): Promise<void> {
+  try {
+    const { error } = await resend.emails.send({
+      from: process.env.EMAIL_FROM!,
+      to,
+      subject: "Confirmez votre nouvelle adresse email - Motion Finance",
+      react: EmailChange({ verifyUrl, userName, newEmail }),
+    })
+
+    if (error) {
+      console.error("[Email] Erreur lors de l'envoi de l'email de changement:", error)
+      return
+    }
+
+    console.log(`[Email] Email de changement d'adresse envoyé à ${to}`)
   } catch (error) {
     console.error("[Email] Erreur inattendue lors de l'envoi:", error)
   }

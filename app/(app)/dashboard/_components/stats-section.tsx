@@ -8,6 +8,7 @@ import {
 import { AnimatedAmount } from "@/components/shared/animated-amount"
 import { Card, CardContent } from "@/components/ui/card"
 import { getDashboardData } from "@/lib/actions/dashboard"
+import { getServerCurrency } from "@/lib/actions/settings"
 import { cn } from "@/lib/utils"
 
 interface Props {
@@ -40,7 +41,10 @@ function TrendBadge({ trend }: { trend: number | null }) {
 }
 
 export async function StatsSection({ periodKey }: Props) {
-  const data = await getDashboardData(periodKey)
+  const [data, currency] = await Promise.all([
+    getDashboardData(periodKey),
+    getServerCurrency(),
+  ])
 
   const netPositive = data.netDifference >= 0
 
@@ -56,7 +60,7 @@ export async function StatsSection({ periodKey }: Props) {
               </p>
               <AnimatedAmount
                 className="mt-1 font-semibold text-lg"
-                currency="EUR"
+                currency={currency}
                 value={data.income}
                 variant="income"
               />
@@ -82,7 +86,7 @@ export async function StatsSection({ periodKey }: Props) {
               </p>
               <AnimatedAmount
                 className="mt-1 font-semibold text-lg"
-                currency="EUR"
+                currency={currency}
                 value={data.expenses}
                 variant="expense"
               />
@@ -108,7 +112,7 @@ export async function StatsSection({ periodKey }: Props) {
               </p>
               <AnimatedAmount
                 className="mt-1 font-semibold text-lg"
-                currency="EUR"
+                currency={currency}
                 value={data.netDifference}
                 variant={netPositive ? "income" : "expense"}
               />

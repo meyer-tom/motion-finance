@@ -10,6 +10,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
+import { useCurrency } from "@/lib/context/currency-context"
+import { formatAmount } from "@/lib/utils/format"
 
 interface ChartData {
   expenses: number[]
@@ -29,15 +31,6 @@ interface BarTooltipItem {
   value: number
 }
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: "EUR",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value)
-}
-
 function formatYAxis(value: number) {
   if (value >= 1000) {
     return `${(value / 1000).toFixed(0)}k`
@@ -47,10 +40,12 @@ function formatYAxis(value: number) {
 
 function BarChartTooltip({
   active,
+  currency,
   payload,
   label,
 }: {
   active?: boolean
+  currency: string
   label?: string
   payload?: BarTooltipItem[]
 }) {
@@ -68,7 +63,7 @@ function BarChartTooltip({
           />
           <span className="text-muted-foreground">{item.name}</span>
           <span className="ml-auto pl-4 font-medium tabular-nums">
-            {formatCurrency(item.value)}
+            {formatAmount(item.value, currency)}
           </span>
         </div>
       ))}
@@ -77,6 +72,7 @@ function BarChartTooltip({
 }
 
 export function MonthlyBarChart({ chart }: Props) {
+  const { currency } = useCurrency()
   const data = chart.labels.map((label, i) => ({
     label,
     Revenus: chart.income[i] ?? 0,
@@ -120,7 +116,7 @@ export function MonthlyBarChart({ chart }: Props) {
           tickLine={false}
         />
         <Tooltip
-          content={<BarChartTooltip />}
+          content={<BarChartTooltip currency={currency} />}
           cursor={{ fill: "currentColor", opacity: 0.05 }}
         />
         <Legend

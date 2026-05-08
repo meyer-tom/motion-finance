@@ -1,5 +1,6 @@
 import { Suspense } from "react"
 import { getDashboardData } from "@/lib/actions/dashboard"
+import { getServerCurrency } from "@/lib/actions/settings"
 import { AlertsSection } from "./_components/alerts-section"
 import { BalanceSection } from "./_components/balance-section"
 import { ChartsSection } from "./_components/charts-section"
@@ -20,8 +21,11 @@ import { StatsSection } from "./_components/stats-section"
 import { TransfersSection } from "./_components/transfers-section"
 
 async function TransfersSectionWrapper({ periodKey }: { periodKey: string }) {
-  const data = await getDashboardData(periodKey)
-  return <TransfersSection periodKey={periodKey} transfers={data.transfers} />
+  const [data, currency] = await Promise.all([
+    getDashboardData(periodKey),
+    getServerCurrency(),
+  ])
+  return <TransfersSection currency={currency} periodKey={periodKey} transfers={data.transfers} />
 }
 
 interface Props {

@@ -7,6 +7,8 @@ import { getAccounts } from "@/lib/actions/accounts"
 import { getCategoriesForUser } from "@/lib/actions/categories"
 import { getUsedTags } from "@/lib/actions/transactions"
 import { auth } from "@/lib/auth"
+import { CurrencyProvider } from "@/lib/context/currency-context"
+import { prisma } from "@/lib/db"
 
 export default async function AppLayout({
   children,
@@ -24,22 +26,27 @@ export default async function AppLayout({
 
   const userId = session.user.id
 
-  const [accounts, categories, usedTags] = await Promise.all([
+  const [accounts, categories, usedTags, userRecord] = await Promise.all([
     getAccounts(),
     getCategoriesForUser(userId),
     getUsedTags(),
+    prisma.user.findUnique({ where: { id: userId }, select: { currency: true } }),
   ])
+
+  const currency = userRecord?.currency ?? "EUR"
 
   return (
     <QueryProvider>
-      <AppShell
-        accounts={accounts}
-        categories={categories}
-        user={session.user}
-        usedTags={usedTags}
-      >
-        {children}
-      </AppShell>
+      <CurrencyProvider initialCurrency={currency}>
+        <AppShell
+          accounts={accounts}
+          categories={categories}
+          user={session.user}
+          usedTags={usedTags}
+        >
+          {children}
+        </AppShell>
+      </CurrencyProvider>
     </QueryProvider>
   )
 }

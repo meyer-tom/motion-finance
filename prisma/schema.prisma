@@ -25,6 +25,7 @@ model User {
   updatedAt     DateTime
   firstName     String
   lastName      String
+  currency      String    @default("EUR")
 
   sessions      Session[]
   accounts      Account[]

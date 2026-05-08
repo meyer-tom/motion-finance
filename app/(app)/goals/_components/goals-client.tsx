@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import type { GoalItem } from "@/lib/actions/goals"
 import { deleteGoal, getGoals } from "@/lib/actions/goals"
+import { useCurrency } from "@/lib/context/currency-context"
+import { formatAmount } from "@/lib/utils/format"
 import { cn } from "@/lib/utils"
 import { GoalCard } from "./goal-card"
 import { GoalFormSheet } from "./goal-form-sheet"
@@ -211,6 +213,7 @@ function CompletedGoalCard({
   onDeleted: () => void
 }) {
   const [isPending, startTransition] = useTransition()
+  const { currency } = useCurrency()
 
   function handleDelete() {
     startTransition(async () => {
@@ -273,11 +276,7 @@ function CompletedGoalCard({
       <div className="flex items-center justify-between text-xs">
         <span className="flex items-center gap-1.5 font-medium text-foreground">
           <CheckCircle2 className="size-3.5 text-[var(--color-income)]" />
-          {new Intl.NumberFormat("fr-FR", {
-            style: "currency",
-            currency: "EUR",
-            maximumFractionDigits: 0,
-          }).format(goal.targetAmount)}
+          {formatAmount(goal.targetAmount, currency)}
         </span>
         {completedDate ? (
           <span className="text-muted-foreground">{completedDate}</span>

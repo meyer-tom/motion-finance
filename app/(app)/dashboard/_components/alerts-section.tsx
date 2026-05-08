@@ -4,19 +4,12 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { getDashboardData } from "@/lib/actions/dashboard"
+import { getServerCurrency } from "@/lib/actions/settings"
+import { formatAmount } from "@/lib/utils/format"
 import { getCategoryIcon } from "@/lib/utils/category-icons"
 
 interface Props {
   periodKey: string
-}
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: "EUR",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value)
 }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -26,7 +19,10 @@ const STATUS_COLOR: Record<string, string> = {
 }
 
 export async function AlertsSection({ periodKey }: Props) {
-  const data = await getDashboardData(periodKey)
+  const [data, currency] = await Promise.all([
+    getDashboardData(periodKey),
+    getServerCurrency(),
+  ])
   const { allBudgets, budgetSummary } = data
 
   if (budgetSummary.total === 0) {
@@ -86,8 +82,8 @@ export async function AlertsSection({ periodKey }: Props) {
                   </span>
                   <div className="flex shrink-0 items-center gap-2">
                     <span className="text-muted-foreground text-xs tabular-nums">
-                      {formatCurrency(budget.spent)} /{" "}
-                      {formatCurrency(budget.amount)}
+                      {formatAmount(budget.spent, currency)} /{" "}
+                      {formatAmount(budget.amount, currency)}
                     </span>
                     {budget.status !== "ok" && (
                       <Badge

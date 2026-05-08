@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import type { BudgetWithSpending } from "@/lib/actions/budgets"
 import { deleteBudget } from "@/lib/actions/budgets"
+import { useCurrency } from "@/lib/context/currency-context"
+import { formatAmount } from "@/lib/utils/format"
 import { cn } from "@/lib/utils"
 import { getCategoryIcon } from "@/lib/utils/category-icons"
 
@@ -22,14 +24,6 @@ interface BudgetCardProps {
   budget: BudgetWithSpending
   onDeleted: () => void
   onEdit: (budget: BudgetWithSpending) => void
-}
-
-function formatAmount(value: number): string {
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: "EUR",
-    maximumFractionDigits: 0,
-  }).format(value)
 }
 
 function percentageBadgeVariant(
@@ -63,6 +57,7 @@ function buildTransactionsUrl(budget: BudgetWithSpending): string {
 
 export function BudgetCard({ budget, onEdit, onDeleted }: BudgetCardProps) {
   const [isPending, startTransition] = useTransition()
+  const { currency } = useCurrency()
   const CategoryIcon = getCategoryIcon(budget.category.icon)
   const capped = Math.min(budget.percentage, 100)
 
@@ -158,10 +153,10 @@ export function BudgetCard({ budget, onEdit, onDeleted }: BudgetCardProps) {
                 : "text-foreground"
             )}
           >
-            {formatAmount(budget.spent)}
+            {formatAmount(budget.spent, currency)}
           </span>
         </span>
-        <span>Plafond : {formatAmount(budget.amount)}</span>
+        <span>Plafond : {formatAmount(budget.amount, currency)}</span>
       </div>
     </div>
   )

@@ -22,6 +22,8 @@ import {
 import { Input } from "@/components/ui/input"
 import type { GoalItem } from "@/lib/actions/goals"
 import { deleteGoal, updateGoalAmount } from "@/lib/actions/goals"
+import { useCurrency } from "@/lib/context/currency-context"
+import { formatAmount } from "@/lib/utils/format"
 import { cn } from "@/lib/utils"
 
 interface GoalCardProps {
@@ -32,18 +34,10 @@ interface GoalCardProps {
   onUpdated: () => void
 }
 
-function formatAmount(value: number): string {
+function formatAmountFlexible(value: number, currency: string): string {
   return new Intl.NumberFormat("fr-FR", {
     style: "currency",
-    currency: "EUR",
-    maximumFractionDigits: 0,
-  }).format(value)
-}
-
-function formatAmountDecimal(value: number): string {
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: "EUR",
+    currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(value)
@@ -52,7 +46,8 @@ function formatAmountDecimal(value: number): string {
 function getDeadlineInfo(
   deadline: Date | null,
   currentAmount: number,
-  targetAmount: number
+  targetAmount: number,
+  currency: string
 ): string | null {
   if (!deadline) {
     return null
@@ -87,7 +82,7 @@ function getDeadlineInfo(
     day: "numeric",
     month: "short",
   })
-  const remainingStr = formatAmount(remaining)
+  const remainingStr = formatAmount(remaining, currency)
 
   if (days === 0) {
     return `Aujourd'hui (${dateStr}) — ${remainingStr} restant`
@@ -108,7 +103,7 @@ function getDeadlineInfo(
   }
 
   const perMonth = remaining / months
-  return `${months} mois restant${months > 1 ? "s" : ""} (${dateStr}) — ${formatAmount(perMonth)}/mois`
+  return `${months} mois restant${months > 1 ? "s" : ""} (${dateStr}) — ${formatAmount(perMonth, currency)}/mois`
 }
 
 export function GoalCard({
@@ -121,11 +116,13 @@ export function GoalCard({
   const [isPending, startTransition] = useTransition()
   const [isEditingAmount, setIsEditingAmount] = useState(false)
   const [amountInput, setAmountInput] = useState("")
+  const { currency } = useCurrency()
 
   const deadlineInfo = getDeadlineInfo(
     goal.deadline,
     goal.currentAmount,
-    goal.targetAmount
+    goal.targetAmount,
+    currency
   )
   const progressVariant = goal.percentage >= 90 ? "accent" : "auto"
 
@@ -222,10 +219,10 @@ export function GoalCard({
               : "text-foreground"
           )}
         >
-          {formatAmountDecimal(goal.currentAmount)}
+          {formatAmountFlexible(goal.currentAmount, currency)}
         </span>
         <span className="text-muted-foreground text-xs tabular-nums">
-          sur {formatAmount(goal.targetAmount)}
+          sur {formatAmount(goal.targetAmount, currency)}
         </span>
       </div>
 

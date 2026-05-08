@@ -2,6 +2,8 @@ import { TrendingUp } from "lucide-react"
 import { AnimatedAmount } from "@/components/shared/animated-amount"
 import { Card, CardContent } from "@/components/ui/card"
 import { getDashboardData } from "@/lib/actions/dashboard"
+import { getServerCurrency } from "@/lib/actions/settings"
+import { formatAmount } from "@/lib/utils/format"
 import { cn } from "@/lib/utils"
 import { getAccountIcon } from "@/lib/utils/account-icons"
 
@@ -10,7 +12,10 @@ interface Props {
 }
 
 export async function BalanceSection({ periodKey }: Props) {
-  const data = await getDashboardData(periodKey)
+  const [data, currency] = await Promise.all([
+    getDashboardData(periodKey),
+    getServerCurrency(),
+  ])
 
   const hasForecasted = data.forecastedBalance !== data.totalBalance
   const forecastDiff = data.forecastedBalance - data.totalBalance
@@ -27,7 +32,7 @@ export async function BalanceSection({ periodKey }: Props) {
             </p>
             <AnimatedAmount
               className="font-bold text-4xl tracking-tight"
-              currency="EUR"
+              currency={currency}
               value={data.totalBalance}
               variant="neutral"
             />
@@ -61,7 +66,7 @@ export async function BalanceSection({ periodKey }: Props) {
                       </div>
                       <AnimatedAmount
                         className="shrink-0 font-semibold text-sm tabular-nums"
-                        currency="EUR"
+                        currency={currency}
                         value={acc.balance}
                         variant="neutral"
                       />
@@ -82,7 +87,7 @@ export async function BalanceSection({ periodKey }: Props) {
               <div className="flex items-center gap-1.5">
                 <AnimatedAmount
                   className="font-semibold text-sm"
-                  currency="EUR"
+                  currency={currency}
                   value={data.forecastedBalance}
                   variant="neutral"
                 />
@@ -95,12 +100,7 @@ export async function BalanceSection({ periodKey }: Props) {
                   )}
                 >
                   ({forecastPositive ? "+" : ""}
-                  {new Intl.NumberFormat("fr-FR", {
-                    style: "currency",
-                    currency: "EUR",
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0,
-                  }).format(forecastDiff)}
+                  {formatAmount(forecastDiff, currency)}
                   )
                 </span>
               </div>

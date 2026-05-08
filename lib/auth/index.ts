@@ -1,7 +1,11 @@
 import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
 import { prisma } from "@/lib/db"
-import { sendPasswordResetEmail, sendVerificationEmail } from "@/lib/email"
+import {
+  sendEmailChangeVerification,
+  sendPasswordResetEmail,
+  sendVerificationEmail,
+} from "@/lib/email"
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -50,6 +54,30 @@ export const auth = betterAuth({
       lastName: {
         type: "string",
         required: true,
+      },
+      currency: {
+        type: "string",
+        required: false,
+        defaultValue: "EUR",
+      },
+    },
+    changeEmail: {
+      enabled: true,
+      sendChangeEmailVerification: async ({
+        user,
+        newEmail,
+        url,
+      }: {
+        newEmail: string
+        url: string
+        user: { email: string; firstName?: string | null; name: string }
+      }) => {
+        await sendEmailChangeVerification({
+          to: newEmail,
+          verifyUrl: url,
+          userName: user.firstName ?? user.name,
+          newEmail,
+        })
       },
     },
   },

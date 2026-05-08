@@ -1,16 +1,42 @@
+import { headers } from "next/headers"
+import { Suspense } from "react"
 import { getAccounts } from "@/lib/actions/accounts"
 import { getSettingsCategories } from "@/lib/actions/categories"
 import { getRecurringTransactions } from "@/lib/actions/recurring-transactions"
-import { CategoriesClient } from "./_components/categories-client"
-import { RecurringClient } from "./_components/recurring-client"
+import { auth } from "@/lib/auth"
+import { prisma } from "@/lib/db"
+import { SettingsTabs } from "./_components/settings-tabs"
 
 export default async function SettingsPage() {
-  const [{ systemCategories, userCategories }, recurringItems, accounts] =
+  const session = await auth.api.getSession({ headers: await headers() })
+  const userId = session!.user.id
+
+  const [{ systemCategories, userCategories }, recurringItems, accounts, userRecord] =
     await Promise.all([
       getSettingsCategories(),
       getRecurringTransactions(),
       getAccounts(),
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          firstName: true,
+          lastName: true,
+          email: true,
+          image: true,
+          name: true,
+          currency: true,
+        },
+      }),
     ])
+
+  const user = userRecord ?? {
+    firstName: session!.user.firstName ?? "",
+    lastName: session!.user.lastName ?? "",
+    email: session!.user.email,
+    image: session!.user.image,
+    name: session!.user.name,
+    currency: "EUR",
+  }
 
   const serializeCategory = (cat: {
     id: string
@@ -30,7 +56,6 @@ export default async function SettingsPage() {
     isSystem: cat.isSystem,
   })
 
-  // Catégories visibles pour le formulaire de récurrentes
   const formCategories = [
     ...systemCategories
       .filter((c) => !c.isHidden)
@@ -59,23 +84,24 @@ export default async function SettingsPage() {
   }))
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-8">
-      <div>
-        <p className="text-muted-foreground text-sm">
-          Gérez vos catégories de dépenses et de revenus.
-        </p>
-      </div>
-
-      <CategoriesClient
-        systemCategories={systemCategories.map(serializeCategory)}
-        userCategories={userCategories.map(serializeCategory)}
-      />
-
-      <RecurringClient
-        accounts={formAccounts}
-        categories={formCategories}
-        items={recurringItems}
-      />
+    <div className="mx-auto max-w-2xl">
+      <Suspense>
+        <SettingsTabs
+          accounts={formAccounts}
+          currency={user.currency}
+          formCategories={formCategories}
+          recurringItems={recurringItems}
+          systemCategories={systemCategories.map(serializeCategory)}
+          user={{
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            image: user.image,
+            name: user.name,
+          }}
+          userCategories={userCategories.map(serializeCategory)}
+        />
+      </Suspense>
     </div>
   )
 }

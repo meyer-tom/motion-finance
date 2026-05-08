@@ -2,6 +2,8 @@ import { ArrowRight } from "lucide-react"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getDashboardData } from "@/lib/actions/dashboard"
+import { getServerCurrency } from "@/lib/actions/settings"
+import { formatAmount } from "@/lib/utils/format"
 import { getAccountIcon } from "@/lib/utils/account-icons"
 import { getCategoryIcon } from "@/lib/utils/category-icons"
 
@@ -21,16 +23,9 @@ const TYPE_COLOR: Record<string, string> = {
   TRANSFER: "var(--color-transfer)",
 }
 
-function formatCurrency(value: number, type: string) {
+function formatCurrency(value: number, type: string, currency: string) {
   const sign = TYPE_SIGN[type] ?? ""
-  return (
-    sign +
-    new Intl.NumberFormat("fr-FR", {
-      style: "currency",
-      currency: "EUR",
-      minimumFractionDigits: 2,
-    }).format(value)
-  )
+  return sign + formatAmount(value, currency)
 }
 
 function formatDate(iso: string) {
@@ -71,7 +66,10 @@ function TxIcon({ tx }: { tx: Tx }) {
 }
 
 export async function RecentTransactionsSection({ periodKey }: Props) {
-  const data = await getDashboardData(periodKey)
+  const [data, currency] = await Promise.all([
+    getDashboardData(periodKey),
+    getServerCurrency(),
+  ])
   const txs = data.recentTransactions
 
   return (
@@ -122,7 +120,7 @@ export async function RecentTransactionsSection({ periodKey }: Props) {
                   className="shrink-0 font-semibold text-sm tabular-nums"
                   style={{ color: TYPE_COLOR[tx.type] ?? "inherit" }}
                 >
-                  {formatCurrency(tx.amount, tx.type)}
+                  {formatCurrency(tx.amount, tx.type, currency)}
                 </span>
               </li>
             ))}
