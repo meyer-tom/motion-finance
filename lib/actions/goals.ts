@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
+import { markChecklistStep } from "@/lib/actions/onboarding"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import {
@@ -72,6 +73,7 @@ export async function createGoal(data: CreateGoalInput) {
     await markGoalCompleted(goal.id, parsed.data.name, user.id)
   }
 
+  await markChecklistStep(user.id, "goal")
   revalidatePath("/goals")
   revalidatePath("/dashboard")
 

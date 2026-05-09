@@ -1,6 +1,33 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 
+export function ChecklistSkeleton() {
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-5 w-16 rounded-full" />
+          </div>
+          <Skeleton className="h-7 w-20 rounded-md" />
+        </div>
+        <Skeleton className="mt-2 h-1.5 w-full rounded-full" />
+      </CardHeader>
+      <CardContent className="pt-0 pb-4">
+        <div className="space-y-0.5">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <div className="flex items-center gap-2.5 px-2 py-1.5" key={i}>
+              <Skeleton className="h-4 w-4 shrink-0 rounded-full" />
+              <Skeleton className="h-4 w-48" />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
 export function BalanceSkeleton() {
   return (
     <Card>

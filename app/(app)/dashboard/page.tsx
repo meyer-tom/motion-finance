@@ -5,6 +5,7 @@ import { AlertsSection } from "./_components/alerts-section"
 import { BalanceSection } from "./_components/balance-section"
 import { ChartsSection } from "./_components/charts-section"
 import { GoalsSection } from "./_components/goals-section"
+import { OnboardingChecklistSection } from "./_components/onboarding-checklist-section"
 import { PeriodSelector } from "./_components/period-selector"
 import { QuickAddButton } from "./_components/quick-add-button"
 import { RecentTransactionsSection } from "./_components/recent-transactions-section"
@@ -12,6 +13,7 @@ import {
   AlertsSkeleton,
   BalanceSkeleton,
   ChartsSkeleton,
+  ChecklistSkeleton,
   GoalsSkeleton,
   RecentTransactionsSkeleton,
   StatsSkeleton,
@@ -25,7 +27,13 @@ async function TransfersSectionWrapper({ periodKey }: { periodKey: string }) {
     getDashboardData(periodKey),
     getServerCurrency(),
   ])
-  return <TransfersSection currency={currency} periodKey={periodKey} transfers={data.transfers} />
+  return (
+    <TransfersSection
+      currency={currency}
+      periodKey={periodKey}
+      transfers={data.transfers}
+    />
+  )
 }
 
 interface Props {
@@ -56,6 +64,11 @@ export default async function DashboardPage({ searchParams }: Props) {
           <QuickAddButton />
         </div>
       </div>
+
+      {/* Checklist d'onboarding */}
+      <Suspense fallback={<ChecklistSkeleton />}>
+        <OnboardingChecklistSection />
+      </Suspense>
 
       {/* Bloc solde */}
       <Suspense fallback={<BalanceSkeleton />}>

@@ -3,24 +3,29 @@
 import { Prisma } from "@prisma/client"
 import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
+import { markChecklistStep } from "@/lib/actions/onboarding"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import { type BudgetInput, budgetSchema } from "@/lib/validations/budgets"
 
-export type BudgetAlert = {
-  title: string
+export interface BudgetAlert {
   body: string
+  title: string
   type: "WARNING" | "DANGER"
 }
 
-type BudgetEntity = { type: string; id: string; threshold: number }
+interface BudgetEntity extends Record<string, unknown> {
+  id: string
+  threshold: number
+  type: string
+}
 
-type ToCreateItem = {
-  userId: string
-  type: "WARNING" | "DANGER"
-  title: string
+interface ToCreateItem {
   body: string
   relatedEntity: BudgetEntity
+  title: string
+  type: "WARNING" | "DANGER"
+  userId: string
 }
 
 async function evaluateBudgets(userId: string): Promise<{
@@ -28,15 +33,21 @@ async function evaluateBudgets(userId: string): Promise<{
   toDelete: string[]
 }> {
   const now = new Date()
-  const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
-  const monthEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1))
+  const monthStart = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)
+  )
+  const monthEnd = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)
+  )
 
   const budgets = await prisma.budget.findMany({
     where: { userId, month: monthStart },
     include: { category: { select: { name: true } } },
   })
 
-  if (budgets.length === 0) return { toCreate: [], toDelete: [] }
+  if (budgets.length === 0) {
+    return { toCreate: [], toDelete: [] }
+  }
 
   const categoryIds = budgets.map((b) => b.categoryId)
 
@@ -76,7 +87,7 @@ async function evaluateBudgets(userId: string): Promise<{
   const existingMap = new Map<string, string>()
   for (const n of existingNotifications) {
     if (n.relatedEntity) {
-      const e = n.relatedEntity as BudgetEntity
+      const e = n.relatedEntity as unknown as BudgetEntity
       existingMap.set(`${e.id}:${e.threshold}`, n.id)
     }
   }
@@ -86,7 +97,9 @@ async function evaluateBudgets(userId: string): Promise<{
 
   for (const budget of budgets) {
     const budgetAmount = Number(budget.amount)
-    if (budgetAmount <= 0) continue
+    if (budgetAmount <= 0) {
+      continue
+    }
 
     const spent = spendingMap.get(budget.categoryId) ?? 0
     const ratio = spent / budgetAmount
@@ -122,12 +135,16 @@ async function evaluateBudgets(userId: string): Promise<{
  * Crée les nouvelles alertes budget ET supprime les obsolètes.
  * À appeler uniquement sur createTransaction.
  */
-export async function checkBudgetAlerts(userId: string): Promise<BudgetAlert[]> {
+export async function checkBudgetAlerts(
+  userId: string
+): Promise<BudgetAlert[]> {
   const { toCreate, toDelete } = await evaluateBudgets(userId)
 
   await Promise.all([
     toCreate.length > 0
-      ? prisma.notification.createMany({ data: toCreate })
+      ? prisma.notification.createMany({
+          data: toCreate as unknown as Prisma.NotificationCreateManyInput[],
+        })
       : Promise.resolve(),
     toDelete.length > 0
       ? prisma.notification.deleteMany({ where: { id: { in: toDelete } } })
@@ -136,7 +153,6 @@ export async function checkBudgetAlerts(userId: string): Promise<BudgetAlert[]> 
 
   return toCreate.map((n) => ({ title: n.title, body: n.body, type: n.type }))
 }
-
 
 export interface BudgetWithSpending {
   amount: number
@@ -181,6 +197,7 @@ export async function createBudget(data: BudgetInput) {
       select: { id: true },
     })
 
+    await markChecklistStep(user.id, "budget")
     revalidatePath("/budgets")
     revalidatePath("/dashboard")
 

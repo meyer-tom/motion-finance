@@ -2,9 +2,10 @@
 
 import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
+import { checkBudgetAlerts } from "@/lib/actions/budgets"
+import { markChecklistStep } from "@/lib/actions/onboarding"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/db"
-import { checkBudgetAlerts } from "@/lib/actions/budgets"
 import {
   type TransactionFilters,
   type TransactionInput,
@@ -104,6 +105,10 @@ export async function createTransaction(data: TransactionInput) {
 
   const alerts =
     parsed.data.type === "EXPENSE" ? await checkBudgetAlerts(user.id) : []
+
+  if (parsed.data.type === "EXPENSE") {
+    await markChecklistStep(user.id, "first-expense")
+  }
 
   revalidatePath("/transactions")
   revalidatePath("/dashboard")

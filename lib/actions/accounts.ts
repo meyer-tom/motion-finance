@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
+import { markChecklistStep } from "@/lib/actions/onboarding"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import {
@@ -97,6 +98,10 @@ export async function createAccount(data: CreateAccountInput) {
       order: count,
     },
   })
+
+  if (parsed.data.type === "SAVINGS") {
+    await markChecklistStep(user.id, "savings")
+  }
 
   revalidatePath("/accounts")
   revalidatePath("/dashboard")

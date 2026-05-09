@@ -2,14 +2,15 @@
 
 import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
+import { markChecklistStep } from "@/lib/actions/onboarding"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import {
   type CreateCategoryInput,
   createCategorySchema,
   type UpdateCategoryInput,
-  updateCategorySchema,
   type UpdateSystemCategoryAppearanceInput,
+  updateCategorySchema,
   updateSystemCategoryAppearanceSchema,
 } from "@/lib/validations/categories"
 
@@ -98,6 +99,7 @@ export async function createCategory(data: CreateCategoryInput) {
     },
   })
 
+  await markChecklistStep(user.id, "categories")
   revalidatePath("/settings")
 }
 

@@ -17,6 +17,63 @@ async function requireAuth() {
   return session.user
 }
 
+export async function markChecklistStep(userId: string, step: string) {
+  try {
+    const existing = await prisma.onboardingProgress.findUnique({
+      where: { userId },
+      select: { checklistCompleted: true },
+    })
+    if (existing?.checklistCompleted.includes(step)) {
+      return
+    }
+    await prisma.onboardingProgress.upsert({
+      where: { userId },
+      update: { checklistCompleted: { push: step } },
+      create: { userId, checklistCompleted: [step], tooltipsSeen: [] },
+    })
+  } catch {
+    // fire-and-forget : ne bloque jamais l'action principale
+  }
+}
+
+export async function getOnboardingProgress() {
+  const user = await requireAuth()
+
+  const [progress, hasChecking] = await Promise.all([
+    prisma.onboardingProgress.findUnique({
+      where: { userId: user.id },
+      select: { checklistCompleted: true, checklistDismissed: true },
+    }),
+    prisma.financialAccount
+      .count({ where: { userId: user.id, type: "CHECKING" } })
+      .then((c) => c > 0),
+  ])
+
+  const base = progress?.checklistCompleted ?? []
+  const checklistCompleted =
+    hasChecking && !base.includes("account") ? [...base, "account"] : base
+
+  return {
+    checklistCompleted,
+    checklistDismissed: progress?.checklistDismissed ?? false,
+  }
+}
+
+export async function dismissChecklist() {
+  const user = await requireAuth()
+  await prisma.onboardingProgress.upsert({
+    where: { userId: user.id },
+    update: { checklistDismissed: true },
+    create: {
+      userId: user.id,
+      checklistCompleted: [],
+      checklistDismissed: true,
+      tooltipsSeen: [],
+    },
+  })
+  revalidatePath("/dashboard")
+}
+
 export async function completeOnboarding(data: CompleteOnboardingInput) {
   const user = await requireAuth()
 

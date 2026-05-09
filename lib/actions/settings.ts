@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { cache } from "react"
+import { markChecklistStep } from "@/lib/actions/onboarding"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 
@@ -56,6 +57,7 @@ export async function updateProfile(data: UpdateProfileInput) {
     },
   })
 
+  await markChecklistStep(user.id, "profile")
   revalidatePath("/settings")
 }
 
@@ -91,7 +93,6 @@ export async function resetOnboarding() {
       tooltipsSeen: [],
     },
   })
-
 }
 
 export async function deleteUserAccount(data: DeleteAccountInput) {
