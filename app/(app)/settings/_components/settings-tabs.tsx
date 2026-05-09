@@ -7,6 +7,13 @@ import type {
   RecurringCategoryOption,
 } from "@/components/recurring/recurring-form-sheet"
 import type { RecurringItemData } from "@/components/recurring/recurring-item"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import { CategoriesClient } from "./categories-client"
 import { DataSection } from "./data-section"
@@ -82,8 +89,24 @@ export function SettingsTabs({
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Sliding pill tab list */}
-      <div className="relative flex rounded-xl bg-muted p-1">
+      {/* Select — mobile uniquement */}
+      <div className="sm:hidden">
+        <Select value={activeTab} onValueChange={(v) => handleTabChange(v as Tab)}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {TABS.map((tab) => (
+              <SelectItem key={tab} value={tab}>
+                {TAB_LABELS[tab]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Sliding pill tab list — desktop uniquement */}
+      <div className="relative hidden sm:flex rounded-xl bg-muted p-1">
         <div
           aria-hidden
           className="pointer-events-none absolute top-1 bottom-1 rounded-lg bg-background shadow-sm transition-all duration-200"

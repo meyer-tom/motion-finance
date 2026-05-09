@@ -92,7 +92,6 @@ export async function resetOnboarding() {
     },
   })
 
-  redirect("/onboarding")
 }
 
 export async function deleteUserAccount(data: DeleteAccountInput) {
