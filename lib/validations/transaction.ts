@@ -13,7 +13,7 @@ export const transactionSchema = z
       .min(1, "Le titre est requis")
       .max(100, "100 caractères maximum"),
     amount: z
-      .number()
+      .coerce.number()
       .positive("Le montant doit être positif")
       .max(10_000_000, "Montant maximum : 10 000 000"),
     date: z.coerce.date(),
@@ -57,8 +57,14 @@ export const transactionFiltersSchema = z.object({
   type: z.enum(["EXPENSE", "INCOME", "TRANSFER"]).optional(),
   accountIds: z.array(cuid("Compte invalide")).optional(),
   categoryIds: z.array(cuid("Catégorie invalide")).optional(),
-  amountMin: z.number().nonnegative().optional(),
-  amountMax: z.number().positive().optional(),
+  amountMin: z.preprocess(
+    (v) => (v === "" || v == null ? undefined : Number(v)),
+    z.number().nonnegative().optional()
+  ),
+  amountMax: z.preprocess(
+    (v) => (v === "" || v == null ? undefined : Number(v)),
+    z.number().positive().optional()
+  ),
   dateFrom: z.coerce.date().optional(),
   dateTo: z.coerce.date().optional(),
   search: z.string().max(100).optional(),

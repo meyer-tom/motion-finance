@@ -16,7 +16,7 @@ import {
   Wallet,
 } from "lucide-react"
 import { useEffect, useState } from "react"
-import { useForm, useWatch } from "react-hook-form"
+import { type Resolver, useForm, useWatch } from "react-hook-form"
 import { FormStepGuide } from "@/components/app/form-step-guide"
 import { BottomSheet } from "@/components/shared/bottom-sheet"
 import { Button } from "@/components/ui/button"
@@ -113,7 +113,8 @@ function AccountFormBody({
     reset,
     formState: { errors, isSubmitting },
   } = useForm<CreateAccountInput>({
-    resolver: standardSchemaResolver(createAccountSchema),
+    // Cast nécessaire : standardSchemaResolver infère startingBalance: unknown avec z.coerce.number() en Zod v4
+    resolver: standardSchemaResolver(createAccountSchema) as Resolver<CreateAccountInput>,
     defaultValues: {
       name: initialValues?.name ?? "",
       type: initialValues?.type ?? "CHECKING",
@@ -265,7 +266,7 @@ function AccountFormBody({
               id="starting-balance"
               step="0.01"
               type="number"
-              {...register("startingBalance", { valueAsNumber: true })}
+              {...register("startingBalance")}
             />
             {errors.startingBalance ? (
               <p className="text-destructive text-xs">

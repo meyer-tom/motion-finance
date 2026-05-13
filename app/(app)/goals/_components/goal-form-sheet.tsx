@@ -2,7 +2,7 @@
 
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useEffect, useState, useTransition } from "react"
-import { useForm } from "react-hook-form"
+import { type Resolver, useForm } from "react-hook-form"
 import { z } from "zod"
 import { FormStepGuide } from "@/components/app/form-step-guide"
 import { BottomSheet } from "@/components/shared/bottom-sheet"
@@ -23,11 +23,11 @@ import { cn } from "@/lib/utils"
 const goalFormSchema = z.object({
   name: z.string().min(1, "Le nom est requis").max(50, "50 caractères maximum"),
   targetAmount: z
-    .number()
+    .coerce.number()
     .positive("Le montant cible doit être positif")
     .max(10_000_000, "Montant maximum : 10 000 000"),
   currentAmount: z
-    .number()
+    .coerce.number()
     .min(0, "Le montant actuel ne peut pas être négatif")
     .max(10_000_000, "Montant maximum : 10 000 000"),
 })
@@ -83,16 +83,14 @@ export function GoalFormSheet({
     watch,
     formState: { errors },
   } = useForm<GoalFormValues>({
-    resolver: standardSchemaResolver(goalFormSchema),
+    resolver: standardSchemaResolver(goalFormSchema) as Resolver<GoalFormValues>,
     defaultValues: { name: "", targetAmount: undefined, currentAmount: 0 },
   })
 
   const watchedName = watch("name")
   const watchedTarget = watch("targetAmount")
   const watchedCurrent = watch("currentAmount")
-  const currentAmountRegistration = register("currentAmount", {
-    valueAsNumber: true,
-  })
+  const currentAmountRegistration = register("currentAmount")
 
   const [guideStep, setGuideStep] = useState(showGuide && !isEditing ? 0 : -1)
 
@@ -220,7 +218,7 @@ export function GoalFormSheet({
             placeholder="0"
             step="0.01"
             type="number"
-            {...register("targetAmount", { valueAsNumber: true })}
+            {...register("targetAmount")}
           />
           <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground text-sm">
             €

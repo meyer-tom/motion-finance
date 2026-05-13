@@ -2,7 +2,7 @@
 
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useEffect, useState, useTransition } from "react"
-import { useForm } from "react-hook-form"
+import { type Resolver, useForm } from "react-hook-form"
 import type { z } from "zod"
 import { FormStepGuide } from "@/components/app/form-step-guide"
 import { BottomSheet } from "@/components/shared/bottom-sheet"
@@ -96,7 +96,7 @@ export function BudgetFormSheet({
     watch,
     formState: { errors },
   } = useForm<BudgetFormValues>({
-    resolver: standardSchemaResolver(budgetFormSchema),
+    resolver: standardSchemaResolver(budgetFormSchema) as Resolver<BudgetFormValues>,
     defaultValues: {
       categoryId: "",
       amount: undefined,
@@ -248,7 +248,7 @@ export function BudgetFormSheet({
             placeholder="0"
             step="0.01"
             type="number"
-            {...register("amount", { valueAsNumber: true })}
+            {...register("amount")}
           />
           <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground text-sm">
             €

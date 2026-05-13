@@ -3,7 +3,7 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { ArrowRightLeft, Minus, Plus } from "lucide-react"
 import { useEffect, useTransition } from "react"
-import { useForm, useWatch } from "react-hook-form"
+import { type Resolver, useForm, useWatch } from "react-hook-form"
 import { BottomSheet } from "@/components/shared/bottom-sheet"
 import { Button } from "@/components/ui/button"
 import {
@@ -345,7 +345,8 @@ function RecurringFormBody({
     setError,
     formState: { errors },
   } = useForm<RecurringInput>({
-    resolver: standardSchemaResolver(recurringSchema),
+    // Cast nécessaire : standardSchemaResolver infère amount: unknown avec z.coerce.number() en Zod v4
+    resolver: standardSchemaResolver(recurringSchema) as Resolver<RecurringInput>,
     defaultValues: {
       name: initialValues?.name ?? "",
       type: initialValues?.type ?? "EXPENSE",
@@ -434,7 +435,7 @@ function RecurringFormBody({
             placeholder="0,00"
             step="0.01"
             type="number"
-            {...register("amount", { valueAsNumber: true })}
+            {...register("amount")}
           />
           <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground text-sm">
             €

@@ -4,7 +4,7 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { ArrowRight } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
-import { useForm } from "react-hook-form"
+import { type Resolver, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { BarChartSvg } from "@/components/app/sidebar"
 import { Button } from "@/components/ui/button"
@@ -48,7 +48,7 @@ export function OnboardingStepper({ firstName }: OnboardingStepperProps) {
     formState: { errors },
     setError,
   } = useForm<CompleteOnboardingInput>({
-    resolver: standardSchemaResolver(completeOnboardingSchema),
+    resolver: standardSchemaResolver(completeOnboardingSchema) as Resolver<CompleteOnboardingInput>,
     defaultValues: { name: "Compte courant", startingBalance: 0 },
   })
 
@@ -180,7 +180,7 @@ export function OnboardingStepper({ firstName }: OnboardingStepperProps) {
                     step="0.01"
                     placeholder="0.00"
                     inputMode="decimal"
-                    {...register("startingBalance", { valueAsNumber: true })}
+                    {...register("startingBalance")}
                   />
                   {errors.startingBalance ? (
                     <p className="text-destructive text-xs" role="alert">
