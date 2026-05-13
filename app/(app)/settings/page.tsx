@@ -2,6 +2,7 @@ import { headers } from "next/headers"
 import { Suspense } from "react"
 import { getAccounts } from "@/lib/actions/accounts"
 import { getSettingsCategories } from "@/lib/actions/categories"
+import { getChecklistState } from "@/lib/actions/onboarding"
 import { getRecurringTransactions } from "@/lib/actions/recurring-transactions"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/db"
@@ -11,23 +12,29 @@ export default async function SettingsPage() {
   const session = await auth.api.getSession({ headers: await headers() })
   const userId = session!.user.id
 
-  const [{ systemCategories, userCategories }, recurringItems, accounts, userRecord] =
-    await Promise.all([
-      getSettingsCategories(),
-      getRecurringTransactions(),
-      getAccounts(),
-      prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-          firstName: true,
-          lastName: true,
-          email: true,
-          image: true,
-          name: true,
-          currency: true,
-        },
-      }),
-    ])
+  const [
+    { systemCategories, userCategories },
+    recurringItems,
+    accounts,
+    userRecord,
+    checklistState,
+  ] = await Promise.all([
+    getSettingsCategories(),
+    getRecurringTransactions(),
+    getAccounts(),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        firstName: true,
+        lastName: true,
+        email: true,
+        image: true,
+        name: true,
+        currency: true,
+      },
+    }),
+    getChecklistState(),
+  ])
 
   const user = userRecord ?? {
     firstName: session!.user.firstName ?? "",
@@ -88,7 +95,10 @@ export default async function SettingsPage() {
       <Suspense>
         <SettingsTabs
           accounts={formAccounts}
+          checklistCompleted={checklistState.checklistCompleted}
+          checklistDismissed={checklistState.checklistDismissed}
           currency={user.currency}
+          tooltipsSeen={checklistState.tooltipsSeen}
           formCategories={formCategories}
           recurringItems={recurringItems}
           systemCategories={systemCategories.map(serializeCategory)}

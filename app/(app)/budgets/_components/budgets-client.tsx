@@ -9,6 +9,7 @@ import {
   Wallet,
 } from "lucide-react"
 import { useCallback, useState, useTransition } from "react"
+import { DiscoveryTooltip } from "@/components/app/discovery-tooltip"
 import { Button } from "@/components/ui/button"
 import type { BudgetWithSpending } from "@/lib/actions/budgets"
 import {
@@ -49,15 +50,26 @@ function monthLabel(date: Date): string {
 
 interface BudgetsClientProps {
   categories: BudgetCategoryOption[]
+  checklistCompleted: string[]
+  checklistDismissed: boolean
   initialData?: BudgetWithSpending[]
   initialMonth: Date
+  tooltipsSeen: string[]
 }
 
 export function BudgetsClient({
   categories,
+  checklistCompleted,
+  checklistDismissed,
   initialData,
   initialMonth,
+  tooltipsSeen,
 }: BudgetsClientProps) {
+  const showGuide = !(
+    checklistDismissed ||
+    checklistCompleted.includes("budget") ||
+    tooltipsSeen.includes("budget")
+  )
   const queryClient = useQueryClient()
   const [month, setMonth] = useState<Date>(() => startOfMonth(initialMonth))
   const [formOpen, setFormOpen] = useState(false)
@@ -115,12 +127,23 @@ export function BudgetsClient({
   return (
     <div className="flex flex-col gap-4 pb-24 md:pb-8">
       {/* Header */}
-      <div className="flex items-center justify-end">
-        <Button className="gap-1.5" onClick={openCreate} size="sm">
-          <Plus className="size-4" />
-          <span className="hidden sm:inline">Nouveau</span>
-        </Button>
-      </div>
+      <DiscoveryTooltip
+        actionLabel="Créer un budget"
+        checklistCompleted={checklistCompleted}
+        checklistDismissed={checklistDismissed}
+        checklistStep="budget"
+        description="Cliquez ici, sélectionnez une catégorie de dépense et définissez le montant maximum pour ce mois."
+        onAction={openCreate}
+        title="Budgets mensuels"
+        tooltipsSeen={tooltipsSeen}
+      >
+        <div className="flex items-center justify-end">
+          <Button className="gap-1.5" onClick={openCreate} size="sm">
+            <Plus className="size-4" />
+            <span className="hidden sm:inline">Nouveau</span>
+          </Button>
+        </div>
+      </DiscoveryTooltip>
 
       {/* Sélecteur de mois */}
       <div className="flex items-center justify-between rounded-lg border bg-card px-2 py-1.5">
@@ -189,6 +212,7 @@ export function BudgetsClient({
         onOpenChange={setFormOpen}
         onSuccess={invalidate}
         open={formOpen}
+        showGuide={showGuide}
       />
     </div>
   )

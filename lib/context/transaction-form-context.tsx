@@ -17,9 +17,10 @@ export interface TransactionFormInitialValues
 
 interface TransactionFormContextValue {
   closeForm: () => void
+  guideActive: boolean
   initialValues: TransactionFormInitialValues | undefined
   open: boolean
-  openForm: (values?: TransactionFormInitialValues) => void
+  openForm: (values?: TransactionFormInitialValues, withGuide?: boolean) => void
 }
 
 const TransactionFormContext = createContext<
@@ -32,6 +33,7 @@ export function TransactionFormProvider({
   children: React.ReactNode
 }) {
   const [open, setOpen] = useState(false)
+  const [guideActive, setGuideActive] = useState(false)
   const [initialValues, setInitialValues] = useState<
     TransactionFormInitialValues | undefined
   >(undefined)
@@ -46,18 +48,23 @@ export function TransactionFormProvider({
     }
   }, [searchParams])
 
-  const openForm = useCallback((values?: TransactionFormInitialValues) => {
-    setInitialValues(values)
-    setOpen(true)
-  }, [])
+  const openForm = useCallback(
+    (values?: TransactionFormInitialValues, withGuide?: boolean) => {
+      setInitialValues(values)
+      setGuideActive(withGuide ?? false)
+      setOpen(true)
+    },
+    []
+  )
 
   const closeForm = useCallback(() => {
     setOpen(false)
+    setGuideActive(false)
   }, [])
 
   return (
     <TransactionFormContext
-      value={{ open, initialValues, openForm, closeForm }}
+      value={{ open, guideActive, initialValues, openForm, closeForm }}
     >
       {children}
     </TransactionFormContext>

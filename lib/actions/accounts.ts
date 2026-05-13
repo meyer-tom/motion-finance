@@ -101,6 +101,8 @@ export async function createAccount(data: CreateAccountInput) {
 
   if (parsed.data.type === "SAVINGS") {
     await markChecklistStep(user.id, "savings")
+  } else if (parsed.data.type === "CHECKING") {
+    await markChecklistStep(user.id, "account")
   }
 
   revalidatePath("/accounts")

@@ -2,6 +2,7 @@ import { headers } from "next/headers"
 import { Suspense } from "react"
 import { getAccounts } from "@/lib/actions/accounts"
 import { getCategoriesForUser } from "@/lib/actions/categories"
+import { getChecklistState } from "@/lib/actions/onboarding"
 import { getTransactions } from "@/lib/actions/transactions"
 import { auth } from "@/lib/auth"
 import { TransactionListSkeleton } from "./_components/transaction-skeletons"
@@ -11,13 +12,22 @@ export default async function TransactionsPage() {
   const session = await auth.api.getSession({ headers: await headers() })
   const userId = session?.user.id ?? ""
 
-  const [initialData, accounts, categories] = await Promise.all([
-    userId
-      ? getTransactions()
-      : Promise.resolve({ items: [], nextCursor: null, hasMore: false }),
-    userId ? getAccounts() : Promise.resolve([]),
-    userId ? getCategoriesForUser(userId) : Promise.resolve([]),
-  ])
+  const [initialData, accounts, categories, checklistState] = await Promise.all(
+    [
+      userId
+        ? getTransactions()
+        : Promise.resolve({ items: [], nextCursor: null, hasMore: false }),
+      userId ? getAccounts() : Promise.resolve([]),
+      userId ? getCategoriesForUser(userId) : Promise.resolve([]),
+      userId
+        ? getChecklistState()
+        : Promise.resolve({
+            checklistCompleted: [],
+            checklistDismissed: false,
+            tooltipsSeen: [],
+          }),
+    ]
+  )
 
   const accountOptions = accounts.map((a) => ({
     id: a.id,
@@ -38,7 +48,10 @@ export default async function TransactionsPage() {
       <TransactionsClient
         accounts={accountOptions}
         categories={categoryOptions}
+        checklistCompleted={checklistState.checklistCompleted}
+        checklistDismissed={checklistState.checklistDismissed}
         initialData={initialData}
+        tooltipsSeen={checklistState.tooltipsSeen}
       />
     </Suspense>
   )

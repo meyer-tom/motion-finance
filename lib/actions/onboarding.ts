@@ -74,6 +74,56 @@ export async function dismissChecklist() {
   revalidatePath("/dashboard")
 }
 
+export async function getChecklistState(): Promise<{
+  checklistCompleted: string[]
+  checklistDismissed: boolean
+  tooltipsSeen: string[]
+}> {
+  const user = await requireAuth()
+  const progress = await prisma.onboardingProgress.findUnique({
+    where: { userId: user.id },
+    select: {
+      checklistCompleted: true,
+      checklistDismissed: true,
+      tooltipsSeen: true,
+    },
+  })
+  return {
+    checklistCompleted: progress?.checklistCompleted ?? [],
+    checklistDismissed: progress?.checklistDismissed ?? false,
+    tooltipsSeen: progress?.tooltipsSeen ?? [],
+  }
+}
+
+export async function markChecklistStepCurrent(step: string) {
+  try {
+    const user = await requireAuth()
+    await markChecklistStep(user.id, step)
+  } catch {
+    // fire-and-forget
+  }
+}
+
+export async function markTooltipSeen(step: string) {
+  try {
+    const user = await requireAuth()
+    const existing = await prisma.onboardingProgress.findUnique({
+      where: { userId: user.id },
+      select: { tooltipsSeen: true },
+    })
+    if (existing?.tooltipsSeen.includes(step)) {
+      return
+    }
+    await prisma.onboardingProgress.upsert({
+      where: { userId: user.id },
+      update: { tooltipsSeen: { push: step } },
+      create: { userId: user.id, checklistCompleted: [], tooltipsSeen: [step] },
+    })
+  } catch {
+    // fire-and-forget
+  }
+}
+
 export async function completeOnboarding(data: CompleteOnboardingInput) {
   const user = await requireAuth()
 

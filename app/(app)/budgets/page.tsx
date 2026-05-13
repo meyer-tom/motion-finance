@@ -1,8 +1,9 @@
-import { Suspense } from "react"
 import { headers } from "next/headers"
-import { auth } from "@/lib/auth"
+import { Suspense } from "react"
 import { getBudgetsWithSpending } from "@/lib/actions/budgets"
 import { getCategoriesForUser } from "@/lib/actions/categories"
+import { getChecklistState } from "@/lib/actions/onboarding"
+import { auth } from "@/lib/auth"
 import { BudgetListSkeleton } from "./_components/budget-skeletons"
 import { BudgetsClient } from "./_components/budgets-client"
 
@@ -15,9 +16,16 @@ export default async function BudgetsPage() {
     Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)
   )
 
-  const [initialData, allCategories] = await Promise.all([
+  const [initialData, allCategories, checklistState] = await Promise.all([
     userId ? getBudgetsWithSpending(initialMonth) : Promise.resolve([]),
     userId ? getCategoriesForUser(userId) : Promise.resolve([]),
+    userId
+      ? getChecklistState()
+      : Promise.resolve({
+          checklistCompleted: [],
+          checklistDismissed: false,
+          tooltipsSeen: [],
+        }),
   ])
 
   const expenseCategories = allCategories
@@ -33,8 +41,11 @@ export default async function BudgetsPage() {
     <Suspense fallback={<BudgetListSkeleton />}>
       <BudgetsClient
         categories={expenseCategories}
+        checklistCompleted={checklistState.checklistCompleted}
+        checklistDismissed={checklistState.checklistDismissed}
         initialData={initialData}
         initialMonth={initialMonth}
+        tooltipsSeen={checklistState.tooltipsSeen}
       />
     </Suspense>
   )

@@ -23,6 +23,7 @@ import { useEffect, useState, useTransition } from "react"
 import { AccountCard } from "@/components/accounts/account-card"
 import type { AccountEditValues } from "@/components/accounts/account-form-modal"
 import { AccountFormModal } from "@/components/accounts/account-form-modal"
+import { DiscoveryTooltip } from "@/components/app/discovery-tooltip"
 import { Button } from "@/components/ui/button"
 import { reorderAccounts } from "@/lib/actions/accounts"
 
@@ -82,11 +83,22 @@ function SortableAccountCard({
 
 interface AccountsClientProps {
   accounts: Account[]
+  checklistCompleted: string[]
+  checklistDismissed: boolean
+  tooltipsSeen: string[]
 }
 
 export function AccountsClient({
   accounts: initialAccounts,
+  checklistCompleted,
+  checklistDismissed,
+  tooltipsSeen,
 }: AccountsClientProps) {
+  const showGuide = !(
+    checklistDismissed ||
+    checklistCompleted.includes("savings") ||
+    tooltipsSeen.includes("savings")
+  )
   const [accounts, setAccounts] = useState(initialAccounts)
   const [modalOpen, setModalOpen] = useState(false)
   const [editValues, setEditValues] = useState<AccountEditValues | undefined>(
@@ -145,16 +157,30 @@ export function AccountsClient({
             ? "Aucun compte pour le moment."
             : `${accounts.length} compte${accounts.length > 1 ? "s" : ""}`}
         </p>
-        <Button
-          onClick={() => {
+        <DiscoveryTooltip
+          actionLabel="Créer un compte épargne"
+          checklistCompleted={checklistCompleted}
+          checklistDismissed={checklistDismissed}
+          checklistStep="savings"
+          description="Cliquez ici, choisissez le type Épargne et renseignez le solde de départ pour créer votre compte."
+          onAction={() => {
             setEditValues(undefined)
             setModalOpen(true)
           }}
-          size="sm"
+          title="Compte épargne"
+          tooltipsSeen={tooltipsSeen}
         >
-          <Plus className="size-4" />
-          Nouveau compte
-        </Button>
+          <Button
+            onClick={() => {
+              setEditValues(undefined)
+              setModalOpen(true)
+            }}
+            size="sm"
+          >
+            <Plus className="size-4" />
+            Nouveau compte
+          </Button>
+        </DiscoveryTooltip>
       </div>
 
       {accounts.length > 0 ? (
@@ -202,6 +228,7 @@ export function AccountsClient({
         initialValues={editValues}
         onOpenChange={handleOpenChange}
         open={modalOpen}
+        showGuide={showGuide}
       />
     </>
   )

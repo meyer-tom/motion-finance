@@ -4,6 +4,7 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useEffect, useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
+import { FormStepGuide } from "@/components/app/form-step-guide"
 import { BottomSheet } from "@/components/shared/bottom-sheet"
 import { Button } from "@/components/ui/button"
 import {
@@ -17,6 +18,7 @@ import { Label } from "@/components/ui/label"
 import type { GoalItem } from "@/lib/actions/goals"
 import { createGoal, updateGoal } from "@/lib/actions/goals"
 import { useIsMobile } from "@/lib/hooks/use-is-mobile"
+import { cn } from "@/lib/utils"
 
 const goalFormSchema = z.object({
   name: z.string().min(1, "Le nom est requis").max(50, "50 caractères maximum"),
@@ -31,12 +33,15 @@ const goalFormSchema = z.object({
 })
 type GoalFormValues = z.infer<typeof goalFormSchema>
 
+const GOAL_GUIDE_STEPS = 5
+
 interface GoalFormSheetProps {
   editGoal?: GoalItem | null
   onGoalCompleted?: () => void
   onOpenChange: (open: boolean) => void
   onSuccess: () => void
   open: boolean
+  showGuide?: boolean
 }
 
 function getSubmitLabel(isPending: boolean, isEditing: boolean): string {
@@ -63,6 +68,7 @@ export function GoalFormSheet({
   onOpenChange,
   onSuccess,
   open,
+  showGuide,
 }: GoalFormSheetProps) {
   const isMobile = useIsMobile()
   const [isPending, startTransition] = useTransition()
@@ -81,10 +87,14 @@ export function GoalFormSheet({
     defaultValues: { name: "", targetAmount: undefined, currentAmount: 0 },
   })
 
+  const watchedName = watch("name")
   const watchedTarget = watch("targetAmount")
+  const watchedCurrent = watch("currentAmount")
   const currentAmountRegistration = register("currentAmount", {
     valueAsNumber: true,
   })
+
+  const [guideStep, setGuideStep] = useState(showGuide && !isEditing ? 0 : -1)
 
   useEffect(() => {
     if (open) {
@@ -100,8 +110,9 @@ export function GoalFormSheet({
         reset({ name: "", targetAmount: undefined, currentAmount: 0 })
         setDeadlineStr("")
       }
+      setGuideStep(showGuide && !isEditing ? 0 : -1)
     }
-  }, [open, editGoal, reset])
+  }, [open, editGoal, reset, showGuide, isEditing])
 
   function onSubmit(data: GoalFormValues) {
     setServerError(null)
@@ -137,10 +148,23 @@ export function GoalFormSheet({
     })
   }
 
+  const nameValid = !!watchedName?.trim()
+  const targetValid =
+    typeof watchedTarget === "number" &&
+    !Number.isNaN(watchedTarget) &&
+    watchedTarget > 0
+  const currentValid =
+    typeof watchedCurrent === "number" && !Number.isNaN(watchedCurrent)
+
   const formContent = (
     <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
       {/* Nom */}
-      <div className="space-y-1.5">
+      <div
+        className={cn(
+          "space-y-1.5 rounded-xl transition-all duration-200",
+          guideStep >= 0 && guideStep !== 0 && "opacity-40"
+        )}
+      >
         <Label htmlFor="name">
           Nom{" "}
           <span aria-hidden="true" className="text-destructive">
@@ -156,9 +180,31 @@ export function GoalFormSheet({
           <p className="text-destructive text-xs">{errors.name.message}</p>
         ) : null}
       </div>
+      {guideStep === 0 ? (
+        <FormStepGuide
+          checklistStep="goal"
+          className="-mt-2"
+          description="Donnez un nom inspirant à votre objectif (ex : Voyage, Voiture, Urgences…)."
+          isFirst={true}
+          isLast={false}
+          isValid={nameValid}
+          onDismiss={() => setGuideStep(-1)}
+          onNext={() => setGuideStep(1)}
+          onPrev={() => setGuideStep(0)}
+          stepIndex={0}
+          title="Nom de l'objectif"
+          totalSteps={GOAL_GUIDE_STEPS}
+          validationMessage="Saisissez un nom pour continuer"
+        />
+      ) : null}
 
       {/* Montant cible */}
-      <div className="space-y-1.5">
+      <div
+        className={cn(
+          "space-y-1.5 rounded-xl transition-all duration-200",
+          guideStep >= 0 && guideStep !== 1 && "opacity-40"
+        )}
+      >
         <Label htmlFor="targetAmount">
           Montant cible{" "}
           <span aria-hidden="true" className="text-destructive">
@@ -186,16 +232,38 @@ export function GoalFormSheet({
           </p>
         ) : null}
       </div>
+      {guideStep === 1 ? (
+        <FormStepGuide
+          checklistStep="goal"
+          className="-mt-2"
+          description="Combien souhaitez-vous épargner au total pour cet objectif ?"
+          isFirst={false}
+          isLast={false}
+          isValid={targetValid}
+          onDismiss={() => setGuideStep(-1)}
+          onNext={() => setGuideStep(2)}
+          onPrev={() => setGuideStep(0)}
+          stepIndex={1}
+          title="Montant cible"
+          totalSteps={GOAL_GUIDE_STEPS}
+          validationMessage="Entrez un montant positif pour continuer"
+        />
+      ) : null}
 
       {/* Montant actuel */}
-      <div className="space-y-1.5">
+      <div
+        className={cn(
+          "space-y-1.5 rounded-xl transition-all duration-200",
+          guideStep >= 0 && guideStep !== 2 && "opacity-40"
+        )}
+      >
         <Label htmlFor="currentAmount">Montant déjà épargné</Label>
         <div className="relative">
           <Input
             className="pr-8"
             id="currentAmount"
             inputMode="decimal"
-            max={watchedTarget ?? undefined}
+            max={Number.isNaN(watchedTarget) ? undefined : watchedTarget}
             min={0}
             placeholder="0"
             step="0.01"
@@ -222,9 +290,30 @@ export function GoalFormSheet({
           </p>
         ) : null}
       </div>
+      {guideStep === 2 ? (
+        <FormStepGuide
+          checklistStep="goal"
+          className="-mt-2"
+          description="Si vous avez déjà mis de côté une somme, entrez-la ici (sinon laissez à 0)."
+          isFirst={false}
+          isLast={false}
+          isValid={currentValid}
+          onDismiss={() => setGuideStep(-1)}
+          onNext={() => setGuideStep(3)}
+          onPrev={() => setGuideStep(1)}
+          stepIndex={2}
+          title="Montant déjà épargné"
+          totalSteps={GOAL_GUIDE_STEPS}
+        />
+      ) : null}
 
       {/* Date limite */}
-      <div className="space-y-1.5">
+      <div
+        className={cn(
+          "space-y-1.5 rounded-xl transition-all duration-200",
+          guideStep >= 0 && guideStep !== 3 && "opacity-40"
+        )}
+      >
         <Label htmlFor="deadline">Date limite</Label>
         <Input
           id="deadline"
@@ -234,6 +323,22 @@ export function GoalFormSheet({
           value={deadlineStr}
         />
       </div>
+      {guideStep === 3 ? (
+        <FormStepGuide
+          checklistStep="goal"
+          className="-mt-2"
+          description="Une échéance permet de calculer combien épargner chaque mois (optionnel)."
+          isFirst={false}
+          isLast={false}
+          isValid={true}
+          onDismiss={() => setGuideStep(-1)}
+          onNext={() => setGuideStep(4)}
+          onPrev={() => setGuideStep(2)}
+          stepIndex={3}
+          title="Date limite (optionnel)"
+          totalSteps={GOAL_GUIDE_STEPS}
+        />
+      ) : null}
 
       {serverError ? (
         <p
@@ -242,6 +347,23 @@ export function GoalFormSheet({
         >
           {serverError}
         </p>
+      ) : null}
+
+      {/* Guide dernière étape */}
+      {guideStep === 4 ? (
+        <FormStepGuide
+          checklistStep="goal"
+          description="Cliquez sur Créer l'objectif pour commencer à suivre votre progression."
+          isFirst={false}
+          isLast={true}
+          isValid={true}
+          onDismiss={() => setGuideStep(-1)}
+          onNext={() => setGuideStep(4)}
+          onPrev={() => setGuideStep(3)}
+          stepIndex={4}
+          title="Tout est prêt !"
+          totalSteps={GOAL_GUIDE_STEPS}
+        />
       ) : null}
 
       <div className="flex gap-2 pt-1">
@@ -253,7 +375,11 @@ export function GoalFormSheet({
         >
           Annuler
         </Button>
-        <Button className="flex-1" disabled={isPending} type="submit">
+        <Button
+          className={cn("flex-1 transition-all duration-200")}
+          disabled={isPending}
+          type="submit"
+        >
           {getSubmitLabel(isPending, isEditing)}
         </Button>
       </div>

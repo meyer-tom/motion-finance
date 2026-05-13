@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation"
 import { useCallback } from "react"
+import { DiscoveryTooltip } from "@/components/app/discovery-tooltip"
 import type {
   RecurringAccountOption,
   RecurringCategoryOption,
@@ -14,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { markChecklistStepCurrent } from "@/lib/actions/onboarding"
 import { cn } from "@/lib/utils"
 import { CategoriesClient } from "./categories-client"
 import { DataSection } from "./data-section"
@@ -34,10 +36,13 @@ interface Category {
 
 interface SettingsTabsProps {
   accounts: RecurringAccountOption[]
+  checklistCompleted: string[]
+  checklistDismissed: boolean
   currency: string
   formCategories: RecurringCategoryOption[]
   recurringItems: RecurringItemData[]
   systemCategories: Category[]
+  tooltipsSeen: string[]
   user: {
     firstName: string
     lastName: string
@@ -71,6 +76,9 @@ export function SettingsTabs({
   accounts,
   formCategories,
   recurringItems,
+  checklistCompleted,
+  checklistDismissed,
+  tooltipsSeen,
 }: SettingsTabsProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -89,48 +97,89 @@ export function SettingsTabs({
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Select — mobile uniquement */}
-      <div className="sm:hidden">
-        <Select value={activeTab} onValueChange={(v) => handleTabChange(v as Tab)}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {TABS.map((tab) => (
-              <SelectItem key={tab} value={tab}>
-                {TAB_LABELS[tab]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {/* Navigation — Select mobile + Sliding pill desktop */}
+      <DiscoveryTooltip
+        align="center"
+        checklistCompleted={checklistCompleted}
+        checklistDismissed={checklistDismissed}
+        checklistStep="profile"
+        onComplete={() => {
+          markChecklistStepCurrent("profile")
+        }}
+        steps={[
+          {
+            description:
+              "Votre profil est configuré lors de l'inscription. Vous pouvez y modifier votre photo.",
+            onEnter: () => handleTabChange("profil"),
+            title: "Profil",
+          },
+          {
+            description:
+              "Choisissez votre devise principale (EUR, USD, GBP...) et votre thème visuel.",
+            onEnter: () => handleTabChange("preferences"),
+            title: "Préférences",
+          },
+          {
+            description:
+              "Créez vos propres catégories et configurez des transactions récurrentes.",
+            onEnter: () => handleTabChange("categories"),
+            title: "Catégories",
+          },
+          {
+            description:
+              "Exportez vos transactions en CSV ou supprimez définitivement votre compte.",
+            onEnter: () => handleTabChange("donnees"),
+            title: "Données",
+          },
+        ]}
+        tooltipsSeen={tooltipsSeen}
+      >
+        <div className="flex flex-col gap-4">
+          <div className="sm:hidden">
+            <Select
+              onValueChange={(v) => handleTabChange(v as Tab)}
+              value={activeTab}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {TABS.map((tab) => (
+                  <SelectItem key={tab} value={tab}>
+                    {TAB_LABELS[tab]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-      {/* Sliding pill tab list — desktop uniquement */}
-      <div className="relative hidden sm:flex rounded-xl bg-muted p-1">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute top-1 bottom-1 rounded-lg bg-background shadow-sm transition-all duration-200"
-          style={{
-            width: `calc((100% - 8px) / ${TABS.length})`,
-            left: `calc(4px + ${tabIndex} * (100% - 8px) / ${TABS.length})`,
-          }}
-        />
-        {TABS.map((tab) => (
-          <button
-            className={cn(
-              "relative z-10 flex flex-1 items-center justify-center rounded-lg py-1.5 font-medium text-sm transition-colors duration-150",
-              activeTab === tab
-                ? "text-foreground"
-                : "text-muted-foreground hover:text-foreground/70"
-            )}
-            key={tab}
-            onClick={() => handleTabChange(tab)}
-            type="button"
-          >
-            {TAB_LABELS[tab]}
-          </button>
-        ))}
-      </div>
+          <div className="relative hidden rounded-xl bg-muted p-1 sm:flex">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute top-1 bottom-1 rounded-lg bg-background shadow-sm transition-all duration-200"
+              style={{
+                width: `calc((100% - 8px) / ${TABS.length})`,
+                left: `calc(4px + ${tabIndex} * (100% - 8px) / ${TABS.length})`,
+              }}
+            />
+            {TABS.map((tab) => (
+              <button
+                className={cn(
+                  "relative z-10 flex flex-1 items-center justify-center rounded-lg py-1.5 font-medium text-sm transition-colors duration-150",
+                  activeTab === tab
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground/70"
+                )}
+                key={tab}
+                onClick={() => handleTabChange(tab)}
+                type="button"
+              >
+                {TAB_LABELS[tab]}
+              </button>
+            ))}
+          </div>
+        </div>
+      </DiscoveryTooltip>
 
       {/* Content */}
       {activeTab === "profil" && <ProfileSection user={user} />}

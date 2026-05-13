@@ -47,6 +47,12 @@
       "complexity": {
         "noForEach": "off",
         "noStaticOnlyClass": "off",
+        "noExcessiveCognitiveComplexity": {
+          "level": "warn",
+          "options": {
+            "maxAllowedComplexity": 55
+          }
+        },
         "useOptionalChain": "warn"
       },
       "correctness": {

@@ -11,6 +11,7 @@ import {
 } from "lucide-react"
 import { useState, useTransition } from "react"
 import { toast } from "sonner"
+import { DiscoveryTooltip } from "@/components/app/discovery-tooltip"
 import { GoalCompletionCelebration } from "@/components/shared/goal-completion-celebration"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -23,19 +24,32 @@ import {
 import type { GoalItem } from "@/lib/actions/goals"
 import { deleteGoal, getGoals } from "@/lib/actions/goals"
 import { useCurrency } from "@/lib/context/currency-context"
-import { formatAmount } from "@/lib/utils/format"
 import { cn } from "@/lib/utils"
+import { formatAmount } from "@/lib/utils/format"
 import { GoalCard } from "./goal-card"
 import { GoalFormSheet } from "./goal-form-sheet"
 import { GoalListSkeleton } from "./goal-skeletons"
 
 interface GoalsClientProps {
+  checklistCompleted: string[]
+  checklistDismissed: boolean
   initialGoals: GoalItem[]
+  tooltipsSeen: string[]
 }
 
 type TabValue = "active" | "completed"
 
-export function GoalsClient({ initialGoals }: GoalsClientProps) {
+export function GoalsClient({
+  checklistCompleted,
+  checklistDismissed,
+  initialGoals,
+  tooltipsSeen,
+}: GoalsClientProps) {
+  const showGuide = !(
+    checklistDismissed ||
+    checklistCompleted.includes("goal") ||
+    tooltipsSeen.includes("goal")
+  )
   const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState<TabValue>("active")
   const [formOpen, setFormOpen] = useState(false)
@@ -82,12 +96,23 @@ export function GoalsClient({ initialGoals }: GoalsClientProps) {
   return (
     <div className="flex flex-col gap-4 pb-24 md:pb-8">
       {/* Header */}
-      <div className="flex items-center justify-end">
-        <Button className="gap-1.5" onClick={openCreate} size="sm">
-          <Plus className="size-4" />
-          <span className="hidden sm:inline">Nouveau</span>
-        </Button>
-      </div>
+      <DiscoveryTooltip
+        actionLabel="Créer un objectif"
+        checklistCompleted={checklistCompleted}
+        checklistDismissed={checklistDismissed}
+        checklistStep="goal"
+        description="Cliquez ici, renseignez un nom, un montant cible et optionnellement une date limite pour suivre votre progression."
+        onAction={openCreate}
+        title="Objectifs d'épargne"
+        tooltipsSeen={tooltipsSeen}
+      >
+        <div className="flex items-center justify-end">
+          <Button className="gap-1.5" onClick={openCreate} size="sm">
+            <Plus className="size-4" />
+            <span className="hidden sm:inline">Nouveau</span>
+          </Button>
+        </div>
+      </DiscoveryTooltip>
 
       {isLoading ? (
         <GoalListSkeleton />
@@ -159,6 +184,7 @@ export function GoalsClient({ initialGoals }: GoalsClientProps) {
         onOpenChange={setFormOpen}
         onSuccess={invalidate}
         open={formOpen}
+        showGuide={showGuide}
       />
 
       <GoalCompletionCelebration isCompleted={celebrationActive} />

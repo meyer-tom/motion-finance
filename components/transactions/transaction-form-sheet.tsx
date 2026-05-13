@@ -5,6 +5,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { ArrowRightLeft, Calendar, Minus, Plus, Trash2, X } from "lucide-react"
 import { useEffect, useRef, useState, useTransition } from "react"
 import { type Resolver, useForm, useWatch } from "react-hook-form"
+import { toast } from "sonner"
+import { FormStepGuide } from "@/components/app/form-step-guide"
 import { BottomSheet } from "@/components/shared/bottom-sheet"
 import {
   type RecurringSuggestionItem,
@@ -28,7 +30,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { toast } from "sonner"
 import { getSuggestedRecurring } from "@/lib/actions/recurring-transactions"
 import {
   createTransaction,
@@ -91,6 +92,8 @@ const TRANSACTION_TYPES = [
     color: "var(--color-transfer)",
   },
 ]
+
+const TX_GUIDE_STEPS = 5
 
 // Hoissé au niveau module pour éviter la recréation à chaque appel
 const TRAILING_COMMA_RE = /,$/
@@ -166,103 +169,6 @@ function TypeSegmentedControl({
 
 /* ── Sous-composants ────────────────────────────────────────────────────────── */
 
-function AccountSelects({
-  accounts,
-  selectedType,
-  defaultAccountId,
-  defaultToAccountId,
-  selectedAccountId,
-  onAccountChange,
-  onToAccountChange,
-  accountError,
-  toAccountError,
-}: {
-  accounts: AccountOption[]
-  selectedType: TransactionType
-  defaultAccountId: string
-  defaultToAccountId?: string
-  selectedAccountId: string
-  onAccountChange: (v: string) => void
-  onToAccountChange: (v: string) => void
-  accountError?: string
-  toAccountError?: string
-}) {
-  const availableToAccounts = accounts.filter((a) => a.id !== selectedAccountId)
-  const label = selectedType === "TRANSFER" ? "Compte source" : "Compte"
-
-  return (
-    <>
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="tx-account">{label}</Label>
-        <Select
-          defaultValue={defaultAccountId || undefined}
-          onValueChange={onAccountChange}
-        >
-          <SelectTrigger id="tx-account">
-            <SelectValue placeholder="Sélectionner un compte" />
-          </SelectTrigger>
-          <SelectContent>
-            {accounts.map((account) => (
-              <SelectItem key={account.id} value={account.id}>
-                <span className="flex items-center gap-2">
-                  <span
-                    className="inline-block size-2.5 rounded-full"
-                    style={{ backgroundColor: account.color }}
-                  />
-                  {account.name}
-                  <span
-                    className={cn(
-                      "ml-1 rounded-full px-1.5 py-0.5 font-medium text-[10px]",
-                      account.type === "CHECKING"
-                        ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                        : "bg-blue-500/10 text-blue-600 dark:text-blue-400"
-                    )}
-                  >
-                    {account.type === "CHECKING" ? "Courant" : "Épargne"}
-                  </span>
-                </span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {accountError ? (
-          <p className="text-destructive text-xs">{accountError}</p>
-        ) : null}
-      </div>
-
-      {selectedType === "TRANSFER" ? (
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="tx-to-account">Compte destination</Label>
-          <Select
-            defaultValue={defaultToAccountId || undefined}
-            onValueChange={onToAccountChange}
-          >
-            <SelectTrigger id="tx-to-account">
-              <SelectValue placeholder="Sélectionner un compte" />
-            </SelectTrigger>
-            <SelectContent>
-              {availableToAccounts.map((account) => (
-                <SelectItem key={account.id} value={account.id}>
-                  <span className="flex items-center gap-2">
-                    <span
-                      className="inline-block size-2.5 rounded-full"
-                      style={{ backgroundColor: account.color }}
-                    />
-                    {account.name}
-                  </span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {toAccountError ? (
-            <p className="text-destructive text-xs">{toAccountError}</p>
-          ) : null}
-        </div>
-      ) : null}
-    </>
-  )
-}
-
 function CategoryGrid({
   categories,
   selectedCategoryId,
@@ -279,8 +185,12 @@ function CategoryGrid({
   scrollable?: boolean
 }) {
   let colsClass = "grid-cols-4"
-  if (cols === 5) colsClass = "grid-cols-5"
-  if (cols === 6) colsClass = "grid-cols-6"
+  if (cols === 5) {
+    colsClass = "grid-cols-5"
+  }
+  if (cols === 6) {
+    colsClass = "grid-cols-6"
+  }
 
   const items = categories.map((cat) => {
     const Icon = getCategoryIcon(cat.icon)
@@ -298,14 +208,19 @@ function CategoryGrid({
         onClick={() => onSelect(isSelected ? null : cat.id)}
         style={
           isSelected
-            ? { backgroundColor: `${cat.color}18`, borderColor: `${cat.color}40` }
+            ? {
+                backgroundColor: `${cat.color}18`,
+                borderColor: `${cat.color}40`,
+              }
             : {}
         }
         type="button"
       >
         <div
           className="flex size-8 items-center justify-center rounded-lg"
-          style={{ backgroundColor: isSelected ? `${cat.color}20` : "transparent" }}
+          style={{
+            backgroundColor: isSelected ? `${cat.color}20` : "transparent",
+          }}
         >
           <Icon
             className="size-4"
@@ -326,7 +241,7 @@ function CategoryGrid({
     <div className="flex flex-col gap-1.5">
       <Label>Catégorie</Label>
       {scrollable ? (
-        <div className="flex gap-2 overflow-x-auto pb-1 [touch-action:pan-x] overscroll-x-contain">
+        <div className="flex gap-2 overflow-x-auto overscroll-x-contain pb-1 [touch-action:pan-x]">
           {items}
         </div>
       ) : (
@@ -455,7 +370,6 @@ function TagsInput({
   )
 }
 
-
 function DateInput({
   initialDate,
   onChange,
@@ -484,11 +398,15 @@ function DateInput({
     setDisplay(formatted)
 
     if (digits.length === 8) {
-      const d = parseInt(digits.slice(0, 2), 10)
-      const m = parseInt(digits.slice(2, 4), 10)
-      const y = parseInt(digits.slice(4, 8), 10)
+      const d = Number.parseInt(digits.slice(0, 2), 10)
+      const m = Number.parseInt(digits.slice(2, 4), 10)
+      const y = Number.parseInt(digits.slice(4, 8), 10)
       const date = new Date(y, m - 1, d)
-      if (date.getDate() === d && date.getMonth() === m - 1 && date.getFullYear() === y) {
+      if (
+        date.getDate() === d &&
+        date.getMonth() === m - 1 &&
+        date.getFullYear() === y
+      ) {
         const iso = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`
         setIsoValue(iso)
         onChange(iso)
@@ -498,9 +416,13 @@ function DateInput({
 
   function handleHiddenChange(e: React.ChangeEvent<HTMLInputElement>) {
     const iso = e.target.value
-    if (!iso) return
+    if (!iso) {
+      return
+    }
     const [y, m, d] = iso.split("-").map(Number)
-    setDisplay(`${String(d).padStart(2, "0")}/${String(m).padStart(2, "0")}/${y}`)
+    setDisplay(
+      `${String(d).padStart(2, "0")}/${String(m).padStart(2, "0")}/${y}`
+    )
     setIsoValue(iso)
     onChange(iso)
   }
@@ -599,13 +521,15 @@ function TransactionFormBody({
   onSuccess: () => void
   wide?: boolean
 }) {
-  const { initialValues, closeForm } = useTransactionForm()
+  const { initialValues, closeForm, guideActive } = useTransactionForm()
   const queryClient = useQueryClient()
   const isEdit = Boolean(initialValues?.id)
 
   const defaultAccountId =
     initialValues?.accountId ??
-    (accounts.find((a) => a.type === "CHECKING")?.id ?? accounts[0]?.id ?? "")
+    accounts.find((a) => a.type === "CHECKING")?.id ??
+    accounts[0]?.id ??
+    ""
 
   const {
     handleSubmit,
@@ -638,7 +562,10 @@ function TransactionFormBody({
   const selectedDescription = useWatch({ control, name: "description" })
   const selectedCategoryId = useWatch({ control, name: "categoryId" })
   const selectedAccountId = useWatch({ control, name: "accountId" })
+  const selectedAmount = useWatch({ control, name: "amount" })
   const currentTags = useWatch({ control, name: "tags" }) ?? []
+
+  const [guideStep, setGuideStep] = useState(guideActive && !isEdit ? 0 : -1)
 
   const [amountDisplay, setAmountDisplay] = useState(
     initialValues?.amount == null ? "" : String(initialValues.amount)
@@ -656,7 +583,9 @@ function TransactionFormBody({
 
   function handleDelete() {
     const id = initialValues?.id
-    if (!id) return
+    if (!id) {
+      return
+    }
     startDeleteTransition(async () => {
       await deleteTransaction(id)
       closeForm()
@@ -685,7 +614,9 @@ function TransactionFormBody({
   useEffect(() => {
     const newAccountId =
       initialValues?.accountId ??
-      (accounts.find((a) => a.type === "CHECKING")?.id ?? accounts[0]?.id ?? "")
+      accounts.find((a) => a.type === "CHECKING")?.id ??
+      accounts[0]?.id ??
+      ""
 
     reset({
       type: initialValues?.type ?? "EXPENSE",
@@ -701,7 +632,8 @@ function TransactionFormBody({
     setAmountDisplay(
       initialValues?.amount == null ? "" : String(initialValues.amount)
     )
-  }, [initialValues, reset, accounts])
+    setGuideStep(guideActive && !isEdit ? 0 : -1)
+  }, [initialValues, reset, accounts, guideActive, isEdit])
 
   /* ── Handlers ─────────────────────────────────────────────────────────── */
 
@@ -757,16 +689,39 @@ function TransactionFormBody({
   return (
     <form className="flex flex-col gap-3" onSubmit={handleSubmit(onSubmit)}>
       {/* ── Segmented control type ── */}
-      <TypeSegmentedControl
-        activeTypeColor={activeTypeColor}
-        onTypeChange={(value) => {
-          setValue("type", value, { shouldValidate: true })
-          setValue("categoryId", null)
-          setValue("toAccountId", null)
-        }}
-        selectedType={selectedType}
-        typeIndex={typeIndex}
-      />
+      <div
+        className={cn(
+          "rounded-xl transition-all duration-200",
+          guideStep >= 0 && guideStep !== 0 && "opacity-40"
+        )}
+      >
+        <TypeSegmentedControl
+          activeTypeColor={activeTypeColor}
+          onTypeChange={(value) => {
+            setValue("type", value, { shouldValidate: true })
+            setValue("categoryId", null)
+            setValue("toAccountId", null)
+          }}
+          selectedType={selectedType}
+          typeIndex={typeIndex}
+        />
+      </div>
+      {guideStep === 0 ? (
+        <FormStepGuide
+          checklistStep="first-expense"
+          className="-mt-2"
+          description="Choisissez Dépense, Revenu ou Virement selon la nature de l'opération."
+          isFirst={true}
+          isLast={false}
+          isValid={true}
+          onDismiss={() => setGuideStep(-1)}
+          onNext={() => setGuideStep(1)}
+          onPrev={() => setGuideStep(0)}
+          stepIndex={0}
+          title="Type de transaction"
+          totalSteps={TX_GUIDE_STEPS}
+        />
+      ) : null}
 
       {/* ── Suggestions récurrentes ── */}
       {isEdit ? null : (
@@ -779,7 +734,12 @@ function TransactionFormBody({
 
       {/* ── Titre + Compte source (même ligne sur sm+) ── */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div className="flex flex-col gap-1.5">
+        <div
+          className={cn(
+            "flex flex-col gap-1.5 rounded-xl transition-all duration-200",
+            guideStep >= 0 && guideStep !== 1 && "opacity-40"
+          )}
+        >
           <Label htmlFor="tx-title">Titre</Label>
           <Input
             id="tx-title"
@@ -793,6 +753,23 @@ function TransactionFormBody({
             <p className="text-destructive text-xs">{errors.title.message}</p>
           ) : null}
         </div>
+        {guideStep === 1 ? (
+          <FormStepGuide
+            checklistStep="first-expense"
+            className="-mt-2"
+            description="Donnez un titre clair à cette transaction (ex : Courses, Loyer, Salaire…)."
+            isFirst={false}
+            isLast={false}
+            isValid={!!selectedTitle?.trim()}
+            onDismiss={() => setGuideStep(-1)}
+            onNext={() => setGuideStep(2)}
+            onPrev={() => setGuideStep(0)}
+            stepIndex={1}
+            title="Titre de la transaction"
+            totalSteps={TX_GUIDE_STEPS}
+            validationMessage="Saisissez un titre pour continuer"
+          />
+        ) : null}
 
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="tx-account">
@@ -840,19 +817,47 @@ function TransactionFormBody({
       </div>
 
       {/* ── Montant + Date ── */}
-      <AmountDateRow
-        amountDisplay={amountDisplay}
-        amountError={errors.amount?.message}
-        dateError={errors.date?.message}
-        initialDate={
-          initialValues?.date instanceof Date ? initialValues.date : new Date()
-        }
-        onAmountChange={handleAmountChange}
-        onDateChange={(isoDate) => {
-          setValue("date", parseLocalDate(isoDate), { shouldValidate: true })
-        }}
-        wide={wide}
-      />
+      <div
+        className={cn(
+          "rounded-xl transition-all duration-200",
+          guideStep >= 0 && guideStep !== 2 && "opacity-40"
+        )}
+      >
+        <AmountDateRow
+          amountDisplay={amountDisplay}
+          amountError={errors.amount?.message}
+          dateError={errors.date?.message}
+          initialDate={
+            initialValues?.date instanceof Date
+              ? initialValues.date
+              : new Date()
+          }
+          onAmountChange={handleAmountChange}
+          onDateChange={(isoDate) => {
+            setValue("date", parseLocalDate(isoDate), {
+              shouldValidate: true,
+            })
+          }}
+          wide={wide}
+        />
+      </div>
+      {guideStep === 2 ? (
+        <FormStepGuide
+          checklistStep="first-expense"
+          className="-mt-2"
+          description="Entrez le montant en euros et vérifiez ou ajustez la date de la transaction."
+          isFirst={false}
+          isLast={false}
+          isValid={typeof selectedAmount === "number" && selectedAmount > 0}
+          onDismiss={() => setGuideStep(-1)}
+          onNext={() => setGuideStep(3)}
+          onPrev={() => setGuideStep(1)}
+          stepIndex={2}
+          title="Montant & Date"
+          totalSteps={TX_GUIDE_STEPS}
+          validationMessage="Entrez un montant supérieur à 0 pour continuer"
+        />
+      ) : null}
 
       {/* ── Compte destination (virements uniquement) ── */}
       {selectedType === "TRANSFER" ? (
@@ -901,19 +906,60 @@ function TransactionFormBody({
         </div>
       ) : null}
 
+      {/* ── Guide catégorie pour les virements ── */}
+      {selectedType === "TRANSFER" && guideStep === 3 ? (
+        <FormStepGuide
+          checklistStep="first-expense"
+          description="Pour un virement, pas de catégorie à sélectionner."
+          isFirst={false}
+          isLast={false}
+          isValid={true}
+          onDismiss={() => setGuideStep(-1)}
+          onNext={() => setGuideStep(4)}
+          onPrev={() => setGuideStep(2)}
+          stepIndex={3}
+          title="Catégorie"
+          totalSteps={TX_GUIDE_STEPS}
+        />
+      ) : null}
+
       {/* ── Grille de catégories (hors TRANSFER) ── */}
       {selectedType === "TRANSFER" ? null : (
-        <CategoryGrid
-          categories={filteredCategories}
-          cols={wide ? 6 : 4}
-          error={errors.categoryId?.message}
-          onSelect={(id) =>
-            setValue("categoryId", id, { shouldValidate: true })
-          }
-          scrollable={!wide}
-          selectedCategoryId={selectedCategoryId}
-        />
+        <div
+          className={cn(
+            "rounded-xl transition-all duration-200",
+            guideStep >= 0 && guideStep !== 3 && "opacity-40"
+          )}
+        >
+          <CategoryGrid
+            categories={filteredCategories}
+            cols={wide ? 6 : 4}
+            error={errors.categoryId?.message}
+            onSelect={(id) =>
+              setValue("categoryId", id, { shouldValidate: true })
+            }
+            scrollable={!wide}
+            selectedCategoryId={selectedCategoryId}
+          />
+        </div>
       )}
+      {selectedType !== "TRANSFER" && guideStep === 3 ? (
+        <FormStepGuide
+          checklistStep="first-expense"
+          className="-mt-2"
+          description="Classez votre transaction pour un meilleur suivi budgétaire."
+          isFirst={false}
+          isLast={false}
+          isValid={!!selectedCategoryId}
+          onDismiss={() => setGuideStep(-1)}
+          onNext={() => setGuideStep(4)}
+          onPrev={() => setGuideStep(2)}
+          stepIndex={3}
+          title="Catégorie"
+          totalSteps={TX_GUIDE_STEPS}
+          validationMessage="Sélectionnez une catégorie pour continuer"
+        />
+      ) : null}
 
       {/* ── Note (optionnel) ── */}
       <div className="flex flex-col gap-1.5">
@@ -923,11 +969,11 @@ function TransactionFormBody({
         </Label>
         <Input
           id="tx-description"
-          value={selectedDescription ?? ""}
           onChange={(e) =>
             setValue("description", e.target.value, { shouldValidate: true })
           }
           placeholder="Informations complémentaires…"
+          value={selectedDescription ?? ""}
         />
         {errors.description ? (
           <p className="text-destructive text-xs">
@@ -951,9 +997,26 @@ function TransactionFormBody({
         </p>
       ) : null}
 
+      {/* ── Guide dernière étape ── */}
+      {guideStep === 4 ? (
+        <FormStepGuide
+          checklistStep="first-expense"
+          description="Cliquez sur le bouton ci-dessous pour enregistrer votre transaction."
+          isFirst={false}
+          isLast={true}
+          isValid={true}
+          onDismiss={() => setGuideStep(-1)}
+          onNext={() => setGuideStep(4)}
+          onPrev={() => setGuideStep(3)}
+          stepIndex={4}
+          title="Tout est prêt !"
+          totalSteps={TX_GUIDE_STEPS}
+        />
+      ) : null}
+
       {/* ── Submit ── */}
       <Button
-        className="mt-1 w-full"
+        className={cn("mt-1 w-full transition-all duration-200")}
         disabled={isPending}
         style={{
           backgroundColor: activeTypeColor,
@@ -965,37 +1028,36 @@ function TransactionFormBody({
       </Button>
 
       {/* ── Supprimer (édition uniquement) ── */}
-      {isEdit ? (
-        deleteConfirm ? (
-          <div className="flex gap-2">
-            <Button
-              className="flex-1"
-              disabled={isDeletePending}
-              onClick={handleDelete}
-              type="button"
-              variant="destructive"
-            >
-              {isDeletePending ? "Suppression…" : "Confirmer"}
-            </Button>
-            <Button
-              onClick={() => setDeleteConfirm(false)}
-              type="button"
-              variant="ghost"
-            >
-              Annuler
-            </Button>
-          </div>
-        ) : (
+      {isEdit && deleteConfirm ? (
+        <div className="flex gap-2">
           <Button
-            className="w-full text-destructive hover:text-destructive"
-            onClick={() => setDeleteConfirm(true)}
+            className="flex-1"
+            disabled={isDeletePending}
+            onClick={handleDelete}
+            type="button"
+            variant="destructive"
+          >
+            {isDeletePending ? "Suppression…" : "Confirmer"}
+          </Button>
+          <Button
+            onClick={() => setDeleteConfirm(false)}
             type="button"
             variant="ghost"
           >
-            <Trash2 className="mr-2 size-4" />
-            Supprimer la transaction
+            Annuler
           </Button>
-        )
+        </div>
+      ) : null}
+      {isEdit && !deleteConfirm ? (
+        <Button
+          className="w-full text-destructive hover:text-destructive"
+          onClick={() => setDeleteConfirm(true)}
+          type="button"
+          variant="ghost"
+        >
+          <Trash2 className="mr-2 size-4" />
+          Supprimer la transaction
+        </Button>
       ) : null}
     </form>
   )

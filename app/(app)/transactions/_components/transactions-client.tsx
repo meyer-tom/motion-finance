@@ -4,6 +4,7 @@ import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query"
 import { Plus } from "lucide-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useEffect, useMemo, useTransition } from "react"
+import { DiscoveryTooltip } from "@/components/app/discovery-tooltip"
 import { Button } from "@/components/ui/button"
 import { deleteTransaction, getTransactions } from "@/lib/actions/transactions"
 import { useTransactionForm } from "@/lib/context/transaction-form-context"
@@ -24,7 +25,10 @@ interface TransactionsClientProps {
     color: string
     type: "EXPENSE" | "INCOME"
   }[]
+  checklistCompleted: string[]
+  checklistDismissed: boolean
   initialData?: Awaited<ReturnType<typeof getTransactions>>
+  tooltipsSeen: string[]
 }
 
 // ─── URL params helpers ──────────────────────────────────────────────────────
@@ -96,9 +100,17 @@ function writeFilters(
 export function TransactionsClient({
   accounts,
   categories,
+  checklistCompleted,
+  checklistDismissed,
   initialData,
+  tooltipsSeen,
 }: TransactionsClientProps) {
   const { openForm } = useTransactionForm()
+  const showGuide = !(
+    checklistDismissed ||
+    checklistCompleted.includes("first-expense") ||
+    tooltipsSeen.includes("first-expense")
+  )
   const queryClient = useQueryClient()
   const router = useRouter()
   const pathname = usePathname()
@@ -230,12 +242,23 @@ export function TransactionsClient({
   return (
     <div className="flex flex-col gap-4 pb-24 md:pb-8">
       {/* En-tête */}
-      <div className="flex items-center justify-end">
-        <Button className="gap-1.5" onClick={() => openForm()} size="sm">
-          <Plus className="size-4" />
-          <span className="hidden sm:inline">Nouvelle</span>
-        </Button>
-      </div>
+      <DiscoveryTooltip
+        actionLabel="Ajouter une transaction"
+        checklistCompleted={checklistCompleted}
+        checklistDismissed={checklistDismissed}
+        checklistStep="first-expense"
+        description="Cliquez ici, choisissez le type (dépense, revenu ou virement), renseignez le montant et la catégorie."
+        onAction={() => openForm(undefined, showGuide)}
+        title="Vos transactions"
+        tooltipsSeen={tooltipsSeen}
+      >
+        <div className="flex items-center justify-end">
+          <Button className="gap-1.5" onClick={() => openForm()} size="sm">
+            <Plus className="size-4" />
+            <span className="hidden sm:inline">Nouvelle</span>
+          </Button>
+        </div>
+      </DiscoveryTooltip>
 
       {/* Barre de filtres */}
       <TransactionFilters
