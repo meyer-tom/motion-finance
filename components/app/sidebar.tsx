@@ -1,6 +1,7 @@
 "use client"
 
 import {
+  Bug,
   LandmarkIcon,
   LayoutDashboard,
   LogOut,
@@ -11,7 +12,10 @@ import {
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
+
+import { BugReportDialog } from "@/components/bug-report/bug-report-dialog"
 
 import {
   Sidebar,
@@ -132,6 +136,7 @@ interface AppSidebarProps {
 export function AppSidebar({ user }: AppSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const [bugReportOpen, setBugReportOpen] = useState(false)
   const displayName = user
     ? `${user.firstName} ${user.lastName}`.trim()
     : "Utilisateur"
@@ -201,17 +206,30 @@ export function AppSidebar({ user }: AppSidebarProps) {
               {user?.email ?? ""}
             </span>
           </div>
-          <button
-            aria-label="Déconnexion"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-            onClick={handleSignOut}
-            title="Déconnexion"
-            type="button"
-          >
-            <LogOut className="size-4" />
-          </button>
+          <div className="flex items-center gap-0.5">
+            <button
+              aria-label="Signaler un bug"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              onClick={() => setBugReportOpen(true)}
+              title="Signaler un bug"
+              type="button"
+            >
+              <Bug className="size-4" />
+            </button>
+            <button
+              aria-label="Déconnexion"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+              onClick={handleSignOut}
+              title="Déconnexion"
+              type="button"
+            >
+              <LogOut className="size-4" />
+            </button>
+          </div>
         </div>
       </SidebarFooter>
+
+      <BugReportDialog onOpenChange={setBugReportOpen} open={bugReportOpen} />
     </Sidebar>
   )
 }

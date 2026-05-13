@@ -1,4 +1,5 @@
 import { Resend } from "resend"
+import { BugReportEmail } from "./templates/bug-report"
 import { EmailChange } from "./templates/email-change"
 import { EmailVerification } from "./templates/email-verification"
 import { PasswordResetEmail } from "./templates/password-reset"
@@ -74,6 +75,52 @@ export async function sendEmailChangeVerification({
     }
 
     console.log(`[Email] Email de changement d'adresse envoyé à ${to}`)
+  } catch (error) {
+    console.error("[Email] Erreur inattendue lors de l'envoi:", error)
+  }
+}
+
+interface SendBugReportEmailParams {
+  description: string
+  pageUrl: string
+  reportId: string
+  reporterEmail: string
+  reporterName: string
+  screenshotUrl?: string
+  severity: string
+  title: string
+}
+
+export async function sendBugReportEmail({
+  reportId,
+  title,
+  description,
+  severity,
+  pageUrl,
+  reporterName,
+  reporterEmail,
+  screenshotUrl,
+}: SendBugReportEmailParams): Promise<void> {
+  try {
+    const { error } = await resend.emails.send({
+      from: process.env.EMAIL_FROM!,
+      to: "tom31.meyer@gmail.com",
+      subject: `[Bug] ${title}`,
+      react: BugReportEmail({
+        reportId,
+        title,
+        description,
+        severity,
+        pageUrl,
+        reporterName,
+        reporterEmail,
+        screenshotUrl,
+      }),
+    })
+
+    if (error) {
+      console.error("[Email] Erreur lors de l'envoi du rapport de bug:", error)
+    }
   } catch (error) {
     console.error("[Email] Erreur inattendue lors de l'envoi:", error)
   }

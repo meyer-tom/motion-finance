@@ -60,6 +60,11 @@ export const auth = betterAuth({
         required: false,
         defaultValue: "EUR",
       },
+      role: {
+        type: "string",
+        required: false,
+        defaultValue: "USER",
+      },
     },
     changeEmail: {
       enabled: true,

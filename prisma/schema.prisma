@@ -26,6 +26,7 @@ model User {
   firstName     String
   lastName      String
   currency      String    @default("EUR")
+  role          UserRole  @default(USER)
 
   sessions      Session[]
   accounts      Account[]
@@ -39,6 +40,7 @@ model User {
   savingsGoals         SavingsGoal[]
   notifications        Notification[]
   onboardingProgress   OnboardingProgress?
+  bugReports           BugReport[]
 
   @@unique([email])
   @@map("user")
@@ -110,6 +112,11 @@ model FinancialAccount {
   goals           SavingsGoal[]
   recurring       RecurringTransaction[] @relation("RecurringSource")
   recurringTo     RecurringTransaction[] @relation("RecurringDestination")
+}
+
+enum UserRole {
+  USER
+  ADMIN
 }
 
 enum AccountType {
@@ -257,4 +264,35 @@ model OnboardingProgress {
   updatedAt           DateTime @updatedAt
 
   user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model BugReport {
+  id            String          @id @default(cuid())
+  userId        String
+  title         String
+  description   String          @db.Text
+  severity      BugSeverity     @default(MEDIUM)
+  status        BugReportStatus @default(OPEN)
+  pageUrl       String
+  userAgent     String
+  screenshotUrl String?
+  metadata      Json?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum BugSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum BugReportStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  WONT_FIX
 }

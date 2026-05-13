@@ -1,12 +1,14 @@
 "use client"
 
-import { LogOut, Search, Settings } from "lucide-react"
+import { Bug, LogOut, Search, Settings } from "lucide-react"
 import Link from "next/link"
+import { useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 
 import { BarChartSvg, UserAvatar } from "@/components/app/sidebar"
 import { NotificationPopover } from "@/components/app/notification-popover"
 import { ThemeToggle } from "@/components/app/theme-toggle"
+import { BugReportDialog } from "@/components/bug-report/bug-report-dialog"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,6 +47,7 @@ interface HeaderProps {
 export function Header({ user }: HeaderProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const [bugReportOpen, setBugReportOpen] = useState(false)
   const title = getPageTitle(pathname)
   const displayName = user
     ? `${user.firstName} ${user.lastName}`.trim()
@@ -115,6 +118,13 @@ export function Header({ user }: HeaderProps) {
                 Paramètres
               </Link>
             </DropdownMenuItem>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={() => setBugReportOpen(true)}
+            >
+              <Bug className="h-4 w-4" />
+              Signaler un bug
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="cursor-pointer text-rose-600 data-highlighted:bg-rose-50 data-highlighted:text-rose-600 dark:text-rose-400 dark:data-highlighted:bg-rose-950/60 dark:data-highlighted:text-rose-400 [&_svg]:text-rose-600 dark:[&_svg]:text-rose-400"
@@ -126,6 +136,8 @@ export function Header({ user }: HeaderProps) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <BugReportDialog onOpenChange={setBugReportOpen} open={bugReportOpen} />
     </header>
   )
 }
