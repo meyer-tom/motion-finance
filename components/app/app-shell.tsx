@@ -6,6 +6,7 @@ import { Suspense } from "react"
 import { BottomNav } from "@/components/app/bottom-nav"
 import { Header } from "@/components/app/header"
 import { AppSidebar } from "@/components/app/sidebar"
+import { InstallBanner } from "@/components/pwa/install-banner"
 import type {
   AccountOption,
   CategoryOption,
@@ -19,8 +20,8 @@ interface AppShellProps {
   readonly accounts: AccountOption[]
   readonly categories: CategoryOption[]
   readonly children: ReactNode
-  readonly user: User | null
   readonly usedTags: string[]
+  readonly user: User | null
 }
 
 export function AppShell({
@@ -45,8 +46,13 @@ export function AppShell({
       </SidebarProvider>
       {/* Suspense requis car TransactionFormProvider utilise useSearchParams */}
       <Suspense>
-        <TransactionFormSheet accounts={accounts} categories={categories} usedTags={usedTags} />
+        <TransactionFormSheet
+          accounts={accounts}
+          categories={categories}
+          usedTags={usedTags}
+        />
       </Suspense>
+      <InstallBanner />
     </TransactionFormProvider>
   )
 }
