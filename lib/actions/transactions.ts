@@ -1,5 +1,6 @@
 "use server"
 
+import type { Prisma } from "@prisma/client"
 import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
 import { checkBudgetAlerts } from "@/lib/actions/budgets"
@@ -24,55 +25,69 @@ async function requireAuth() {
 }
 
 function buildWhereClause(userId: string, filters: TransactionFilters) {
-  return {
-    userId,
-    ...(filters.type ? { type: filters.type } : {}),
-    ...(filters.accountIds?.length
-      ? {
-          OR: [
-            { accountId: { in: filters.accountIds } },
-            { toAccountId: { in: filters.accountIds } },
-          ],
-        }
-      : {}),
-    ...(filters.categoryIds?.length
-      ? { categoryId: { in: filters.categoryIds } }
-      : {}),
-    ...(filters.amountMin !== undefined || filters.amountMax !== undefined
-      ? {
-          amount: {
-            ...(filters.amountMin === undefined
-              ? {}
-              : { gte: filters.amountMin }),
-            ...(filters.amountMax === undefined
-              ? {}
-              : { lte: filters.amountMax }),
-          },
-        }
-      : {}),
-    ...(filters.dateFrom || filters.dateTo
-      ? {
-          date: {
-            ...(filters.dateFrom ? { gte: filters.dateFrom } : {}),
-            ...(filters.dateTo
-              ? {
-                  // +1 jour pour inclure toute la journée (lt exclusif)
-                  lt: new Date(filters.dateTo.getTime() + 24 * 60 * 60 * 1000),
-                }
-              : {}),
-          },
-        }
-      : {}),
-    ...(filters.search
-      ? {
-          description: {
-            contains: filters.search,
-            mode: "insensitive" as const,
-          },
-        }
-      : {}),
-    ...(filters.tags?.length ? { tags: { hasSome: filters.tags } } : {}),
+  const AND: Prisma.TransactionWhereInput[] = [{ userId }]
+
+  if (filters.type) AND.push({ type: filters.type })
+
+  if (filters.accountIds?.length) {
+    AND.push({
+      OR: [
+        { accountId: { in: filters.accountIds } },
+        { toAccountId: { in: filters.accountIds } },
+      ],
+    })
   }
+
+  if (filters.categoryIds?.length) {
+    AND.push({ categoryId: { in: filters.categoryIds } })
+  }
+
+  if (filters.amountMin !== undefined || filters.amountMax !== undefined) {
+    AND.push({
+      amount: {
+        ...(filters.amountMin !== undefined ? { gte: filters.amountMin } : {}),
+        ...(filters.amountMax !== undefined ? { lte: filters.amountMax } : {}),
+      },
+    })
+  }
+
+  if (filters.dateFrom || filters.dateTo) {
+    AND.push({
+      date: {
+        ...(filters.dateFrom ? { gte: filters.dateFrom } : {}),
+        ...(filters.dateTo
+          ? {
+              // +1 jour pour inclure toute la journée (lt exclusif)
+              lt: new Date(filters.dateTo.getTime() + 24 * 60 * 60 * 1000),
+            }
+          : {}),
+      },
+    })
+  }
+
+  if (filters.search) {
+    AND.push({
+      OR: [
+        { title: { contains: filters.search, mode: "insensitive" } },
+        { description: { contains: filters.search, mode: "insensitive" } },
+        {
+          category: { name: { contains: filters.search, mode: "insensitive" } },
+        },
+        {
+          account: { name: { contains: filters.search, mode: "insensitive" } },
+        },
+        {
+          toAccount: {
+            name: { contains: filters.search, mode: "insensitive" },
+          },
+        },
+      ],
+    })
+  }
+
+  if (filters.tags?.length) AND.push({ tags: { hasSome: filters.tags } })
+
+  return { AND }
 }
 
 // ─────────────────────────────────────────────

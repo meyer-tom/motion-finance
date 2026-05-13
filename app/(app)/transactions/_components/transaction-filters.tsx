@@ -271,7 +271,7 @@ export function TransactionFilters({
       {/* Barre recherche + bouton filtres */}
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             aria-label="Rechercher une transaction"
             className="pl-9"

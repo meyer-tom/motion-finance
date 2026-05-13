@@ -2,10 +2,11 @@
 
 import { Bug, LogOut, Search, Settings } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 
 import { BarChartSvg, UserAvatar } from "@/components/app/sidebar"
+import { GlobalSearch } from "@/components/app/global-search"
 import { NotificationPopover } from "@/components/app/notification-popover"
 import { ThemeToggle } from "@/components/app/theme-toggle"
 import { BugReportDialog } from "@/components/bug-report/bug-report-dialog"
@@ -48,7 +49,19 @@ export function Header({ user }: HeaderProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [bugReportOpen, setBugReportOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
   const title = getPageTitle(pathname)
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault()
+        setSearchOpen((prev) => !prev)
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown)
+    return () => document.removeEventListener("keydown", handleKeyDown)
+  }, [])
   const displayName = user
     ? `${user.firstName} ${user.lastName}`.trim()
     : "Utilisateur"
@@ -76,6 +89,7 @@ export function Header({ user }: HeaderProps) {
         {/* Recherche — desktop uniquement */}
         <button
           className="hidden h-9 w-60 items-center justify-between rounded-lg border border-border bg-background/60 px-3 text-muted-foreground text-sm transition-colors hover:bg-background md:flex"
+          onClick={() => setSearchOpen(true)}
           type="button"
         >
           <span className="flex items-center gap-2">
@@ -138,6 +152,7 @@ export function Header({ user }: HeaderProps) {
       </div>
 
       <BugReportDialog onOpenChange={setBugReportOpen} open={bugReportOpen} />
+      <GlobalSearch onOpenChange={setSearchOpen} open={searchOpen} />
     </header>
   )
 }
