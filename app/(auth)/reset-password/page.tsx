@@ -1,20 +1,14 @@
 "use client"
 
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { CheckCircle2, XCircle } from "lucide-react"
+import { CheckCircle2, Eye, EyeOff, Loader2, Lock, XCircle } from "lucide-react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { Suspense, useState } from "react"
 import { useForm } from "react-hook-form"
+
 import { resetPasswordAction } from "@/app/(auth)/reset-password/actions"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -31,6 +25,8 @@ function ResetPasswordForm() {
   )
   const [tokenError, setTokenError] = useState<string | null>(null)
   const [rootError, setRootError] = useState<string | null>(null)
+  const [showNew, setShowNew] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
 
   const {
     register,
@@ -42,64 +38,64 @@ function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <Card className="w-full max-w-sm">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-            <XCircle className="h-6 w-6 text-destructive" />
+      <div className="w-full max-w-sm">
+        <div className="rounded-2xl border border-border bg-card/60 p-8 text-center backdrop-blur-sm">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/15">
+            <XCircle className="h-7 w-7 text-destructive" />
           </div>
-          <CardTitle className="text-xl">Lien invalide</CardTitle>
-          <CardDescription>
-            Ce lien de réinitialisation est invalide ou a expiré. Faites une
-            nouvelle demande.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button asChild className="w-full">
+          <h2 className="font-bold text-xl text-foreground tracking-tight">
+            Lien invalide
+          </h2>
+          <p className="mx-auto mt-2 max-w-xs text-muted-foreground text-sm leading-relaxed">
+            Ce lien de réinitialisation est invalide ou a expiré.
+          </p>
+          <Button asChild className="btn-gradient-primary mt-6 w-full hover:opacity-90">
             <Link href="/forgot-password">Nouvelle demande</Link>
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     )
   }
 
   if (status === "success") {
     return (
-      <Card className="w-full max-w-sm">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-            <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
+      <div className="w-full max-w-sm">
+        <div className="rounded-2xl border border-border bg-card/60 p-8 text-center backdrop-blur-sm">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-income)]/15">
+            <CheckCircle2 className="h-7 w-7 text-[var(--color-income)]" />
           </div>
-          <CardTitle className="text-xl">Mot de passe modifié</CardTitle>
-          <CardDescription>
-            Votre mot de passe a été réinitialisé avec succès. Vous pouvez
-            maintenant vous connecter.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button asChild className="w-full">
+          <h2 className="font-bold text-xl text-foreground tracking-tight">
+            Mot de passe modifié
+          </h2>
+          <p className="mx-auto mt-2 max-w-xs text-muted-foreground text-sm leading-relaxed">
+            Votre mot de passe a été réinitialisé avec succès.
+          </p>
+          <Button asChild className="btn-gradient-primary mt-6 w-full hover:opacity-90">
             <Link href="/login">Se connecter</Link>
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     )
   }
 
   if (status === "token-error" && tokenError) {
     return (
-      <Card className="w-full max-w-sm">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-            <XCircle className="h-6 w-6 text-destructive" />
+      <div className="w-full max-w-sm">
+        <div className="rounded-2xl border border-border bg-card/60 p-8 text-center backdrop-blur-sm">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/15">
+            <XCircle className="h-7 w-7 text-destructive" />
           </div>
-          <CardTitle className="text-xl">Lien expiré</CardTitle>
-          <CardDescription>{tokenError}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button asChild className="w-full">
+          <h2 className="font-bold text-xl text-foreground tracking-tight">
+            Lien expiré
+          </h2>
+          <p className="mx-auto mt-2 max-w-xs text-muted-foreground text-sm leading-relaxed">
+            {tokenError}
+          </p>
+          <Button asChild className="btn-gradient-primary mt-6 w-full hover:opacity-90">
             <Link href="/forgot-password">Nouvelle demande</Link>
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     )
   }
 
@@ -124,30 +120,46 @@ function ResetPasswordForm() {
   }
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader className="text-center">
-        <CardTitle className="text-xl">Nouveau mot de passe</CardTitle>
-        <CardDescription>
+    <div className="w-full max-w-sm">
+      <div className="mb-8 text-center">
+        <h1 className="font-bold text-2xl text-foreground tracking-tight">
+          Nouveau mot de passe
+        </h1>
+        <p className="mt-1.5 text-muted-foreground text-sm">
           Choisissez un mot de passe sécurisé d&apos;au moins 8 caractères.
-        </CardDescription>
-      </CardHeader>
+        </p>
+      </div>
 
-      <CardContent>
+      <div className="rounded-2xl border border-border bg-card/60 p-6 backdrop-blur-sm">
         <form
-          className="flex flex-col gap-4"
+          className="flex flex-col gap-5"
           noValidate
           onSubmit={handleSubmit(onSubmit)}
         >
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="newPassword">Nouveau mot de passe</Label>
-            <Input
-              aria-invalid={!!errors.newPassword}
-              autoComplete="new-password"
-              id="newPassword"
-              placeholder="••••••••"
-              type="password"
-              {...register("newPassword")}
-            />
+          <div className="flex flex-col gap-2">
+            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider" htmlFor="newPassword">
+              Nouveau mot de passe
+            </Label>
+            <div className="relative">
+              <Lock className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground/60" />
+              <Input
+                aria-invalid={!!errors.newPassword}
+                autoComplete="new-password"
+                className="pl-10 pr-10 h-11 bg-background/50 border-border focus:border-primary"
+                id="newPassword"
+                placeholder="••••••••"
+                type={showNew ? "text" : "password"}
+                {...register("newPassword")}
+              />
+              <button
+                aria-label={showNew ? "Masquer" : "Afficher"}
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground/60 transition-colors hover:text-foreground"
+                onClick={() => setShowNew((v) => !v)}
+                type="button"
+              >
+                {showNew ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </button>
+            </div>
             {errors.newPassword ? (
               <p className="text-destructive text-xs">
                 {errors.newPassword.message}
@@ -155,16 +167,30 @@ function ResetPasswordForm() {
             ) : null}
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
-            <Input
-              aria-invalid={!!errors.confirmPassword}
-              autoComplete="new-password"
-              id="confirmPassword"
-              placeholder="••••••••"
-              type="password"
-              {...register("confirmPassword")}
-            />
+          <div className="flex flex-col gap-2">
+            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider" htmlFor="confirmPassword">
+              Confirmer
+            </Label>
+            <div className="relative">
+              <Lock className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground/60" />
+              <Input
+                aria-invalid={!!errors.confirmPassword}
+                autoComplete="new-password"
+                className="pl-10 pr-10 h-11 bg-background/50 border-border focus:border-primary"
+                id="confirmPassword"
+                placeholder="••••••••"
+                type={showConfirm ? "text" : "password"}
+                {...register("confirmPassword")}
+              />
+              <button
+                aria-label={showConfirm ? "Masquer" : "Afficher"}
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground/60 transition-colors hover:text-foreground"
+                onClick={() => setShowConfirm((v) => !v)}
+                type="button"
+              >
+                {showConfirm ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </button>
+            </div>
             {errors.confirmPassword ? (
               <p className="text-destructive text-xs">
                 {errors.confirmPassword.message}
@@ -173,19 +199,28 @@ function ResetPasswordForm() {
           </div>
 
           {rootError ? (
-            <p className="rounded-lg bg-destructive/10 px-3 py-2 text-center text-destructive text-sm">
+            <p className="rounded-xl border border-destructive/20 bg-destructive/10 px-3 py-2.5 text-center text-destructive text-sm">
               {rootError}
             </p>
           ) : null}
 
-          <Button className="w-full" disabled={isSubmitting} type="submit">
-            {isSubmitting
-              ? "Réinitialisation…"
-              : "Réinitialiser le mot de passe"}
+          <Button
+            className="btn-gradient-primary h-11 w-full font-medium hover:opacity-90"
+            disabled={isSubmitting}
+            type="submit"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Réinitialisation…
+              </>
+            ) : (
+              "Réinitialiser le mot de passe"
+            )}
           </Button>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
 
@@ -193,11 +228,11 @@ export default function ResetPasswordPage() {
   return (
     <Suspense
       fallback={
-        <Card className="w-full max-w-sm">
-          <CardHeader className="text-center">
-            <CardTitle className="text-xl">Chargement…</CardTitle>
-          </CardHeader>
-        </Card>
+        <div className="w-full max-w-sm">
+          <div className="rounded-2xl border border-border bg-card/60 p-8 text-center backdrop-blur-sm">
+            <p className="text-muted-foreground text-sm">Chargement…</p>
+          </div>
+        </div>
       }
     >
       <ResetPasswordForm />

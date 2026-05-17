@@ -1,20 +1,15 @@
 "use client"
 
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
+import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import type { z } from "zod"
+
 import { loginAction } from "@/app/(auth)/login/actions"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -30,6 +25,7 @@ export default function LoginPage() {
   const [resendStatus, setResendStatus] = useState<"idle" | "sending" | "sent">(
     "idle"
   )
+  const [showPassword, setShowPassword] = useState(false)
 
   const {
     register,
@@ -48,7 +44,6 @@ export default function LoginPage() {
     setRootError(null)
     setUnverifiedEmail(null)
 
-    // Validation côté serveur
     const serverResult = await loginAction(data)
     if (!serverResult.success) {
       if (serverResult.errors.root) {
@@ -57,7 +52,6 @@ export default function LoginPage() {
       return
     }
 
-    // Authentification Better Auth
     const { error } = await authClient.signIn.email({
       email: data.email,
       password: data.password,
@@ -98,63 +92,91 @@ export default function LoginPage() {
   }
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader className="text-center">
-        <CardTitle className="text-xl">Connexion</CardTitle>
-        <CardDescription>
+    <div className="mx-auto w-full max-w-sm">
+      <div className="mb-6 text-center">
+        <h1 className="font-bold text-2xl tracking-tight">Bon retour</h1>
+        <p className="mt-1.5 text-muted-foreground text-sm">
           Pas encore de compte ?{" "}
           <Link
-            className="text-primary underline-offset-4 hover:underline"
+            className="font-medium text-primary transition-opacity hover:opacity-80"
             href="/register"
           >
-            S&apos;inscrire
+            S&apos;inscrire gratuitement
           </Link>
-        </CardDescription>
-      </CardHeader>
+        </p>
+      </div>
 
-      <CardContent>
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-xl shadow-black/5">
         <form
-          className="flex flex-col gap-4"
+          className="flex flex-col gap-5"
           method="post"
           noValidate
           onSubmit={handleSubmit(onSubmit)}
         >
-          {/* Email */}
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              aria-invalid={!!errors.email}
-              autoComplete="email"
-              id="email"
-              placeholder="vous@exemple.fr"
-              type="email"
-              {...register("email")}
-            />
+          <div className="flex flex-col gap-2">
+            <Label
+              className="text-xs font-medium text-muted-foreground uppercase tracking-wider"
+              htmlFor="email"
+            >
+              Email
+            </Label>
+            <div className="relative">
+              <Mail className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground/50" />
+              <Input
+                aria-invalid={!!errors.email}
+                autoComplete="email"
+                className="h-11 border-border bg-background/80 pl-10"
+                id="email"
+                placeholder="vous@exemple.fr"
+                type="email"
+                {...register("email")}
+              />
+            </div>
             {errors.email ? (
               <p className="text-destructive text-xs">{errors.email.message}</p>
             ) : null}
           </div>
 
-          {/* Mot de passe */}
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password">Mot de passe</Label>
+              <Label
+                className="text-xs font-medium text-muted-foreground uppercase tracking-wider"
+                htmlFor="password"
+              >
+                Mot de passe
+              </Label>
               <Link
-                className="text-muted-foreground text-xs underline-offset-4 hover:underline"
+                className="text-muted-foreground text-xs transition-colors hover:text-primary"
                 href="/forgot-password"
                 tabIndex={-1}
               >
-                Mot de passe oublié ?
+                Oublié ?
               </Link>
             </div>
-            <Input
-              aria-invalid={!!errors.password}
-              autoComplete="current-password"
-              id="password"
-              placeholder="••••••••"
-              type="password"
-              {...register("password")}
-            />
+            <div className="relative">
+              <Lock className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground/50" />
+              <Input
+                aria-invalid={!!errors.password}
+                autoComplete="current-password"
+                className="h-11 border-border bg-background/80 pl-10 pr-10"
+                id="password"
+                placeholder="••••••••"
+                type={showPassword ? "text" : "password"}
+                {...register("password")}
+              />
+              <button
+                aria-label={showPassword ? "Masquer" : "Afficher"}
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground/50 transition-colors hover:text-foreground"
+                onClick={() => setShowPassword((v) => !v)}
+                type="button"
+              >
+                {showPassword ? (
+                  <EyeOff className="size-4" />
+                ) : (
+                  <Eye className="size-4" />
+                )}
+              </button>
+            </div>
             {errors.password ? (
               <p className="text-destructive text-xs">
                 {errors.password.message}
@@ -162,8 +184,7 @@ export default function LoginPage() {
             ) : null}
           </div>
 
-          {/* Rester connecté */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <Checkbox
               checked={rememberMe}
               id="rememberMe"
@@ -171,22 +192,24 @@ export default function LoginPage() {
                 setValue("rememberMe", checked === true)
               }
             />
-            <Label className="font-normal" htmlFor="rememberMe">
+            <Label
+              className="cursor-pointer font-normal text-muted-foreground text-sm"
+              htmlFor="rememberMe"
+            >
               Rester connecté
             </Label>
           </div>
 
-          {/* Erreur email non vérifié */}
           {unverifiedEmail ? (
-            <div className="rounded-lg bg-amber-50 px-3 py-3 text-center text-sm dark:bg-amber-900/20">
-              <p className="font-medium text-amber-800 dark:text-amber-300">
-                Adresse email non vérifiée
+            <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-center">
+              <p className="font-medium text-amber-300 text-sm">
+                Email non vérifié
               </p>
-              <p className="mt-1 text-amber-700 dark:text-amber-400">
-                Vérifiez votre boîte email ou renvoyez le lien de confirmation.
+              <p className="mt-1 text-amber-400/80 text-xs">
+                Vérifiez votre boîte email ou renvoyez le lien.
               </p>
               <Button
-                className="mt-2 h-auto px-3 py-1.5 text-xs"
+                className="mt-2.5 h-7 border-amber-500/30 px-3 text-amber-300 text-xs hover:bg-amber-500/10"
                 disabled={resendStatus !== "idle"}
                 onClick={handleResendVerification}
                 size="sm"
@@ -195,23 +218,33 @@ export default function LoginPage() {
               >
                 {resendStatus === "sending" && "Envoi…"}
                 {resendStatus === "sent" && "Email envoyé !"}
-                {resendStatus === "idle" && "Renvoyer l'email de vérification"}
+                {resendStatus === "idle" && "Renvoyer l'email"}
               </Button>
             </div>
           ) : null}
 
-          {/* Erreur globale */}
           {rootError ? (
-            <p className="rounded-lg bg-destructive/10 px-3 py-2 text-center text-destructive text-sm">
+            <p className="rounded-xl border border-destructive/20 bg-destructive/8 px-3 py-2.5 text-center text-destructive text-sm">
               {rootError}
             </p>
           ) : null}
 
-          <Button className="w-full" disabled={isSubmitting} type="submit">
-            {isSubmitting ? "Connexion…" : "Se connecter"}
+          <Button
+            className="btn-gradient-primary h-11 w-full font-semibold hover:opacity-90"
+            disabled={isSubmitting}
+            type="submit"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Connexion…
+              </>
+            ) : (
+              "Se connecter"
+            )}
           </Button>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

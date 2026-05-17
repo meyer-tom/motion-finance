@@ -1,5 +1,4 @@
 import { ArrowRight } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { DashboardData } from "@/lib/actions/dashboard"
 import { formatAmount } from "@/lib/utils/format"
 
@@ -17,44 +16,36 @@ function formatDate(iso: string) {
 }
 
 function getPeriodLabel(periodKey: string) {
-  if (periodKey === "week") {
-    return "cette semaine"
-  }
-  if (periodKey === "quarter") {
-    return "ce trimestre"
-  }
-  if (periodKey === "year") {
-    return "cette année"
-  }
-  if (periodKey.startsWith("custom:")) {
-    return "sur la période"
-  }
+  if (periodKey === "week") return "cette semaine"
+  if (periodKey === "quarter") return "ce trimestre"
+  if (periodKey === "year") return "cette année"
+  if (periodKey.startsWith("custom:")) return "sur la période"
   return "ce mois"
 }
 
 export function TransfersSection({ currency, periodKey, transfers }: Props) {
   return (
-    <Card className="flex min-h-[220px] flex-col">
-      <CardHeader className="flex flex-row items-center justify-between pb-3">
+    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+      <div className="flex items-center justify-between border-b border-border/60 px-5 py-3.5">
         <div className="flex items-center gap-2">
-          <CardTitle className="font-semibold text-sm">Virements</CardTitle>
-          <span className="text-muted-foreground text-xs">
+          <span className="section-title">Virements</span>
+          <span className="text-[11px] text-muted-foreground">
             {getPeriodLabel(periodKey)}
           </span>
         </div>
         {transfers.total > 0 && (
-          <span className="font-semibold text-sm tabular-nums">
+          <span className="font-semibold text-[13px] tabular-nums text-[var(--color-transfer)]">
             {formatAmount(transfers.total, currency)}
           </span>
         )}
-      </CardHeader>
-      <CardContent className="flex-1 overflow-hidden p-0">
+      </div>
+      <div className="px-5 py-4">
         {transfers.total === 0 ? (
-          <p className="px-6 py-2 text-center text-muted-foreground text-sm">
-            Aucun virement
+          <p className="py-4 text-center text-muted-foreground text-sm">
+            Aucun virement {getPeriodLabel(periodKey)}
           </p>
         ) : (
-          <ul className="space-y-2.5 overflow-y-auto px-6 pb-4 [max-height:160px]">
+          <ul className="space-y-3 overflow-y-auto [max-height:164px]">
             {transfers.items.map((t) => (
               <li
                 className="flex items-center justify-between gap-3"
@@ -81,7 +72,7 @@ export function TransfersSection({ currency, periodKey, transfers }: Props) {
             ))}
           </ul>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

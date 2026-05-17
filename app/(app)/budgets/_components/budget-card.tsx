@@ -71,8 +71,13 @@ export function BudgetCard({ budget, onEdit, onDeleted }: BudgetCardProps) {
   return (
     <div
       className={cn(
-        "group relative space-y-3 rounded-xl border bg-card p-4 transition-all",
-        "hover:border-border/80 hover:bg-accent/5 hover:shadow-sm",
+        "group relative space-y-3 rounded-xl border p-4 transition-all duration-200",
+        "hover:shadow-lg hover:shadow-black/20",
+        budget.percentage >= 100
+          ? "border-[var(--color-expense)]/20 bg-[var(--color-expense)]/5 hover:border-[var(--color-expense)]/30"
+          : budget.percentage >= 80
+            ? "border-orange-500/20 bg-orange-500/5 hover:border-orange-500/30"
+            : "border-border bg-card hover:border-border-accent hover:bg-surface-elevated",
         isPending && "pointer-events-none opacity-50"
       )}
     >
@@ -88,15 +93,15 @@ export function BudgetCard({ budget, onEdit, onDeleted }: BudgetCardProps) {
         {/* Côté gauche — pointer-events-none : les clics traversent vers le Link */}
         <div className="pointer-events-none flex min-w-0 items-center gap-2">
           <span
-            className="flex size-8 shrink-0 items-center justify-center rounded-lg"
-            style={{ backgroundColor: `${budget.category.color}20` }}
+            className="flex size-9 shrink-0 items-center justify-center rounded-xl"
+            style={{ backgroundColor: `${budget.category.color}25` }}
           >
             <CategoryIcon
-              className="size-4"
+              className="size-[18px]"
               style={{ color: budget.category.color }}
             />
           </span>
-          <span className="truncate font-medium text-sm">
+          <span className="truncate font-semibold text-sm">
             {budget.category.name}
           </span>
         </div>
@@ -138,16 +143,16 @@ export function BudgetCard({ budget, onEdit, onDeleted }: BudgetCardProps) {
 
       {/* Progress bar — pointer-events-none : clics traversent vers le Link */}
       <div className="pointer-events-none">
-        <AnimatedProgress value={capped} variant="auto" />
+        <AnimatedProgress progressClassName="h-2.5" value={capped} variant="auto" />
       </div>
 
       {/* Amounts — pointer-events-none : clics traversent vers le Link */}
-      <div className="pointer-events-none flex items-center justify-between text-muted-foreground text-xs">
-        <span>
+      <div className="pointer-events-none flex items-center justify-between text-xs">
+        <span className="text-muted-foreground">
           Dépensé :{" "}
           <span
             className={cn(
-              "font-medium",
+              "font-mono font-semibold tabular-nums",
               budget.percentage >= 100
                 ? "text-[var(--color-expense)]"
                 : "text-foreground"
@@ -156,7 +161,9 @@ export function BudgetCard({ budget, onEdit, onDeleted }: BudgetCardProps) {
             {formatAmount(budget.spent, currency)}
           </span>
         </span>
-        <span>Plafond : {formatAmount(budget.amount, currency)}</span>
+        <span className="font-mono font-semibold tabular-nums text-muted-foreground">
+          {formatAmount(budget.amount, currency)}
+        </span>
       </div>
     </div>
   )

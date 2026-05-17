@@ -42,12 +42,12 @@ function CustomTooltip({
   }
   const IconComp = getCategoryIcon(entry.categoryIcon)
   return (
-    <div className="rounded-xl border bg-background px-3 py-2 shadow-lg">
-      <div className="flex items-center gap-1.5 font-medium text-sm">
+    <div className="rounded-xl border border-border bg-card px-3 py-2 shadow-xl shadow-black/30">
+      <div className="flex items-center gap-1.5 font-medium text-sm text-foreground">
         <IconComp className="size-3.5" style={{ color: entry.fill }} />
         <span>{entry.categoryName}</span>
       </div>
-      <p className="mt-0.5 text-muted-foreground text-xs">
+      <p className="mt-0.5 font-mono text-muted-foreground text-xs">
         {formatAmount(entry.total, currency)} · {entry.percentage.toFixed(1)}%
       </p>
     </div>

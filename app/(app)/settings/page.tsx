@@ -91,7 +91,13 @@ export default async function SettingsPage() {
   }))
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-2xl pb-24 md:pb-8">
+      <div className="mb-6">
+        <h1 className="font-bold text-xl tracking-tight">Paramètres</h1>
+        <p className="mt-0.5 text-muted-foreground text-sm">
+          Gérez votre profil, préférences et données
+        </p>
+      </div>
       <Suspense>
         <SettingsTabs
           accounts={formAccounts}
@@ -113,5 +119,6 @@ export default async function SettingsPage() {
         />
       </Suspense>
     </div>
+
   )
 }

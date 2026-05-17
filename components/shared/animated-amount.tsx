@@ -99,7 +99,7 @@ export function AnimatedAmount({
 
   return (
     <span
-      className={cn("tabular-nums", variantClass[variant], className)}
+      className={cn("font-mono tabular-nums", variantClass[variant], className)}
       ref={spanRef}
     >
       {formatAmount(value, currency)}

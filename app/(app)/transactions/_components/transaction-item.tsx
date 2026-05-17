@@ -84,7 +84,7 @@ export function TransactionItem({
     ? getCategoryIcon(transaction.category.icon)
     : null
 
-  const amountClass = cn("font-semibold tabular-nums", {
+  const amountClass = cn("font-mono font-semibold tabular-nums", {
     "text-[var(--color-income)]": isIncome,
     "text-[var(--color-expense)]": !(isIncome || isTransfer),
     "text-[var(--color-transfer)]": isTransfer,
@@ -124,7 +124,7 @@ export function TransactionItem({
 
   return (
     <div
-      className="group flex cursor-pointer select-none [touch-action:manipulation] items-center gap-3 bg-background px-4 py-3 transition-colors hover:bg-muted/40 active:bg-muted/60"
+      className="group flex cursor-pointer select-none [touch-action:manipulation] items-center gap-3 bg-transparent px-4 py-3.5 transition-colors duration-150 hover:bg-surface-elevated active:bg-surface-elevated/70"
       onClick={handleEdit}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") handleEdit()
@@ -134,7 +134,7 @@ export function TransactionItem({
     >
       {/* Icône */}
       <div
-        className="flex size-9 shrink-0 items-center justify-center rounded-full"
+        className="flex size-10 shrink-0 items-center justify-center rounded-full"
         style={{ backgroundColor: iconBgColor }}
       >
         {isTransfer ? (
@@ -166,10 +166,10 @@ export function TransactionItem({
 
       {/* ── MOBILE ── */}
       <div className="min-w-0 flex-1 md:hidden">
-        <span className="block truncate font-medium text-sm leading-tight">
+        <span className="block truncate font-semibold text-sm leading-tight">
           {transaction.title}
         </span>
-        <div className="mt-0.5 flex min-w-0 items-center gap-1.5 overflow-hidden">
+        <div className="mt-1 flex min-w-0 items-center gap-1.5 overflow-hidden">
           {isTransfer ? (
             <>
               <AccountChip account={transaction.account} className="max-w-[44%]" />
@@ -202,10 +202,10 @@ export function TransactionItem({
 
       {/* ── DESKTOP : col gauche (titre + chips) ── */}
       <div className="hidden min-w-0 flex-[2] md:block">
-        <span className="block truncate font-medium text-sm leading-tight">
+        <span className="block truncate font-semibold text-sm leading-tight">
           {transaction.title}
         </span>
-        <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+        <div className="mt-1 flex flex-wrap items-center gap-1.5">
           {chips}
           {transaction.tags.map((tag) => (
             <Badge
@@ -236,7 +236,7 @@ export function TransactionItem({
       </div>
 
       {/* Montant — visible sur mobile et desktop */}
-      <div className="shrink-0">
+      <div className="shrink-0 text-right">
         <span className={cn(amountClass, "text-sm")}>{amountFormatted}</span>
       </div>
 

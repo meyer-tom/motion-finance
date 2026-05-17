@@ -165,18 +165,25 @@ export function GoalCard({
   return (
     <div
       className={cn(
-        "group space-y-3 rounded-xl border bg-card p-4 transition-all",
-        "hover:border-border/80 hover:bg-accent/5 hover:shadow-sm",
+        "group space-y-3 rounded-xl border border-border bg-card p-4 transition-all duration-200",
+        "hover:border-border-accent hover:bg-surface-elevated hover:shadow-lg hover:shadow-black/20",
         isPending && "pointer-events-none opacity-50"
       )}
     >
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
         <span className="truncate font-semibold text-sm">{goal.name}</span>
-        <div className="flex shrink-0 items-center gap-1">
-          <Badge variant={goal.percentage >= 100 ? "success" : "outline"}>
+        <div className="flex shrink-0 items-center gap-1.5">
+          <span
+            className={cn(
+              "font-bold font-mono tabular-nums text-base",
+              goal.percentage >= 100
+                ? "text-[var(--color-income)]"
+                : "text-foreground"
+            )}
+          >
             {goal.percentage}%
-          </Badge>
+          </span>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -207,13 +214,13 @@ export function GoalCard({
       </div>
 
       {/* Progress */}
-      <AnimatedProgress value={goal.percentage} variant={progressVariant} />
+      <AnimatedProgress progressClassName="h-3" value={goal.percentage} variant={progressVariant} />
 
-      {/* Amounts — montant actuel prominent + cible en muted */}
+      {/* Amounts — montant actuel prominent + cible en grand */}
       <div className="flex items-baseline justify-between gap-2">
         <span
           className={cn(
-            "font-semibold text-base tabular-nums",
+            "font-mono font-bold text-lg tabular-nums",
             goal.percentage >= 100
               ? "text-[var(--color-income)]"
               : "text-foreground"
@@ -221,8 +228,8 @@ export function GoalCard({
         >
           {formatAmountFlexible(goal.currentAmount, currency)}
         </span>
-        <span className="text-muted-foreground text-xs tabular-nums">
-          sur {formatAmount(goal.targetAmount, currency)}
+        <span className="font-mono font-semibold tabular-nums text-muted-foreground text-sm">
+          / {formatAmountFlexible(goal.targetAmount, currency)}
         </span>
       </div>
 

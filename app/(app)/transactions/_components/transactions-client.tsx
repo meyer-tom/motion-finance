@@ -252,10 +252,22 @@ export function TransactionsClient({
         title="Vos transactions"
         tooltipsSeen={tooltipsSeen}
       >
-        <div className="flex items-center justify-end">
-          <Button className="gap-1.5" onClick={() => openForm()} size="sm">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2.5">
+            <h1 className="font-bold text-xl tracking-tight">Transactions</h1>
+            {transactions.length > 0 ? (
+              <span className="rounded-full border border-border/60 bg-muted px-2 py-0.5 font-medium text-muted-foreground text-xs tabular-nums">
+                {transactions.length}
+              </span>
+            ) : null}
+          </div>
+          <Button
+            className="btn-gradient-primary gap-1.5 hover:opacity-90"
+            onClick={() => openForm()}
+            size="sm"
+          >
             <Plus className="size-4" />
-            <span className="hidden sm:inline">Nouvelle</span>
+            <span className="hidden sm:inline">Ajouter</span>
           </Button>
         </div>
       </DiscoveryTooltip>

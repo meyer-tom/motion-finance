@@ -88,7 +88,7 @@ export function TransactionList({
       {groups.map((group) => (
         <section key={group.dateKey}>
           {/* Header date sticky */}
-          <div className="sticky top-14 z-10 flex items-center gap-3 bg-background px-4 py-2">
+          <div className="sticky top-14 z-10 flex items-center gap-3 bg-background/90 px-4 py-2 backdrop-blur-sm">
             <span className="whitespace-nowrap font-semibold text-[11px] text-muted-foreground uppercase tracking-wider">
               {group.label}
             </span>
@@ -96,7 +96,7 @@ export function TransactionList({
           </div>
 
           {/* Items du groupe */}
-          <div className="divide-y divide-border/50">
+          <div className="divide-y divide-border/30">
             {group.transactions.map((tx) => (
               <TransactionItem
                 key={tx.id}

@@ -1,20 +1,13 @@
 "use client"
 
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { MailCheck } from "lucide-react"
+import { Eye, EyeOff, Loader2, Lock, Mail, MailCheck, User } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 
 import { registerAction } from "@/app/(auth)/register/actions"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { authClient } from "@/lib/auth/client"
@@ -23,6 +16,8 @@ import { type RegisterInput, registerSchema } from "@/lib/validations/auth"
 export default function RegisterPage() {
   const [emailSent, setEmailSent] = useState(false)
   const [rootError, setRootError] = useState<string | null>(null)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
 
   const {
     register,
@@ -35,7 +30,6 @@ export default function RegisterPage() {
   async function onSubmit(data: RegisterInput) {
     setRootError(null)
 
-    // Validation côté serveur (champs non-sensibles uniquement — pas de mot de passe)
     const serverResult = await registerAction({
       firstName: data.firstName,
       lastName: data.lastName,
@@ -57,7 +51,6 @@ export default function RegisterPage() {
     })
 
     if (error) {
-      console.error("[register] Better Auth error:", error)
       if (
         error.message?.toLowerCase().includes("email") ||
         error.code === "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL"
@@ -76,64 +69,69 @@ export default function RegisterPage() {
 
   if (emailSent) {
     return (
-      <Card className="w-full max-w-sm">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-            <MailCheck className="h-6 w-6 text-primary" />
+      <div className="mx-auto w-full max-w-sm">
+        <div className="rounded-2xl border border-border bg-card p-8 text-center shadow-xl shadow-black/5">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/15">
+            <MailCheck className="h-7 w-7 text-primary" />
           </div>
-          <CardTitle className="text-xl">Vérifiez votre email</CardTitle>
-          <CardDescription>
-            Un email de confirmation a été envoyé à votre adresse. Cliquez sur
-            le lien dans l&apos;email pour activer votre compte.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-center text-muted-foreground text-sm">
-            Vous pouvez fermer cette page.{" "}
-            <Link
-              className="text-primary underline-offset-4 hover:underline"
-              href="/login"
-            >
-              Se connecter
-            </Link>
+          <h2 className="font-bold text-xl tracking-tight">
+            Vérifiez votre email
+          </h2>
+          <p className="mx-auto mt-2 max-w-xs text-muted-foreground text-sm leading-relaxed">
+            Un lien de confirmation a été envoyé. Cliquez dessus pour activer
+            votre compte.
           </p>
-        </CardContent>
-      </Card>
+          <Link
+            className="mt-6 inline-block text-primary text-sm transition-opacity hover:opacity-80"
+            href="/login"
+          >
+            Retour à la connexion →
+          </Link>
+        </div>
+      </div>
     )
   }
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader className="text-center">
-        <CardTitle className="text-xl">Créer un compte</CardTitle>
-        <CardDescription>
+    <div className="mx-auto w-full max-w-sm">
+      <div className="mb-6 text-center">
+        <h1 className="font-bold text-2xl tracking-tight">Créer un compte</h1>
+        <p className="mt-1.5 text-muted-foreground text-sm">
           Déjà inscrit ?{" "}
           <Link
-            className="text-primary underline-offset-4 hover:underline"
+            className="font-medium text-primary transition-opacity hover:opacity-80"
             href="/login"
           >
             Se connecter
           </Link>
-        </CardDescription>
-      </CardHeader>
+        </p>
+      </div>
 
-      <CardContent>
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-xl shadow-black/5">
         <form
-          className="flex flex-col gap-4"
+          className="flex flex-col gap-5"
           noValidate
           onSubmit={handleSubmit(onSubmit)}
         >
-          {/* Prénom + Nom */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="firstName">Prénom</Label>
-              <Input
-                aria-invalid={!!errors.firstName}
-                autoComplete="given-name"
-                id="firstName"
-                placeholder="Jean"
-                {...register("firstName")}
-              />
+            <div className="flex flex-col gap-2">
+              <Label
+                className="text-xs font-medium text-muted-foreground uppercase tracking-wider"
+                htmlFor="firstName"
+              >
+                Prénom
+              </Label>
+              <div className="relative">
+                <User className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground/50" />
+                <Input
+                  aria-invalid={!!errors.firstName}
+                  autoComplete="given-name"
+                  className="h-11 border-border bg-background/80 pl-10"
+                  id="firstName"
+                  placeholder="Jean"
+                  {...register("firstName")}
+                />
+              </div>
               {errors.firstName ? (
                 <p className="text-destructive text-xs">
                   {errors.firstName.message}
@@ -141,15 +139,23 @@ export default function RegisterPage() {
               ) : null}
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="lastName">Nom</Label>
-              <Input
-                aria-invalid={!!errors.lastName}
-                autoComplete="family-name"
-                id="lastName"
-                placeholder="Dupont"
-                {...register("lastName")}
-              />
+            <div className="flex flex-col gap-2">
+              <Label
+                className="text-xs font-medium text-muted-foreground uppercase tracking-wider"
+                htmlFor="lastName"
+              >
+                Nom
+              </Label>
+              <div className="relative">
+                <Input
+                  aria-invalid={!!errors.lastName}
+                  autoComplete="family-name"
+                  className="h-11 border-border bg-background/80"
+                  id="lastName"
+                  placeholder="Dupont"
+                  {...register("lastName")}
+                />
+              </div>
               {errors.lastName ? (
                 <p className="text-destructive text-xs">
                   {errors.lastName.message}
@@ -158,33 +164,61 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          {/* Email */}
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              aria-invalid={!!errors.email}
-              autoComplete="email"
-              id="email"
-              placeholder="vous@exemple.fr"
-              type="email"
-              {...register("email")}
-            />
+          <div className="flex flex-col gap-2">
+            <Label
+              className="text-xs font-medium text-muted-foreground uppercase tracking-wider"
+              htmlFor="email"
+            >
+              Email
+            </Label>
+            <div className="relative">
+              <Mail className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground/50" />
+              <Input
+                aria-invalid={!!errors.email}
+                autoComplete="email"
+                className="h-11 border-border bg-background/80 pl-10"
+                id="email"
+                placeholder="vous@exemple.fr"
+                type="email"
+                {...register("email")}
+              />
+            </div>
             {errors.email ? (
               <p className="text-destructive text-xs">{errors.email.message}</p>
             ) : null}
           </div>
 
-          {/* Mot de passe */}
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="password">Mot de passe</Label>
-            <Input
-              aria-invalid={!!errors.password}
-              autoComplete="new-password"
-              id="password"
-              placeholder="••••••••"
-              type="password"
-              {...register("password")}
-            />
+          <div className="flex flex-col gap-2">
+            <Label
+              className="text-xs font-medium text-muted-foreground uppercase tracking-wider"
+              htmlFor="password"
+            >
+              Mot de passe
+            </Label>
+            <div className="relative">
+              <Lock className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground/50" />
+              <Input
+                aria-invalid={!!errors.password}
+                autoComplete="new-password"
+                className="h-11 border-border bg-background/80 pl-10 pr-10"
+                id="password"
+                placeholder="••••••••"
+                type={showPassword ? "text" : "password"}
+                {...register("password")}
+              />
+              <button
+                aria-label={showPassword ? "Masquer" : "Afficher"}
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground/50 transition-colors hover:text-foreground"
+                onClick={() => setShowPassword((v) => !v)}
+                type="button"
+              >
+                {showPassword ? (
+                  <EyeOff className="size-4" />
+                ) : (
+                  <Eye className="size-4" />
+                )}
+              </button>
+            </div>
             {errors.password ? (
               <p className="text-destructive text-xs">
                 {errors.password.message}
@@ -192,17 +226,37 @@ export default function RegisterPage() {
             ) : null}
           </div>
 
-          {/* Confirmation mot de passe */}
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
-            <Input
-              aria-invalid={!!errors.confirmPassword}
-              autoComplete="new-password"
-              id="confirmPassword"
-              placeholder="••••••••"
-              type="password"
-              {...register("confirmPassword")}
-            />
+          <div className="flex flex-col gap-2">
+            <Label
+              className="text-xs font-medium text-muted-foreground uppercase tracking-wider"
+              htmlFor="confirmPassword"
+            >
+              Confirmer
+            </Label>
+            <div className="relative">
+              <Lock className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground/50" />
+              <Input
+                aria-invalid={!!errors.confirmPassword}
+                autoComplete="new-password"
+                className="h-11 border-border bg-background/80 pl-10 pr-10"
+                id="confirmPassword"
+                placeholder="••••••••"
+                type={showConfirm ? "text" : "password"}
+                {...register("confirmPassword")}
+              />
+              <button
+                aria-label={showConfirm ? "Masquer" : "Afficher"}
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground/50 transition-colors hover:text-foreground"
+                onClick={() => setShowConfirm((v) => !v)}
+                type="button"
+              >
+                {showConfirm ? (
+                  <EyeOff className="size-4" />
+                ) : (
+                  <Eye className="size-4" />
+                )}
+              </button>
+            </div>
             {errors.confirmPassword ? (
               <p className="text-destructive text-xs">
                 {errors.confirmPassword.message}
@@ -210,18 +264,28 @@ export default function RegisterPage() {
             ) : null}
           </div>
 
-          {/* Erreur globale */}
           {rootError ? (
-            <p className="rounded-lg bg-destructive/10 px-3 py-2 text-center text-destructive text-sm">
+            <p className="rounded-xl border border-destructive/20 bg-destructive/8 px-3 py-2.5 text-center text-destructive text-sm">
               {rootError}
             </p>
           ) : null}
 
-          <Button className="w-full" disabled={isSubmitting} type="submit">
-            {isSubmitting ? "Création…" : "Créer mon compte"}
+          <Button
+            className="btn-gradient-primary h-11 w-full font-semibold hover:opacity-90"
+            disabled={isSubmitting}
+            type="submit"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Création…
+              </>
+            ) : (
+              "Créer mon compte"
+            )}
           </Button>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

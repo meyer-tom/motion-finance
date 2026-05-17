@@ -7,13 +7,6 @@ import { useTransition } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import {
   Select,
@@ -70,14 +63,15 @@ export function PreferencesSection({ initialCurrency }: { initialCurrency: strin
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Devise</CardTitle>
-          <CardDescription>
+      {/* Devise */}
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="border-b border-border/60 px-6 py-5">
+          <h2 className="font-semibold text-base">Devise</h2>
+          <p className="mt-1 text-muted-foreground text-sm">
             Devise utilisée pour l'affichage de tous les montants
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+        <div className="px-6 py-6">
           <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-2">
               <Label htmlFor="currency">Devise</Label>
@@ -104,15 +98,16 @@ export function PreferencesSection({ initialCurrency }: { initialCurrency: strin
               {isPending ? "Enregistrement…" : "Enregistrer"}
             </Button>
           </form>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Thème</CardTitle>
-          <CardDescription>Apparence de l'interface</CardDescription>
-        </CardHeader>
-        <CardContent>
+      {/* Thème */}
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="border-b border-border/60 px-6 py-5">
+          <h2 className="font-semibold text-base">Thème</h2>
+          <p className="mt-1 text-muted-foreground text-sm">Apparence de l'interface</p>
+        </div>
+        <div className="px-6 py-6">
           <div className="flex gap-2">
             {THEMES.map(({ value, label, icon: Icon }) => (
               <Button
@@ -127,8 +122,8 @@ export function PreferencesSection({ initialCurrency }: { initialCurrency: strin
               </Button>
             ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

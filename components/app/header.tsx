@@ -1,15 +1,13 @@
 "use client"
 
-import { Bug, LogOut, Search, Settings } from "lucide-react"
-import Link from "next/link"
-import { useEffect, useState } from "react"
+import { LogOut, Settings } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
+import { useState } from "react"
 
-import { BarChartSvg, UserAvatar } from "@/components/app/sidebar"
 import { GlobalSearch } from "@/components/app/global-search"
 import { NotificationPopover } from "@/components/app/notification-popover"
-import { ThemeToggle } from "@/components/app/theme-toggle"
-import { BugReportDialog } from "@/components/bug-report/bug-report-dialog"
+import { BarChartSvg, UserAvatar } from "@/components/app/sidebar"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,23 +46,11 @@ interface HeaderProps {
 export function Header({ user }: HeaderProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const [bugReportOpen, setBugReportOpen] = useState(false)
-  const [searchOpen, setSearchOpen] = useState(false)
   const title = getPageTitle(pathname)
-
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault()
-        setSearchOpen((prev) => !prev)
-      }
-    }
-    document.addEventListener("keydown", handleKeyDown)
-    return () => document.removeEventListener("keydown", handleKeyDown)
-  }, [])
   const displayName = user
     ? `${user.firstName} ${user.lastName}`.trim()
     : "Utilisateur"
+  const [searchOpen, setSearchOpen] = useState(false)
 
   async function handleSignOut() {
     await authClient.signOut()
@@ -73,86 +59,104 @@ export function Header({ user }: HeaderProps) {
   }
 
   return (
-    <header className="header-animate sticky top-0 z-40 flex h-14 items-center gap-2 border-sidebar-border border-b bg-sidebar px-3 lg:px-4">
-      {/* Mobile : icône logo + titre de la page courante */}
-      <div className="flex items-center gap-2.5 md:hidden">
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-violet-600/20 bg-white shadow-sm dark:border-indigo-500/20 dark:bg-[#0f0f1a]">
-          <BarChartSvg size={16} />
-        </div>
-        <h1 className="font-semibold text-base tracking-tight">{title}</h1>
-      </div>
-
-      {/* Desktop : titre de la page */}
-      <h1 className="hidden font-semibold text-base md:block">{title}</h1>
-
-      <div className="ml-auto flex items-center gap-1.5">
-        {/* Recherche — desktop uniquement */}
-        <button
-          className="hidden h-9 w-60 items-center justify-between rounded-lg border border-border bg-background/60 px-3 text-muted-foreground text-sm transition-colors hover:bg-background md:flex"
-          onClick={() => setSearchOpen(true)}
-          type="button"
-        >
-          <span className="flex items-center gap-2">
-            <Search className="h-3.5 w-3.5 shrink-0" />
-            <span>Recherche rapide…</span>
+    <>
+      <header className="header-animate sticky top-0 z-40 flex h-14 items-center gap-2 border-border border-b bg-background/80 px-3 backdrop-blur-lg lg:px-4">
+        {/* Logo + titre — mobile uniquement */}
+        <div className="flex items-center gap-2 md:hidden">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-violet-700 shadow-sm">
+            <BarChartSvg size={16} />
+          </div>
+          <span className="font-bold text-foreground text-sm tracking-[-0.02em]">
+            {title}
           </span>
-          <kbd className="pointer-events-none inline-flex h-5 items-center rounded border border-border bg-muted px-1 font-medium text-[11px] text-muted-foreground">
-            ⌘K
-          </kbd>
-        </button>
+        </div>
 
-        {/* Notifications */}
-        <NotificationPopover />
+        <h1 className="hidden font-semibold text-base text-foreground md:block">
+          {title}
+        </h1>
 
-        {/* Thème */}
-        <ThemeToggle />
-
-        {/* Avatar + menu — mobile uniquement */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              aria-label={displayName}
-              className="flex items-center rounded-full outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-ring md:hidden"
-              type="button"
-            >
-              <UserAvatar size="sm" user={user} />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <div className="px-3 py-2">
-              <p className="font-medium text-sm">{displayName}</p>
-              <p className="truncate text-muted-foreground text-xs">
-                {user?.email ?? ""}
-              </p>
+        <div className="ml-auto flex items-center gap-2">
+          {/* Search trigger — desktop */}
+          <button
+            className="hidden h-9 w-64 items-center justify-between rounded-lg border border-border bg-card px-3 text-muted-foreground text-sm transition-colors hover:border-border-accent hover:bg-surface-elevated md:flex"
+            onClick={() => setSearchOpen(true)}
+            type="button"
+          >
+            <span className="flex items-center gap-2">
+              <svg aria-hidden="true" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+              <span>Recherche rapide…</span>
+            </span>
+            <div className="flex items-center gap-0.5">
+              <kbd className="pointer-events-none inline-flex h-5 items-center rounded border border-border bg-surface-elevated px-1.5 font-medium text-[11px]">
+                ⌘
+              </kbd>
+              <kbd className="pointer-events-none inline-flex h-5 items-center rounded border border-border bg-surface-elevated px-1.5 font-medium font-mono text-[11px]">
+                K
+              </kbd>
             </div>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/settings">
-                <Settings className="h-4 w-4" />
-                Paramètres
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onClick={() => setBugReportOpen(true)}
-            >
-              <Bug className="h-4 w-4" />
-              Signaler un bug
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="cursor-pointer text-rose-600 data-highlighted:bg-rose-50 data-highlighted:text-rose-600 dark:text-rose-400 dark:data-highlighted:bg-rose-950/60 dark:data-highlighted:text-rose-400 [&_svg]:text-rose-600 dark:[&_svg]:text-rose-400"
-              onClick={handleSignOut}
-            >
-              <LogOut className="h-4 w-4" />
-              Déconnexion
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+          </button>
 
-      <BugReportDialog onOpenChange={setBugReportOpen} open={bugReportOpen} />
+          {/* Search trigger — mobile */}
+          <Button
+            aria-label="Recherche"
+            className="text-muted-foreground hover:text-foreground md:hidden"
+            onClick={() => setSearchOpen(true)}
+            size="icon"
+            variant="ghost"
+          >
+            <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+            </svg>
+          </Button>
+
+          {/* Notifications */}
+          <NotificationPopover />
+
+          {/* Avatar dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                aria-label={displayName}
+                className="flex items-center rounded-full outline-none ring-offset-2 ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+                type="button"
+              >
+                <UserAvatar size="sm" user={user} />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-52">
+              <div className="px-2 py-1.5">
+                <p className="font-semibold text-foreground text-sm">
+                  {displayName}
+                </p>
+                <p className="truncate text-muted-foreground text-xs">
+                  {user?.email ?? ""}
+                </p>
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <a href="/settings">
+                  <Settings className="h-4 w-4" />
+                  Paramètres
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="cursor-pointer text-destructive focus:text-destructive [&_svg]:text-destructive"
+                onClick={handleSignOut}
+              >
+                <LogOut className="h-4 w-4" />
+                Déconnexion
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </header>
+
       <GlobalSearch onOpenChange={setSearchOpen} open={searchOpen} />
-    </header>
+    </>
   )
 }

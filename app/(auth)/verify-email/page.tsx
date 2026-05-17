@@ -4,21 +4,14 @@ import { CheckCircle2, XCircle } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
+
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import { useSession } from "@/lib/auth/client"
 
 export default function VerifyEmailPage() {
   const { data: session } = useSession()
   const router = useRouter()
 
-  // Si l'utilisateur est connecté (autoSignInAfterVerification), on redirige vers le dashboard
   useEffect(() => {
     if (session?.user) {
       const timer = setTimeout(() => router.push("/dashboard"), 2500)
@@ -28,43 +21,41 @@ export default function VerifyEmailPage() {
 
   if (session?.user) {
     return (
-      <Card className="w-full max-w-sm">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-            <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
+      <div className="w-full max-w-sm">
+        <div className="rounded-2xl border border-border bg-card/60 p-8 text-center backdrop-blur-sm">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-income)]/15">
+            <CheckCircle2 className="h-7 w-7 text-[var(--color-income)]" />
           </div>
-          <CardTitle className="text-xl">Email vérifié !</CardTitle>
-          <CardDescription>
-            Votre adresse email a été confirmée. Vous allez être redirigé vers
-            le tableau de bord…
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button asChild className="w-full">
-            <Link href="/dashboard">Accéder au tableau de bord</Link>
+          <h2 className="font-bold text-xl text-foreground tracking-tight">
+            Email vérifié !
+          </h2>
+          <p className="mx-auto mt-2 max-w-xs text-muted-foreground text-sm leading-relaxed">
+            Votre adresse a été confirmée. Redirection vers le tableau de bord…
+          </p>
+          <Button asChild className="btn-gradient-primary mt-6 w-full hover:opacity-90">
+            <Link href="/dashboard">Accéder au dashboard</Link>
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     )
   }
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader className="text-center">
-        <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-          <XCircle className="h-6 w-6 text-destructive" />
+    <div className="w-full max-w-sm">
+      <div className="rounded-2xl border border-border bg-card/60 p-8 text-center backdrop-blur-sm">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/15">
+          <XCircle className="h-7 w-7 text-destructive" />
         </div>
-        <CardTitle className="text-xl">Lien invalide ou expiré</CardTitle>
-        <CardDescription>
-          Ce lien de vérification est invalide ou a expiré. Connectez-vous pour
-          en recevoir un nouveau.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Button asChild className="w-full">
+        <h2 className="font-bold text-xl text-foreground tracking-tight">
+          Lien invalide
+        </h2>
+        <p className="mx-auto mt-2 max-w-xs text-muted-foreground text-sm leading-relaxed">
+          Ce lien de vérification est invalide ou a expiré. Connectez-vous pour en recevoir un nouveau.
+        </p>
+        <Button asChild className="btn-gradient-primary mt-6 w-full hover:opacity-90">
           <Link href="/login">Se connecter</Link>
         </Button>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

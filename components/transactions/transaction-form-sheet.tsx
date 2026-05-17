@@ -136,10 +136,10 @@ function TypeSegmentedControl({
   onTypeChange: (value: TransactionType) => void
 }) {
   return (
-    <div className="relative flex rounded-xl bg-muted p-1">
+    <div className="relative flex rounded-xl border border-border bg-card p-1">
       <div
         aria-hidden
-        className="pointer-events-none absolute top-1 bottom-1 rounded-lg bg-background shadow-sm transition-all duration-200"
+        className="pointer-events-none absolute top-1 bottom-1 rounded-lg bg-surface-elevated transition-all duration-200"
         style={{
           width: "calc((100% - 8px) / 3)",
           left: `calc(4px + ${typeIndex} * (100% - 8px) / 3)`,
@@ -151,7 +151,7 @@ function TypeSegmentedControl({
             "relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 font-medium text-sm transition-colors",
             selectedType === value
               ? "text-foreground"
-              : "text-muted-foreground hover:text-foreground/70"
+              : "text-muted-foreground hover:text-foreground"
           )}
           key={value}
           onClick={() => onTypeChange(value)}

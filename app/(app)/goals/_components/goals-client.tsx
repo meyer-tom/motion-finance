@@ -119,10 +119,10 @@ export function GoalsClient({
       ) : (
         <>
           {/* Tabs — sliding pill */}
-          <div className="relative flex rounded-xl bg-muted p-1">
+          <div className="relative flex rounded-xl border border-border bg-card p-1">
             <div
               aria-hidden
-              className="pointer-events-none absolute top-1 bottom-1 rounded-lg bg-background shadow-sm transition-all duration-200"
+              className="pointer-events-none absolute top-1 bottom-1 rounded-lg bg-primary/15 transition-all duration-200"
               style={{
                 width: "calc((100% - 8px) / 2)",
                 left: `calc(4px + ${tabIndex} * (100% - 8px) / 2)`,
@@ -208,8 +208,8 @@ function TabButton({
       className={cn(
         "relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-lg py-1.5 font-medium text-sm transition-colors duration-150",
         active
-          ? "text-foreground"
-          : "text-muted-foreground hover:text-foreground/70"
+          ? "text-primary"
+          : "text-muted-foreground hover:text-foreground"
       )}
       onClick={onClick}
       type="button"
@@ -259,8 +259,8 @@ function CompletedGoalCard({
   return (
     <div
       className={cn(
-        "space-y-3 rounded-xl border bg-card p-4 transition-all",
-        "hover:border-border/80 hover:bg-accent/5 hover:shadow-sm",
+        "space-y-3 rounded-xl border border-border bg-card p-4 transition-all duration-200",
+        "hover:border-border-accent hover:bg-surface-elevated hover:shadow-lg hover:shadow-black/20",
         isPending && "pointer-events-none opacity-50"
       )}
     >
@@ -314,17 +314,17 @@ function CompletedGoalCard({
 
 function EmptyActive({ onAdd }: { onAdd: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed py-16 text-center">
-      <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+    <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-border/50 border-dashed py-20 text-center">
+      <div className="flex size-14 items-center justify-center rounded-2xl border border-border bg-card">
         <Target className="size-6 text-muted-foreground" />
       </div>
-      <div className="space-y-1">
-        <p className="font-medium text-sm">Aucun objectif en cours</p>
+      <div className="space-y-1.5">
+        <p className="font-semibold text-foreground text-sm">Aucun objectif en cours</p>
         <p className="text-muted-foreground text-xs">
           Définissez un objectif d'épargne pour suivre votre progression.
         </p>
       </div>
-      <Button onClick={onAdd} size="sm" variant="outline">
+      <Button className="btn-gradient-primary hover:opacity-90" onClick={onAdd} size="sm">
         <Plus className="size-4" />
         Créer un objectif
       </Button>
@@ -334,19 +334,19 @@ function EmptyActive({ onAdd }: { onAdd: () => void }) {
 
 function EmptyCompleted({ onAdd }: { onAdd: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed py-16 text-center">
-      <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+    <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-border/50 border-dashed py-20 text-center">
+      <div className="flex size-14 items-center justify-center rounded-2xl border border-border bg-card">
         <Trophy className="size-6 text-muted-foreground" />
       </div>
-      <div className="space-y-1">
-        <p className="font-medium text-sm">
+      <div className="space-y-1.5">
+        <p className="font-semibold text-foreground text-sm">
           Aucun objectif atteint pour l'instant
         </p>
         <p className="text-muted-foreground text-xs">
           Vos objectifs complétés apparaîtront ici.
         </p>
       </div>
-      <Button onClick={onAdd} size="sm" variant="outline">
+      <Button className="btn-gradient-primary hover:opacity-90" onClick={onAdd} size="sm">
         <Plus className="size-4" />
         Créer un objectif
       </Button>

@@ -149,14 +149,34 @@ export function AccountsClient({
     }
   }
 
+  const totalBalance = accounts.reduce((sum, a) => sum + a.balance, 0)
+
   return (
     <>
       <div className="flex items-center justify-between gap-4">
-        <p className="text-muted-foreground text-sm">
-          {accounts.length === 0
-            ? "Aucun compte pour le moment."
-            : `${accounts.length} compte${accounts.length > 1 ? "s" : ""}`}
-        </p>
+        <div>
+          <div className="flex items-center gap-2.5">
+            <h1 className="font-bold text-xl tracking-tight">Mes comptes</h1>
+            {accounts.length > 0 ? (
+              <span className="rounded-full border border-border/60 bg-muted px-2 py-0.5 font-medium text-muted-foreground text-xs tabular-nums">
+                {accounts.length}
+              </span>
+            ) : null}
+          </div>
+          {accounts.length > 0 ? (
+            <p className="mt-0.5 font-mono font-semibold tabular-nums text-sm text-muted-foreground">
+              {totalBalance.toLocaleString("fr-FR", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}{" "}
+              € total
+            </p>
+          ) : (
+            <p className="mt-0.5 text-muted-foreground text-sm">
+              Aucun compte pour le moment.
+            </p>
+          )}
+        </div>
         <DiscoveryTooltip
           actionLabel="Créer un compte épargne"
           checklistCompleted={checklistCompleted}
@@ -171,6 +191,7 @@ export function AccountsClient({
           tooltipsSeen={tooltipsSeen}
         >
           <Button
+            className="btn-gradient-primary hover:opacity-90"
             onClick={() => {
               setEditValues(undefined)
               setModalOpen(true)
@@ -207,16 +228,22 @@ export function AccountsClient({
           </SortableContext>
         </DndContext>
       ) : (
-        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed p-10 text-center">
-          <p className="text-muted-foreground text-sm">
-            Créez votre premier compte pour commencer à suivre vos finances.
-          </p>
+        <div className="flex flex-col items-center gap-4 rounded-xl border border-border/50 border-dashed py-20 text-center">
+          <div className="flex size-14 items-center justify-center rounded-2xl border border-border bg-card">
+            <Plus className="size-6 text-muted-foreground" />
+          </div>
+          <div className="space-y-1.5">
+            <p className="font-semibold text-foreground text-sm">Aucun compte</p>
+            <p className="text-muted-foreground text-xs">
+              Créez votre premier compte pour commencer à suivre vos finances.
+            </p>
+          </div>
           <Button
+            className="btn-gradient-primary hover:opacity-90"
             onClick={() => {
               setEditValues(undefined)
               setModalOpen(true)
             }}
-            variant="outline"
           >
             <Plus className="size-4" />
             Créer un compte

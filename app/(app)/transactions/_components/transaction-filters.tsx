@@ -362,7 +362,7 @@ export function TransactionFilters({
                       </span>
                       <Input
                         aria-label="Date de début"
-                        className="h-8 flex-1 text-xs"
+                        className="h-9 flex-1 rounded-lg border-border bg-card text-xs"
                         onChange={(e) => onChange({ dateFrom: e.target.value })}
                         type="date"
                         value={value.dateFrom}
@@ -374,7 +374,7 @@ export function TransactionFilters({
                       </span>
                       <Input
                         aria-label="Date de fin"
-                        className="h-8 flex-1 text-xs"
+                        className="h-9 flex-1 rounded-lg border-border bg-card text-xs"
                         onChange={(e) => onChange({ dateTo: e.target.value })}
                         type="date"
                         value={value.dateTo}
@@ -391,7 +391,7 @@ export function TransactionFilters({
                   <div className="flex items-center gap-2">
                     <Input
                       aria-label="Montant minimum"
-                      className="h-8 text-xs"
+                      className="h-9 rounded-lg border-border bg-card text-xs"
                       min={0}
                       onChange={(e) => onChange({ amountMin: e.target.value })}
                       placeholder="Min"
@@ -403,7 +403,7 @@ export function TransactionFilters({
                     </span>
                     <Input
                       aria-label="Montant maximum"
-                      className="h-8 text-xs"
+                      className="h-9 rounded-lg border-border bg-card text-xs"
                       min={0}
                       onChange={(e) => onChange({ amountMax: e.target.value })}
                       placeholder="Max"
@@ -444,7 +444,7 @@ export function TransactionFilters({
                     </div>
                   ) : null}
                   <Input
-                    className="h-8 text-xs"
+                    className="h-9 rounded-lg border-border bg-card text-xs"
                     onChange={(e) => setTagInput(e.target.value)}
                     onKeyDown={handleTagKeyDown}
                     placeholder="Ajouter un tag…"
@@ -560,10 +560,10 @@ export function TransactionFilters({
         {TYPE_OPTIONS.map((opt) => (
           <button
             className={cn(
-              "whitespace-nowrap rounded-full border px-3 py-1 font-medium text-xs transition-colors",
+              "whitespace-nowrap rounded-full border px-3 py-1 font-medium text-xs transition-all duration-150",
               value.type === opt.value
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
+                ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                : "border-border/60 bg-card text-muted-foreground hover:border-border hover:bg-surface-elevated hover:text-foreground"
             )}
             key={opt.value}
             onClick={() => onChange({ type: opt.value })}
@@ -578,28 +578,28 @@ export function TransactionFilters({
       {activeChips.length > 0 ? (
         <div className="flex flex-wrap items-center gap-1.5">
           {activeChips.map((chip) => (
-            <Badge
-              className="gap-1 pr-1 font-normal"
+            <span
+              className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 font-medium text-primary text-xs"
               key={chip.label}
-              variant="secondary"
             >
               {chip.label}
               <button
                 aria-label={`Retirer ${chip.label}`}
-                className="ml-0.5 hover:text-destructive"
+                className="ml-0.5 flex size-3.5 items-center justify-center rounded-full hover:bg-primary/20"
                 onClick={chip.onRemove}
                 type="button"
               >
-                <X className="size-3" />
+                <X className="size-2.5" />
               </button>
-            </Badge>
+            </span>
           ))}
           <button
-            className="text-[11px] text-muted-foreground underline underline-offset-2 hover:text-foreground"
+            className="flex size-5 items-center justify-center rounded-full border border-border bg-muted text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
             onClick={clearAll}
+            title="Effacer tous les filtres"
             type="button"
           >
-            Tout effacer
+            <X className="size-3" />
           </button>
         </div>
       ) : null}

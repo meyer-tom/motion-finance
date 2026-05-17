@@ -5,13 +5,6 @@ import { useState, useTransition } from "react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -47,14 +40,15 @@ export function DataSection() {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Exporter mes données</CardTitle>
-          <CardDescription>
+      {/* Export */}
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="border-b border-border/60 px-6 py-5">
+          <h2 className="font-semibold text-base">Exporter mes données</h2>
+          <p className="mt-1 text-muted-foreground text-sm">
             Téléchargez toutes vos transactions au format CSV (compatible Excel)
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+        <div className="px-6 py-6">
           <Button onClick={handleExport} type="button" variant="outline">
             <Download className="mr-2 h-4 w-4" />
             Télécharger le CSV
@@ -62,21 +56,22 @@ export function DataSection() {
           <p className="mt-2 text-muted-foreground text-xs">
             Inclut : date, type, montant, catégorie, compte, description et tags
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <Card className="border-destructive/30">
-        <CardHeader>
-          <CardTitle className="text-destructive">
+      {/* Suppression du compte */}
+      <div className="overflow-hidden rounded-2xl border border-destructive/20 bg-card">
+        <div className="border-b border-destructive/15 px-6 py-5">
+          <h2 className="font-semibold text-base text-destructive">
             Supprimer mon compte
-          </CardTitle>
-          <CardDescription>
+          </h2>
+          <p className="mt-1 text-muted-foreground text-sm">
             Cette action est irréversible. Toutes vos données seront
             définitivement supprimées : comptes, transactions, budgets,
             objectifs.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+        <div className="px-6 py-6">
           <Dialog onOpenChange={setDeleteOpen} open={deleteOpen}>
             <DialogTrigger asChild>
               <Button type="button" variant="destructive">
@@ -134,8 +129,8 @@ export function DataSection() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

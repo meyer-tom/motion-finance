@@ -4,15 +4,13 @@ import type { ReactNode } from "react"
 import { Suspense } from "react"
 
 import { BottomNav } from "@/components/app/bottom-nav"
-import { Header } from "@/components/app/header"
-import { AppSidebar } from "@/components/app/sidebar"
+import { TopNav } from "@/components/app/top-nav"
 import { InstallBanner } from "@/components/pwa/install-banner"
 import type {
   AccountOption,
   CategoryOption,
 } from "@/components/transactions/transaction-form-sheet"
 import { TransactionFormSheet } from "@/components/transactions/transaction-form-sheet"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import type { User } from "@/lib/auth"
 import { TransactionFormProvider } from "@/lib/context/transaction-form-context"
 
@@ -33,17 +31,13 @@ export function AppShell({
 }: AppShellProps) {
   return (
     <TransactionFormProvider>
-      <SidebarProvider>
-        <AppSidebar user={user} />
-        <SidebarInset className="min-w-0 overflow-x-hidden">
-          <Header user={user} />
-          {/* pb sur mobile pour laisser la place à la bottom nav (56px + safe area) */}
-          <div className="p-4 pb-[calc(1rem+56px+env(safe-area-inset-bottom))] md:p-6 md:pb-6">
-            {children}
-          </div>
-          <BottomNav />
-        </SidebarInset>
-      </SidebarProvider>
+      <div className="flex min-h-svh flex-col">
+        <TopNav user={user} />
+        <main className="mx-auto w-full max-w-screen-2xl flex-1 px-4 pb-[calc(1.5rem+56px+env(safe-area-inset-bottom))] pt-6 md:pb-8 lg:px-6">
+          {children}
+        </main>
+        <BottomNav />
+      </div>
       {/* Suspense requis car TransactionFormProvider utilise useSearchParams */}
       <Suspense>
         <TransactionFormSheet

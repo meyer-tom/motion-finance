@@ -9,7 +9,6 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 
 const STEPS = [
@@ -63,20 +62,18 @@ export function OnboardingChecklist({ completedSteps }: Props) {
   const firstPendingId = STEPS.find((s) => !completedSet.has(s.id))?.id
 
   return (
-    <Card className="overflow-hidden p-0 shadow-md">
-      {/* Header gradient — entièrement cliquable */}
+    <div className="overflow-hidden rounded-2xl border border-primary/25 shadow-sm">
+      {/* Header — entièrement cliquable */}
       <button
         className="w-full cursor-pointer select-none text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
         onClick={() => setCollapsed((c) => !c)}
         type="button"
       >
-        <div className="relative overflow-hidden bg-gradient-to-br from-violet-600 to-purple-700 px-5 py-4">
-          {/* Cercles décoratifs */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-primary to-blue-600 px-5 py-4">
           <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/5" />
           <div className="absolute -bottom-10 -left-4 h-24 w-24 rounded-full bg-white/5" />
 
           <div className="relative flex items-center gap-3">
-            {/* Badge compteur */}
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15 font-bold text-sm text-white ring-1 ring-white/20">
               {completedCount}/{STEPS.length}
             </div>
@@ -85,14 +82,13 @@ export function OnboardingChecklist({ completedSteps }: Props) {
               <p className="font-semibold text-sm leading-tight text-white">
                 Démarrage
               </p>
-              <p className="mt-0.5 text-violet-200 text-xs">
+              <p className="mt-0.5 text-blue-100 text-xs">
                 {STEPS.length - completedCount > 0
                   ? `${STEPS.length - completedCount} étape${STEPS.length - completedCount > 1 ? "s" : ""} restante${STEPS.length - completedCount > 1 ? "s" : ""}`
                   : "Toutes les étapes complétées !"}
               </p>
             </div>
 
-            {/* Mini progress — visible sm+ */}
             <div className="hidden w-24 sm:block">
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/20">
                 <div
@@ -103,28 +99,17 @@ export function OnboardingChecklist({ completedSteps }: Props) {
             </div>
 
             {collapsed ? (
-              <ChevronDown
-                aria-hidden="true"
-                className="h-4 w-4 shrink-0 text-white/70"
-              />
+              <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0 text-white/70" />
             ) : (
-              <ChevronUp
-                aria-hidden="true"
-                className="h-4 w-4 shrink-0 text-white/70"
-              />
+              <ChevronUp aria-hidden="true" className="h-4 w-4 shrink-0 text-white/70" />
             )}
           </div>
         </div>
 
-        {/* Barre pleine largeur quand déplié */}
         {!collapsed && (
           <Progress
             className="h-1 rounded-none"
-            style={
-              {
-                "--progress-color": "hsl(var(--color-accent))",
-              } as React.CSSProperties
-            }
+            style={{ "--progress-color": "var(--primary)" } as React.CSSProperties}
             value={progress}
           />
         )}
@@ -132,27 +117,11 @@ export function OnboardingChecklist({ completedSteps }: Props) {
 
       {/* Liste des étapes */}
       {!collapsed && (
-        <CardContent className="px-3 pb-3 pt-2">
+        <div className="bg-card px-3 pb-3 pt-2">
           <ul className="space-y-0.5">
             {STEPS.map((step) => {
               const isCompleted = completedSet.has(step.id)
               const isNext = step.id === firstPendingId
-
-              let circleColor: string
-              if (isNext) {
-                circleColor = "hsl(var(--color-accent))"
-              } else {
-                circleColor = "hsl(var(--foreground) / 0.2)"
-              }
-
-              let labelClass: string
-              if (isCompleted) {
-                labelClass = "line-through text-muted-foreground"
-              } else if (isNext) {
-                labelClass = "font-medium text-foreground"
-              } else {
-                labelClass = "text-foreground/70"
-              }
 
               return (
                 <li key={step.id}>
@@ -162,8 +131,8 @@ export function OnboardingChecklist({ completedSteps }: Props) {
                     style={
                       isNext
                         ? {
-                            background: "hsl(var(--color-accent) / 0.1)",
-                            boxShadow: "inset 3px 0 0 hsl(var(--color-accent) / 0.7)",
+                            background: "color-mix(in oklch, var(--primary) 10%, transparent)",
+                            boxShadow: "inset 3px 0 0 color-mix(in oklch, var(--primary) 70%, transparent)",
                           }
                         : undefined
                     }
@@ -171,31 +140,40 @@ export function OnboardingChecklist({ completedSteps }: Props) {
                     {isCompleted ? (
                       <CheckCircle2
                         aria-hidden="true"
-                        className="h-4 w-4 shrink-0"
-                        style={{ color: "hsl(var(--color-income))" }}
+                        className="h-4 w-4 shrink-0 text-[var(--color-income)]"
                       />
                     ) : (
                       <Circle
                         aria-hidden="true"
                         className="h-4 w-4 shrink-0"
-                        style={{ color: circleColor }}
+                        style={{
+                          color: isNext ? "var(--primary)" : "oklch(from var(--foreground) l c h / 0.2)",
+                        }}
                       />
                     )}
-                    <span className={`flex-1 text-sm leading-snug ${labelClass}`}>
+                    <span
+                      className={`flex-1 text-sm leading-snug ${
+                        isCompleted
+                          ? "text-muted-foreground line-through"
+                          : isNext
+                            ? "font-medium text-foreground"
+                            : "text-foreground/70"
+                      }`}
+                    >
                       {step.label}
                     </span>
                     <ChevronRight
                       aria-hidden="true"
                       className="h-3.5 w-3.5 shrink-0 opacity-30 transition-opacity group-hover:opacity-70"
-                      style={isNext ? { color: "hsl(var(--color-accent))" } : undefined}
+                      style={isNext ? { color: "var(--primary)" } : undefined}
                     />
                   </Link>
                 </li>
               )
             })}
           </ul>
-        </CardContent>
+        </div>
       )}
-    </Card>
+    </div>
   )
 }

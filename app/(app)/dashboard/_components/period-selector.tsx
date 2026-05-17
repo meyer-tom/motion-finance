@@ -181,11 +181,11 @@ export function PeriodSelector({ periodKey }: Props) {
   return (
     <div className="flex flex-1 flex-col gap-2 md:flex-none md:flex-row md:flex-wrap md:items-center">
       {/* Segment control — pleine largeur sur mobile, auto sur desktop */}
-      <div className="relative flex w-full rounded-xl border bg-muted/40 p-1 md:w-auto">
+      <div className="relative flex w-full rounded-xl border border-border bg-card p-1 md:w-auto">
         {activeIndex >= 0 && (
           <div
             aria-hidden
-            className="pointer-events-none absolute top-1 bottom-1 rounded-lg bg-background shadow-sm transition-all duration-200 ease-in-out"
+            className="pointer-events-none absolute top-1 bottom-1 rounded-lg bg-primary/15 transition-all duration-200 ease-in-out"
             style={{
               width: `calc((100% - 8px) / ${PERIODS.length})`,
               left: `calc(4px + ${activeIndex} * (100% - 8px) / ${PERIODS.length})`,
@@ -197,7 +197,7 @@ export function PeriodSelector({ periodKey }: Props) {
             className={cn(
               "relative z-10 flex flex-1 items-center justify-center rounded-lg px-4 py-1.5 font-medium text-sm transition-colors duration-150",
               periodKey === key
-                ? "text-foreground"
+                ? "text-primary"
                 : "text-muted-foreground hover:text-foreground"
             )}
             key={key}

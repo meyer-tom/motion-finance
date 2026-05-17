@@ -53,8 +53,8 @@ function BarChartTooltip({
     return null
   }
   return (
-    <div className="rounded-xl border bg-background px-3 py-2.5 shadow-lg">
-      <p className="mb-2 font-semibold text-xs">{label}</p>
+    <div className="rounded-xl border border-border bg-card px-3 py-2.5 shadow-xl shadow-black/30">
+      <p className="mb-2 font-semibold text-foreground text-xs">{label}</p>
       {payload.map((item) => (
         <div className="flex items-center gap-2 text-xs" key={item.name}>
           <span
@@ -62,7 +62,7 @@ function BarChartTooltip({
             style={{ backgroundColor: item.fill ?? item.color }}
           />
           <span className="text-muted-foreground">{item.name}</span>
-          <span className="ml-auto pl-4 font-medium tabular-nums">
+          <span className="ml-auto pl-4 font-mono font-medium tabular-nums text-foreground">
             {formatAmount(item.value, currency)}
           </span>
         </div>

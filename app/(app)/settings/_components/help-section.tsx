@@ -5,13 +5,6 @@ import { useRouter } from "next/navigation"
 import { useTransition } from "react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import { resetOnboarding } from "@/lib/actions/settings"
 
 export function HelpSection() {
@@ -31,14 +24,14 @@ export function HelpSection() {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Tutoriel d'introduction</CardTitle>
-          <CardDescription>
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="border-b border-border/60 px-6 py-5">
+          <h2 className="font-semibold text-base">Tutoriel d'introduction</h2>
+          <p className="mt-1 text-muted-foreground text-sm">
             Revoir les étapes de démarrage et les conseils d'utilisation
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
+          </p>
+        </div>
+        <div className="space-y-3 px-6 py-6">
           <Button disabled={isPending} onClick={handleReset} type="button" variant="outline">
             <RotateCcw className="mr-2 h-4 w-4" />
             {isPending ? "Redirection…" : "Revoir le tutoriel"}
@@ -47,8 +40,8 @@ export function HelpSection() {
             Votre progression et vos données ne seront pas supprimées — seules
             les étapes de l'onboarding seront réinitialisées.
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

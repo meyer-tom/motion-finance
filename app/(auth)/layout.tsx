@@ -8,21 +8,19 @@ export default function AuthLayout({
   readonly children: ReactNode
 }) {
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center p-4">
-      {/* Gradient background */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,oklch(0.92_0.05_293)_0%,transparent_60%)] dark:bg-[radial-gradient(ellipse_at_top,oklch(0.22_0.04_293)_0%,transparent_60%)]"
-      />
+    <div className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-background px-4 py-8">
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10">
+        <div className="blob-float absolute top-[-8%] left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-primary/[0.1] blur-[130px] dark:bg-primary/[0.14]" />
+        <div className="blob-float-delayed absolute right-[-8%] bottom-[-8%] h-[420px] w-[420px] rounded-full bg-[var(--color-income)]/[0.06] blur-[120px] dark:bg-[var(--color-income)]/[0.09]" />
+        <div className="absolute bottom-[15%] left-[-6%] h-[360px] w-[360px] rounded-full bg-violet-600/[0.06] blur-[120px] dark:bg-violet-600/[0.1]" />
+      </div>
 
-      {/* Logo */}
       <div className="mb-8 flex flex-col items-center gap-3">
-        <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-violet-600/30 bg-white shadow-md dark:border-indigo-500/30 dark:bg-[#0f0f1a]">
-          <BarChartSvg size={38} />
+        <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-violet-700 shadow-lg shadow-primary/30">
+          <BarChartSvg size={32} />
         </div>
-        <span className="font-extrabold text-3xl text-slate-900 tracking-[-0.04em] dark:text-white">
-          Motion{" "}
-          <span className="text-violet-700 dark:text-violet-400">Finance</span>
+        <span className="font-bold text-2xl tracking-[-0.02em]">
+          Motion <span className="text-primary">Finance</span>
         </span>
       </div>
 

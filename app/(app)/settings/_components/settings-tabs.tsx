@@ -153,10 +153,10 @@ export function SettingsTabs({
             </Select>
           </div>
 
-          <div className="relative hidden rounded-xl bg-muted p-1 sm:flex">
+          <div className="relative hidden rounded-xl border border-border bg-card p-1 sm:flex">
             <div
               aria-hidden
-              className="pointer-events-none absolute top-1 bottom-1 rounded-lg bg-background shadow-sm transition-all duration-200"
+              className="pointer-events-none absolute top-1 bottom-1 rounded-lg bg-primary/15 transition-all duration-200"
               style={{
                 width: `calc((100% - 8px) / ${TABS.length})`,
                 left: `calc(4px + ${tabIndex} * (100% - 8px) / ${TABS.length})`,
@@ -167,8 +167,8 @@ export function SettingsTabs({
                 className={cn(
                   "relative z-10 flex flex-1 items-center justify-center rounded-lg py-1.5 font-medium text-sm transition-colors duration-150",
                   activeTab === tab
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground/70"
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-foreground"
                 )}
                 key={tab}
                 onClick={() => handleTabChange(tab)}

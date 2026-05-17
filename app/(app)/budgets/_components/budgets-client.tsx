@@ -146,7 +146,7 @@ export function BudgetsClient({
       </DiscoveryTooltip>
 
       {/* Sélecteur de mois */}
-      <div className="flex items-center justify-between rounded-lg border bg-card px-2 py-1.5">
+      <div className="flex items-center justify-between rounded-lg border border-border bg-card px-2 py-1.5">
         <Button
           aria-label="Mois précédent"
           className="size-8"
@@ -239,10 +239,10 @@ function ReconductionBanner({
   }
 
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg border bg-card p-4">
+    <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-card p-4">
       <div className="flex min-w-0 items-center gap-3">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-          <CalendarCheck className="size-4 text-muted-foreground" />
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+          <CalendarCheck className="size-4 text-primary" />
         </span>
         <div className="min-w-0">
           <p className="font-medium text-sm">
@@ -269,17 +269,17 @@ function ReconductionBanner({
 
 function EmptyBudgets({ onAdd }: { onAdd: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed py-16 text-center">
-      <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+    <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-border/50 border-dashed py-20 text-center">
+      <div className="flex size-14 items-center justify-center rounded-2xl border border-border bg-card">
         <Wallet className="size-6 text-muted-foreground" />
       </div>
-      <div className="space-y-1">
-        <p className="font-medium text-sm">Aucun budget ce mois-ci</p>
+      <div className="space-y-1.5">
+        <p className="font-semibold text-foreground text-sm">Aucun budget ce mois-ci</p>
         <p className="text-muted-foreground text-xs">
           Définissez un plafond par catégorie pour suivre vos dépenses.
         </p>
       </div>
-      <Button onClick={onAdd} size="sm" variant="outline">
+      <Button className="btn-gradient-primary hover:opacity-90" onClick={onAdd} size="sm">
         <Plus className="size-4" />
         Créer un budget
       </Button>

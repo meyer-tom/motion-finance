@@ -7,7 +7,6 @@ import {
   Bell,
   CheckCircle2,
   Info,
-  Trash2,
   X,
 } from "lucide-react"
 import { useState } from "react"
@@ -38,7 +37,12 @@ type NotificationType = Notification["type"]
 
 const TYPE_CONFIG: Record<
   NotificationType,
-  { icon: React.ElementType; iconClass: string; bgClass: string; barClass: string }
+  {
+    icon: React.ElementType
+    iconClass: string
+    bgClass: string
+    barClass: string
+  }
 > = {
   WARNING: {
     icon: AlertTriangle,
@@ -71,17 +75,25 @@ const TYPE_CONFIG: Record<
 function relativeTime(date: Date): string {
   const diff = Date.now() - new Date(date).getTime()
   const minutes = Math.floor(diff / 60_000)
-  if (minutes < 1) return "À l'instant"
-  if (minutes < 60) return `il y a ${minutes} min`
+  if (minutes < 1) {
+    return "À l'instant"
+  }
+  if (minutes < 60) {
+    return `il y a ${minutes} min`
+  }
   const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `il y a ${hours}h`
+  if (hours < 24) {
+    return `il y a ${hours}h`
+  }
   return `il y a ${Math.floor(hours / 24)}j`
 }
 
 /* ── Sous-composants ────────────────────────────────────────────────────── */
 
 function NotificationBadge({ count }: { count: number }) {
-  if (count === 0) return null
+  if (count === 0) {
+    return null
+  }
   return (
     <span className="absolute top-1 right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-0.5 font-semibold text-[10px] text-white leading-none">
       {count > 9 ? "9+" : count}
@@ -98,7 +110,12 @@ function NotificationItem({
   onMarkRead: (id: string) => void
   onDelete: (id: string) => void
 }) {
-  const { icon: Icon, iconClass, bgClass, barClass } = TYPE_CONFIG[notification.type]
+  const {
+    icon: Icon,
+    iconClass,
+    bgClass,
+    barClass,
+  } = TYPE_CONFIG[notification.type]
   const unread = !notification.isRead
 
   return (
@@ -132,7 +149,9 @@ function NotificationItem({
       <button
         className="min-w-0 flex-1 text-left"
         onClick={() => {
-          if (unread) onMarkRead(notification.id)
+          if (unread) {
+            onMarkRead(notification.id)
+          }
         }}
         type="button"
       >
@@ -157,7 +176,7 @@ function NotificationItem({
       {/* Bouton supprimer — toujours visible mobile, hover sur desktop */}
       <button
         aria-label="Supprimer"
-        className="shrink-0 rounded-md p-1 text-muted-foreground transition-all hover:bg-muted hover:text-foreground opacity-100 md:opacity-0 md:group-hover:opacity-100"
+        className="shrink-0 rounded-md p-1 text-muted-foreground opacity-100 transition-all hover:bg-muted hover:text-foreground md:opacity-0 md:group-hover:opacity-100"
         onClick={() => onDelete(notification.id)}
         type="button"
       >
@@ -194,7 +213,9 @@ function HeaderActions({
   onMarkAll: () => void
   onDeleteAll: () => void
 }) {
-  if (!hasUnread && !hasNotifications) return null
+  if (!(hasUnread || hasNotifications)) {
+    return null
+  }
 
   return (
     <div className="flex items-center gap-3">
@@ -238,28 +259,24 @@ export function NotificationPopover() {
   const { mutate: markAll } = useMutation({
     mutationFn: markAllNotificationsAsRead,
     onMutate: () =>
-      queryClient.setQueryData(
-        ["notifications"],
-        (old: Notification[] = []) => old.map((n) => ({ ...n, isRead: true }))
+      queryClient.setQueryData(["notifications"], (old: Notification[] = []) =>
+        old.map((n) => ({ ...n, isRead: true }))
       ),
   })
 
   const { mutate: markOne } = useMutation({
     mutationFn: markNotificationAsRead,
     onMutate: (id) =>
-      queryClient.setQueryData(
-        ["notifications"],
-        (old: Notification[] = []) =>
-          old.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+      queryClient.setQueryData(["notifications"], (old: Notification[] = []) =>
+        old.map((n) => (n.id === id ? { ...n, isRead: true } : n))
       ),
   })
 
   const { mutate: deleteOne } = useMutation({
     mutationFn: deleteNotification,
     onMutate: (id) =>
-      queryClient.setQueryData(
-        ["notifications"],
-        (old: Notification[] = []) => old.filter((n) => n.id !== id)
+      queryClient.setQueryData(["notifications"], (old: Notification[] = []) =>
+        old.filter((n) => n.id !== id)
       ),
   })
 
@@ -271,7 +288,9 @@ export function NotificationPopover() {
 
   function handleOpenChange(next: boolean) {
     setOpen(next)
-    if (next) void refetch()
+    if (next) {
+      refetch()
+    }
   }
 
   const unreadCount = notifications.filter((n) => !n.isRead).length
@@ -341,7 +360,7 @@ export function NotificationPopover() {
       <PopoverTrigger asChild>
         <Button
           aria-label="Notifications"
-          className="relative"
+          className="relative h-10 w-10 rounded-full bg-background shadow-sm hover:shadow-md"
           size="icon"
           variant="ghost"
         >

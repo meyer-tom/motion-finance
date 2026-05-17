@@ -7,13 +7,6 @@ import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
@@ -150,14 +143,15 @@ export function ProfileSection({ user }: ProfileSectionProps) {
 
   return (
     <div className="space-y-6">
-      {/* Photo */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Photo de profil</CardTitle>
-          <CardDescription>JPEG, PNG, WebP — 2 Mo max</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {/* Drop zone */}
+      {/* Photo de profil */}
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="border-b border-border/60 px-6 py-5">
+          <h2 className="font-semibold text-base">Photo de profil</h2>
+          <p className="mt-1 text-muted-foreground text-sm">
+            JPEG, PNG, WebP — 2 Mo max
+          </p>
+        </div>
+        <div className="px-6 py-6">
           <button
             className={cn(
               "relative flex w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-8 transition-all duration-200",
@@ -173,7 +167,6 @@ export function ProfileSection({ user }: ProfileSectionProps) {
             onDrop={handleDrop}
             type="button"
           >
-            {/* Avatar preview */}
             <div className="relative">
               <Avatar className="h-20 w-20 shadow-md ring-4 ring-background">
                 <AvatarImage alt={user.name} src={previewUrl ?? undefined} />
@@ -181,13 +174,11 @@ export function ProfileSection({ user }: ProfileSectionProps) {
                   {getInitials()}
                 </AvatarFallback>
               </Avatar>
-              {/* Overlay camera icon */}
               <div className="absolute -right-1 -bottom-1 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">
                 <Camera className="h-3.5 w-3.5" />
               </div>
             </div>
 
-            {/* Text hint */}
             {isUploading ? (
               <div className="flex flex-col items-center gap-1">
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
@@ -217,18 +208,18 @@ export function ProfileSection({ user }: ProfileSectionProps) {
             ref={fileInputRef}
             type="file"
           />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Informations personnelles */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Informations personnelles</CardTitle>
-          <CardDescription>
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="border-b border-border/60 px-6 py-5">
+          <h2 className="font-semibold text-base">Informations personnelles</h2>
+          <p className="mt-1 text-muted-foreground text-sm">
             Votre prénom et nom affichés dans l'application
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+        <div className="px-6 py-6">
           <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
@@ -272,18 +263,18 @@ export function ProfileSection({ user }: ProfileSectionProps) {
               )}
             </Button>
           </form>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {/* Email */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Adresse email</CardTitle>
-          <CardDescription>
+      {/* Adresse email */}
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="border-b border-border/60 px-6 py-5">
+          <h2 className="font-semibold text-base">Adresse email</h2>
+          <p className="mt-1 text-muted-foreground text-sm">
             Adresse actuelle : <strong>{user.email}</strong>
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+          </p>
+        </div>
+        <div className="space-y-4 px-6 py-6">
           {emailSent ? (
             <p className="text-muted-foreground text-sm">
               Un lien de vérification a été envoyé à <strong>{newEmail}</strong>
@@ -326,8 +317,8 @@ export function ProfileSection({ user }: ProfileSectionProps) {
             Un email de vérification sera envoyé à votre nouvelle adresse. Le
             changement sera effectif après confirmation.
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

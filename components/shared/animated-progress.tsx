@@ -29,6 +29,7 @@ function resolveColor(variant: Variant, value: number): string {
 
 interface AnimatedProgressProps {
   className?: string
+  progressClassName?: string
   value: number
   variant?: Variant
 }
@@ -37,6 +38,7 @@ export function AnimatedProgress({
   value,
   variant = "auto",
   className,
+  progressClassName,
 }: AnimatedProgressProps) {
   const ref = useRef<HTMLDivElement>(null)
   const [displayed, setDisplayed] = useState(0)
@@ -76,6 +78,7 @@ export function AnimatedProgress({
   return (
     <div className={cn("w-full", className)} ref={ref}>
       <Progress
+        className={progressClassName}
         style={{ "--progress-color": color } as React.CSSProperties}
         value={displayed}
       />
