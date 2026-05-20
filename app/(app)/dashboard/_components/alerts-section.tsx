@@ -27,7 +27,7 @@ export async function AlertsSection({ periodKey }: Props) {
 
   if (budgetSummary.total === 0) {
     return (
-      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+      <div className="overflow-hidden rounded-3xl border border-border bg-card">
         <div className="border-b border-border/60 px-5 py-3.5">
           <span className="section-title">Budgets</span>
         </div>
@@ -45,7 +45,7 @@ export async function AlertsSection({ periodKey }: Props) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+    <div className="flex flex-col overflow-hidden rounded-3xl border border-border bg-card">
       <div className="flex items-center justify-between border-b border-border/60 px-5 py-3.5">
         <div className="flex items-center gap-2">
           <span className="section-title">Budgets</span>
@@ -66,7 +66,7 @@ export async function AlertsSection({ periodKey }: Props) {
           <ArrowRight className="size-3" />
         </Link>
       </div>
-      <ul className="space-y-4 overflow-y-auto px-5 py-4 [max-height:272px]">
+      <ul className="space-y-4 overflow-y-auto px-5 py-4 [max-height:340px]">
         {allBudgets.map((budget) => {
           const IconComp = getCategoryIcon(budget.categoryIcon)
           return (

@@ -90,7 +90,7 @@ export function MonthlyBarChart({ chart }: Props) {
   }
 
   return (
-    <ResponsiveContainer height={200} width="100%">
+    <ResponsiveContainer height={250} width="100%">
       <BarChart
         barCategoryGap="20%"
         barGap={2}

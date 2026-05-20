@@ -26,7 +26,7 @@ export async function GoalsSection({ periodKey }: Props) {
 
   if (goals.length === 0) {
     return (
-      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+      <div className="overflow-hidden rounded-3xl border border-border bg-card">
         <div className="border-b border-border/60 px-5 py-3.5">
           <span className="section-title">Objectifs d'épargne</span>
         </div>
@@ -47,7 +47,7 @@ export async function GoalsSection({ periodKey }: Props) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+    <div className="overflow-hidden rounded-3xl border border-border bg-card">
       <div className="flex items-center justify-between border-b border-border/60 px-5 py-3.5">
         <span className="section-title">Objectifs d'épargne</span>
         <Link

@@ -358,15 +358,14 @@ export function NotificationPopover() {
   return (
     <Popover onOpenChange={handleOpenChange} open={open}>
       <PopoverTrigger asChild>
-        <Button
+        <button
           aria-label="Notifications"
-          className="relative h-10 w-10 rounded-full bg-background shadow-sm hover:shadow-md"
-          size="icon"
-          variant="ghost"
+          className="relative flex h-10 w-10 items-center justify-center rounded-full bg-background text-muted-foreground shadow-sm transition-all hover:text-foreground hover:shadow-md"
+          type="button"
         >
           <Bell className="h-[18px] w-[18px]" />
           <NotificationBadge count={unreadCount} />
-        </Button>
+        </button>
       </PopoverTrigger>
 
       <PopoverContent

@@ -56,6 +56,7 @@ function CustomTooltip({
 
 export function CategoryDonutChart({ categoryBreakdown }: Props) {
   const { currency } = useCurrency()
+
   if (categoryBreakdown.length === 0) {
     return (
       <div className="flex h-40 items-center justify-center text-muted-foreground text-sm">
@@ -72,29 +73,32 @@ export function CategoryDonutChart({ categoryBreakdown }: Props) {
   }))
 
   return (
-    <div>
-      <ResponsiveContainer height={200} width="100%">
-        <PieChart>
-          <Pie
-            cx="50%"
-            cy="50%"
-            data={data}
-            dataKey="value"
-            innerRadius="52%"
-            outerRadius="80%"
-            paddingAngle={2}
-            stroke="none"
-          >
-            {data.map((entry) => (
-              <Cell fill={entry.fill} key={entry.categoryName} />
-            ))}
-          </Pie>
-          <Tooltip content={<CustomTooltip currency={currency} />} />
-        </PieChart>
-      </ResponsiveContainer>
+    <div className="flex items-center gap-5">
+      {/* Anneau */}
+      <div className="h-[160px] w-[160px] shrink-0">
+        <ResponsiveContainer height="100%" width="100%">
+          <PieChart>
+            <Pie
+              cx="50%"
+              cy="50%"
+              data={data}
+              dataKey="value"
+              innerRadius="52%"
+              outerRadius="82%"
+              paddingAngle={2}
+              stroke="none"
+            >
+              {data.map((entry) => (
+                <Cell fill={entry.fill} key={entry.categoryName} />
+              ))}
+            </Pie>
+            <Tooltip content={<CustomTooltip currency={currency} />} />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
 
-      {/* Légende manuelle avec vraies icônes Lucide */}
-      <ul className="mt-2 space-y-1.5">
+      {/* Légende à droite */}
+      <ul className="min-w-0 flex-1 space-y-2.5">
         {data.map((entry) => {
           const IconComp = getCategoryIcon(entry.categoryIcon)
           return (

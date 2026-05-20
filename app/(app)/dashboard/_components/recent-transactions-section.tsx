@@ -1,3 +1,5 @@
+import { ArrowRight } from "lucide-react"
+import Link from "next/link"
 import { getDashboardData } from "@/lib/actions/dashboard"
 import { getServerCurrency } from "@/lib/actions/settings"
 import { formatAmount } from "@/lib/utils/format"
@@ -65,7 +67,17 @@ export async function RecentTransactionsSection({ periodKey }: Props) {
   const txs = data.recentTransactions
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+    <div className="flex flex-col overflow-hidden rounded-3xl border border-border bg-card">
+      <div className="flex items-center justify-between border-b border-border/60 px-5 py-3.5">
+        <span className="section-title">Transactions récentes</span>
+        <Link
+          className="flex items-center gap-1 text-[12px] text-muted-foreground transition-colors hover:text-primary"
+          href="/transactions"
+        >
+          Voir tout
+          <ArrowRight className="size-3" />
+        </Link>
+      </div>
       {txs.length === 0 ? (
         <div className="flex flex-col items-center gap-2 px-6 py-14 text-center">
           <p className="text-muted-foreground text-sm">Aucune transaction sur la période</p>

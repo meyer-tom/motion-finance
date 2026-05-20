@@ -25,7 +25,7 @@ function getPeriodLabel(periodKey: string) {
 
 export function TransfersSection({ currency, periodKey, transfers }: Props) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+    <div className="overflow-hidden rounded-3xl border border-border bg-card">
       <div className="flex items-center justify-between border-b border-border/60 px-5 py-3.5">
         <div className="flex items-center gap-2">
           <span className="section-title">Virements</span>

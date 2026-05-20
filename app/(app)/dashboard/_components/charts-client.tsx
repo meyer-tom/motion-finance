@@ -9,7 +9,7 @@ const MonthlyBarChart = dynamic(
     import("./monthly-bar-chart").then((m) => ({ default: m.MonthlyBarChart })),
   {
     ssr: false,
-    loading: () => <Skeleton className="h-52 w-full" />,
+    loading: () => <Skeleton className="h-[250px] w-full" />,
   }
 )
 
@@ -33,7 +33,7 @@ const CategoryDonutChart = dynamic(
   }
 )
 
-function getChartTitle(periodKey: string) {
+function getPeriodTitle(periodKey: string): string {
   if (periodKey === "week") return "Cette semaine"
   if (periodKey === "quarter") return "Ce trimestre"
   if (periodKey === "year") return "Cette année"
@@ -49,13 +49,13 @@ interface Props {
 
 export function ChartsClient({ periodKey, chart, categoryBreakdown }: Props) {
   return (
-    <div className="grid gap-4 md:grid-cols-3">
+    <div className="grid gap-4 md:grid-cols-2">
       {/* Histogramme */}
-      <div className="overflow-hidden rounded-2xl border border-border bg-card md:col-span-2">
+      <div className="overflow-hidden rounded-3xl border border-border bg-card">
         <div className="flex items-center justify-between border-b border-border/60 px-5 py-3.5">
           <span className="section-title">Revenus & dépenses</span>
-          <span className="rounded bg-muted/60 px-2 py-0.5 text-[10px] text-muted-foreground">
-            {getChartTitle(periodKey)}
+          <span className="rounded-full bg-muted/60 px-2.5 py-0.5 text-[10px] text-muted-foreground">
+            {getPeriodTitle(periodKey)}
           </span>
         </div>
         <div className="px-5 pb-5 pt-4">
@@ -64,11 +64,11 @@ export function ChartsClient({ periodKey, chart, categoryBreakdown }: Props) {
       </div>
 
       {/* Anneau */}
-      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+      <div className="flex flex-col overflow-hidden rounded-3xl border border-border bg-card">
         <div className="border-b border-border/60 px-5 py-3.5">
           <span className="section-title">Répartition dépenses</span>
         </div>
-        <div className="px-5 pb-5 pt-4">
+        <div className="flex flex-1 flex-col justify-center px-5 pb-5 pt-4">
           <CategoryDonutChart categoryBreakdown={categoryBreakdown} />
         </div>
       </div>

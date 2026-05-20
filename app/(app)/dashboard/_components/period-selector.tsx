@@ -1,5 +1,6 @@
 "use client"
 
+import { motion } from "framer-motion"
 import { CalendarDays, ChevronDown } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useEffect, useRef, useState } from "react"
@@ -18,6 +19,8 @@ const PERIODS = [
   { key: "quarter", label: "Trimestre" },
   { key: "year", label: "Année" },
 ] as const
+
+const PILL_SPRING = { type: "spring" as const, stiffness: 500, damping: 38 }
 
 interface Props {
   periodKey: string
@@ -153,8 +156,6 @@ export function PeriodSelector({ periodKey }: Props) {
   )
   const [customOpen, setCustomOpen] = useState(false)
 
-  const activeIndex = PERIODS.findIndex((p) => p.key === periodKey)
-
   const navigate = useCallback(
     (key: string) => {
       const params = new URLSearchParams(searchParams.toString())
@@ -180,45 +181,42 @@ export function PeriodSelector({ periodKey }: Props) {
 
   return (
     <div className="flex flex-1 flex-col gap-2 md:flex-none md:flex-row md:flex-wrap md:items-center">
-      {/* Segment control — pleine largeur sur mobile, auto sur desktop */}
-      <div className="relative flex w-full rounded-xl border border-border bg-card p-1 md:w-auto">
-        {activeIndex >= 0 && (
-          <div
-            aria-hidden
-            className="pointer-events-none absolute top-1 bottom-1 rounded-lg bg-primary/15 transition-all duration-200 ease-in-out"
-            style={{
-              width: `calc((100% - 8px) / ${PERIODS.length})`,
-              left: `calc(4px + ${activeIndex} * (100% - 8px) / ${PERIODS.length})`,
-            }}
-          />
-        )}
+      {/* Segment control pills — même style que la navbar */}
+      <div className="relative flex h-11 w-full items-center rounded-full border border-border/50 bg-muted/50 p-1 md:w-auto">
         {PERIODS.map(({ key, label }) => (
           <button
             className={cn(
-              "relative z-10 flex flex-1 items-center justify-center rounded-lg px-4 py-1.5 font-medium text-sm transition-colors duration-150",
+              "relative flex h-9 flex-1 items-center justify-center rounded-full px-4 font-semibold text-sm transition-colors duration-150",
               periodKey === key
-                ? "text-primary"
+                ? "text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground"
             )}
             key={key}
             onClick={() => navigate(key)}
             type="button"
           >
-            {label}
+            {periodKey === key && (
+              <motion.span
+                aria-hidden
+                className="absolute inset-0 rounded-full bg-primary shadow-sm shadow-primary/30"
+                layoutId="period-pill"
+                transition={PILL_SPRING}
+              />
+            )}
+            <span className="relative z-10">{label}</span>
           </button>
         ))}
       </div>
 
-      {/* Bouton période personnalisée — icône seule si pas de période custom sur mobile */}
+      {/* Bouton période personnalisée */}
       <Popover onOpenChange={setCustomOpen} open={customOpen}>
         <PopoverTrigger asChild>
           <button
             className={cn(
-              "flex items-center justify-center gap-1.5 rounded-lg border font-medium text-sm transition-all duration-150",
-              "px-3 py-1.5",
+              "flex h-11 w-full items-center justify-center gap-1.5 rounded-full border px-4 font-semibold text-sm transition-all duration-150 md:w-auto",
               isCustom
-                ? "w-full border-primary/40 bg-primary/10 text-primary md:w-auto"
-                : "w-full bg-muted/40 text-muted-foreground hover:text-foreground md:w-auto"
+                ? "border-primary/40 bg-primary/10 text-primary"
+                : "border-border/50 bg-muted/50 text-muted-foreground hover:text-foreground"
             )}
             type="button"
           >
@@ -226,7 +224,7 @@ export function PeriodSelector({ periodKey }: Props) {
             <span>
               {isCustom
                 ? `${isoToDisplay(customFrom)} → ${isoToDisplay(customTo)}`
-                : "Période personnalisée"}
+                : "Personnalisée"}
             </span>
             <ChevronDown className="ml-auto size-3 shrink-0 md:ml-0" />
           </button>

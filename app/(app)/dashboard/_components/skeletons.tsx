@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export function ChecklistSkeleton() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+    <div className="overflow-hidden rounded-3xl border border-border bg-card">
       <div className="flex items-center justify-between border-border/60 border-b px-5 py-3.5">
         <div className="flex items-center gap-2">
           <Skeleton className="h-3 w-24" />
@@ -25,19 +25,28 @@ export function ChecklistSkeleton() {
 
 export function BalanceSkeleton() {
   return (
-    <div className="relative h-full overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.06] via-card to-card">
-      <div className="px-5 pt-6 pb-5">
-        <Skeleton className="mb-3 h-3 w-20" />
-        <Skeleton className="h-12 w-48" />
-        <div className="mt-6 space-y-2 border-border/50 border-t pt-4">
+    <div className="overflow-hidden rounded-3xl border border-border bg-card">
+      <div className="flex flex-col lg:flex-row">
+        <div className="px-6 pb-5 pt-6 lg:min-w-[280px] lg:border-r lg:border-border/40">
+          <Skeleton className="mb-3 h-3 w-20" />
+          <Skeleton className="h-12 w-52" />
+          <div className="mt-4 flex items-center gap-2">
+            <Skeleton className="h-3 w-3" />
+            <Skeleton className="h-3 w-36" />
+          </div>
+        </div>
+        <div className="flex flex-1 border-t border-border/40 lg:border-t-0">
           {Array.from({ length: 2 }).map((_, i) => (
-            <div className="flex items-center gap-2.5 px-2 py-2" key={i}>
-              <Skeleton className="size-8 shrink-0 rounded-lg" />
-              <div className="flex-1 space-y-1">
-                <Skeleton className="h-3.5 w-28" />
-                <Skeleton className="h-3 w-16" />
+            <div
+              className="flex flex-1 items-center gap-3 border-r border-border/30 px-5 py-4 last:border-r-0"
+              key={i}
+            >
+              <Skeleton className="size-9 shrink-0 rounded-xl" />
+              <div className="flex-1 space-y-1.5">
+                <Skeleton className="h-3.5 w-24" />
+                <Skeleton className="h-3 w-14" />
               </div>
-              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-4 w-20 shrink-0" />
             </div>
           ))}
         </div>
@@ -51,7 +60,7 @@ export function StatsSkeleton() {
     <>
       {Array.from({ length: 3 }).map((_, i) => (
         <div
-          className="flex flex-col gap-3 rounded-2xl border border-border bg-card px-4 py-5 md:px-5"
+          className="flex flex-col gap-3 rounded-3xl border border-border bg-card px-4 py-5 md:px-5"
           key={i}
         >
           <div className="flex items-center gap-1.5">
@@ -69,7 +78,7 @@ export function StatsSkeleton() {
 export function ChartsSkeleton() {
   return (
     <div className="grid gap-4 md:grid-cols-3">
-      <div className="overflow-hidden rounded-2xl border border-border bg-card md:col-span-2">
+      <div className="overflow-hidden rounded-3xl border border-border bg-card md:col-span-2">
         <div className="border-border/60 border-b px-5 py-3.5">
           <Skeleton className="h-3 w-36" />
         </div>
@@ -77,7 +86,7 @@ export function ChartsSkeleton() {
           <Skeleton className="h-52 w-full" />
         </div>
       </div>
-      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+      <div className="overflow-hidden rounded-3xl border border-border bg-card">
         <div className="border-border/60 border-b px-5 py-3.5">
           <Skeleton className="h-3 w-32" />
         </div>
@@ -99,7 +108,7 @@ export function ChartsSkeleton() {
 
 export function TransfersSkeleton() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+    <div className="overflow-hidden rounded-3xl border border-border bg-card">
       <div className="flex items-center justify-between border-border/60 border-b px-5 py-3.5">
         <Skeleton className="h-3 w-20" />
         <Skeleton className="h-3 w-16" />
@@ -121,7 +130,7 @@ export function TransfersSkeleton() {
 
 export function RecentTransactionsSkeleton() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+    <div className="overflow-hidden rounded-3xl border border-border bg-card">
       <div className="divide-y divide-border/60">
         {Array.from({ length: 5 }).map((_, i) => (
           <div className="flex items-center gap-3 px-5 py-3.5" key={i}>
@@ -140,7 +149,7 @@ export function RecentTransactionsSkeleton() {
 
 export function GoalsSkeleton() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+    <div className="overflow-hidden rounded-3xl border border-border bg-card">
       <div className="flex items-center justify-between border-border/60 border-b px-5 py-3.5">
         <Skeleton className="h-3 w-36" />
         <Skeleton className="h-3 w-14" />
@@ -166,7 +175,7 @@ export function GoalsSkeleton() {
 
 export function AlertsSkeleton() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+    <div className="overflow-hidden rounded-3xl border border-border bg-card">
       <div className="flex items-center justify-between border-border/60 border-b px-5 py-3.5">
         <Skeleton className="h-3 w-20" />
         <Skeleton className="h-3 w-14" />

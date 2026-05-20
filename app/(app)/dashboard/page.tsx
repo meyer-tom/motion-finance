@@ -1,6 +1,4 @@
-import { ArrowRight } from "lucide-react"
 import { headers } from "next/headers"
-import Link from "next/link"
 import { Suspense } from "react"
 import { getDashboardData } from "@/lib/actions/dashboard"
 import { getServerCurrency } from "@/lib/actions/settings"
@@ -73,14 +71,14 @@ export default async function DashboardPage({ searchParams }: Props) {
   }).format(new Date())
 
   return (
-    <div className="space-y-6">
-      {/* Greeting + controls */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div className="space-y-5">
+      {/* Header: salutation + contrôles période */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="font-black text-3xl tracking-tight md:text-4xl">
             {getGreeting()}
             {firstName ? (
-              <span className="text-primary">, {firstName}</span>
+              <>, <span className="text-primary">{firstName}</span></>
             ) : null}{" "}
             !
           </h1>
@@ -100,71 +98,46 @@ export default async function DashboardPage({ searchParams }: Props) {
         </div>
       </div>
 
-      {/* Onboarding checklist */}
+      {/* Checklist d'onboarding */}
       <Suspense fallback={<ChecklistSkeleton />}>
         <OnboardingChecklistSection />
       </Suspense>
 
-      {/* Stats row: balance card + 3 metric cards */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
-        <Suspense fallback={<BalanceSkeleton />}>
-          <BalanceSection periodKey={periodKey} />
-        </Suspense>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:col-span-3">
-          <Suspense fallback={<StatsSkeleton />}>
-            <StatsSection periodKey={periodKey} />
-          </Suspense>
-        </div>
-      </div>
+      {/* Solde total — pleine largeur */}
+      <Suspense fallback={<BalanceSkeleton />}>
+        <BalanceSection periodKey={periodKey} />
+      </Suspense>
 
-      {/* Charts */}
-      <div>
-        <div className="mb-4 flex items-center gap-3">
-          <span className="section-title">Analytiques</span>
-          <div className="h-px flex-1 bg-gradient-to-r from-border to-transparent" />
-        </div>
-        <Suspense fallback={<ChartsSkeleton />}>
-          <ChartsSection periodKey={periodKey} />
+      {/* Revenus / Dépenses / Net */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <Suspense fallback={<StatsSkeleton />}>
+          <StatsSection periodKey={periodKey} />
         </Suspense>
       </div>
 
-      {/* Transactions + sidebar */}
-      <div>
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="section-title">Transactions récentes</span>
-            <div className="hidden h-px w-16 bg-gradient-to-r from-border to-transparent sm:block" />
-          </div>
-          <Link
-            className="flex items-center gap-1 rounded-lg px-2 py-1 font-medium text-[12px] text-primary transition-colors hover:bg-primary/10"
-            href="/transactions"
-          >
-            Voir tout
-            <ArrowRight className="size-3.5" />
-          </Link>
-        </div>
+      {/* Graphiques */}
+      <Suspense fallback={<ChartsSkeleton />}>
+        <ChartsSection periodKey={periodKey} />
+      </Suspense>
 
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <div className="lg:col-span-2">
-            <Suspense fallback={<RecentTransactionsSkeleton />}>
-              <RecentTransactionsSection periodKey={periodKey} />
-            </Suspense>
-          </div>
+      {/* Transactions récentes + Budgets (50/50, items-start) */}
+      <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
+        <Suspense fallback={<RecentTransactionsSkeleton />}>
+          <RecentTransactionsSection periodKey={periodKey} />
+        </Suspense>
+        <Suspense fallback={<AlertsSkeleton />}>
+          <AlertsSection periodKey={periodKey} />
+        </Suspense>
+      </div>
 
-          <div className="flex flex-col gap-4">
-            <Suspense fallback={<AlertsSkeleton />}>
-              <AlertsSection periodKey={periodKey} />
-            </Suspense>
-
-            <Suspense fallback={<GoalsSkeleton />}>
-              <GoalsSection periodKey={periodKey} />
-            </Suspense>
-
-            <Suspense fallback={<TransfersSkeleton />}>
-              <TransfersSectionWrapper periodKey={periodKey} />
-            </Suspense>
-          </div>
-        </div>
+      {/* Virements + Objectifs d'épargne */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <Suspense fallback={<TransfersSkeleton />}>
+          <TransfersSectionWrapper periodKey={periodKey} />
+        </Suspense>
+        <Suspense fallback={<GoalsSkeleton />}>
+          <GoalsSection periodKey={periodKey} />
+        </Suspense>
       </div>
     </div>
   )

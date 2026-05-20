@@ -9,9 +9,8 @@ export function QuickAddButton() {
 
   return (
     <Button
-      className="hidden gap-1.5 md:flex"
+      className="hidden h-11 gap-2 rounded-full px-5 md:flex"
       onClick={() => openForm()}
-      size="sm"
       type="button"
     >
       <Plus className="size-4" strokeWidth={2.5} />
