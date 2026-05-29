@@ -1,6 +1,7 @@
 "use client"
 
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query"
+import { motion } from "framer-motion"
 import { Plus } from "lucide-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useEffect, useMemo, useTransition } from "react"
@@ -185,6 +186,11 @@ export function TransactionsClient({
     [data]
   )
 
+  const usedTags = useMemo(
+    () => [...new Set(transactions.flatMap((t) => t.tags))].sort(),
+    [transactions]
+  )
+
   const handleDelete = useCallback(
     async (id: string) => {
       await deleteTransaction(id)
@@ -254,21 +260,24 @@ export function TransactionsClient({
       >
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <h1 className="font-bold text-xl tracking-tight">Transactions</h1>
+            <h1 className="font-extrabold text-xl tracking-tight">
+              Transactions
+            </h1>
             {transactions.length > 0 ? (
-              <span className="rounded-full border border-border/60 bg-muted px-2 py-0.5 font-medium text-muted-foreground text-xs tabular-nums">
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 font-semibold text-primary text-xs tabular-nums">
                 {transactions.length}
               </span>
             ) : null}
           </div>
-          <Button
-            className="btn-gradient-primary gap-1.5 hover:opacity-90"
-            onClick={() => openForm()}
-            size="sm"
-          >
-            <Plus className="size-4" />
-            <span className="hidden sm:inline">Ajouter</span>
-          </Button>
+          <motion.div whileTap={{ scale: 0.94 }}>
+            <Button
+              className="btn-gradient-primary h-11 gap-2 rounded-full px-5 font-semibold shadow-md shadow-primary/20 hover:opacity-90"
+              onClick={() => openForm()}
+            >
+              <Plus className="size-4" />
+              <span className="hidden sm:inline">Ajouter</span>
+            </Button>
+          </motion.div>
         </div>
       </DiscoveryTooltip>
 
@@ -278,6 +287,7 @@ export function TransactionsClient({
         activeCount={activeFilterCount}
         categories={categories}
         onChange={handleFiltersChange}
+        usedTags={usedTags}
         value={filters}
       />
 

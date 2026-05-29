@@ -4,8 +4,10 @@ import { useEffect, useId, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 
 interface BottomSheetProps {
+  ariaLabel?: string
   children: React.ReactNode
   description?: string
+  noPadding?: boolean
   onOpenChange: (open: boolean) => void
   open: boolean
   title?: string
@@ -20,6 +22,8 @@ export function BottomSheet({
   title,
   description,
   children,
+  noPadding = false,
+  ariaLabel,
 }: BottomSheetProps) {
   const titleId = useId()
   const descId = useId()
@@ -135,6 +139,7 @@ export function BottomSheet({
   return createPortal(
     <div
       aria-describedby={description ? descId : undefined}
+      aria-label={!title && ariaLabel ? ariaLabel : undefined}
       aria-labelledby={title ? titleId : undefined}
       aria-modal="true"
       className="fixed inset-0 z-50"
@@ -196,7 +201,7 @@ export function BottomSheet({
           </div>
         ) : null}
 
-        <div className="px-6">{children}</div>
+        <div className={noPadding ? "" : "px-6"}>{children}</div>
       </div>
     </div>,
     document.body

@@ -1,17 +1,19 @@
 "use client"
 
+import { motion } from "framer-motion"
 import { Search, SlidersHorizontal, Tag, X } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
+import { BottomSheet } from "@/components/shared/bottom-sheet"
 import { Input } from "@/components/ui/input"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { useIsMobile } from "@/lib/hooks/use-is-mobile"
 import { cn } from "@/lib/utils"
+
+const PILL_SPRING = { type: "spring" as const, stiffness: 500, damping: 38 }
 
 export interface AccountOption {
   color: string
@@ -44,6 +46,7 @@ interface TransactionFiltersProps {
   activeCount: number
   categories: CategoryOption[]
   onChange: (next: Partial<FiltersValue>) => void
+  usedTags?: string[]
   value: FiltersValue
 }
 
@@ -115,7 +118,7 @@ function buildDateLabel(dateFrom: string, dateTo: string): string {
     return dateFrom
   }
   if (dateFrom && dateTo) {
-    return `${dateFrom} → ${dateTo}`
+    return `${dateFrom} au ${dateTo}`
   }
   return dateFrom || dateTo
 }
@@ -176,13 +179,328 @@ function buildActiveChips(
   return chips
 }
 
-// ─── Sous-composants ─────────────────────────────────────────────────────────
+// ─── Sous-composants ──────────────────────────────────────────────────────────
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mb-2 font-medium text-[11px] text-muted-foreground/70 uppercase tracking-widest">
+    <p className="mb-2.5 font-semibold text-[10px] text-muted-foreground/50 uppercase tracking-[0.12em]">
       {children}
     </p>
+  )
+}
+
+// ─── Sections de filtres (partagées Sheet + Popover) ─────────────────────────
+
+interface FilterSectionsProps {
+  accounts: AccountOption[]
+  categories: CategoryOption[]
+  onChange: (next: Partial<FiltersValue>) => void
+  setTagInput: (v: string) => void
+  tagInput: string
+  usedTags?: string[]
+  value: FiltersValue
+}
+
+function FilterSections({
+  value,
+  onChange,
+  accounts,
+  categories,
+  tagInput,
+  setTagInput,
+  usedTags,
+}: FilterSectionsProps) {
+  const isMobile = useIsMobile()
+
+  const currentPreset = DATE_PRESETS.find((p) => {
+    const { dateFrom, dateTo } = p.get()
+    return value.dateFrom === dateFrom && value.dateTo === dateTo
+  })
+
+  function toggleAccount(id: string) {
+    const current = value.accountIds
+    onChange({
+      accountIds: current.includes(id)
+        ? current.filter((x) => x !== id)
+        : [...current, id],
+    })
+  }
+
+  function toggleCategory(id: string) {
+    const current = value.categoryIds
+    onChange({
+      categoryIds: current.includes(id)
+        ? current.filter((x) => x !== id)
+        : [...current, id],
+    })
+  }
+
+  function handleTagKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if ((e.key === "Enter" || e.key === ",") && tagInput.trim()) {
+      e.preventDefault()
+      const tag = tagInput.trim()
+      if (!value.tags.includes(tag)) {
+        onChange({ tags: [...value.tags, tag] })
+      }
+      setTagInput("")
+    }
+  }
+
+  return (
+    <div className="divide-y divide-border/40">
+      {/* Période */}
+      <div className="px-4 py-4">
+        <SectionTitle>Période</SectionTitle>
+        <div className="mb-3 flex flex-wrap gap-1.5">
+          {DATE_PRESETS.map((preset) => {
+            const active = currentPreset?.label === preset.label
+            return (
+              <button
+                className={cn(
+                  "rounded-full border px-3 py-1 font-medium text-xs transition-all",
+                  active
+                    ? "border-primary bg-primary text-primary-foreground shadow-primary/20 shadow-sm"
+                    : "border-border/50 bg-card text-muted-foreground hover:border-border hover:text-foreground"
+                )}
+                key={preset.label}
+                onClick={() => {
+                  const { dateFrom, dateTo } = preset.get()
+                  onChange(
+                    active ? { dateFrom: "", dateTo: "" } : { dateFrom, dateTo }
+                  )
+                }}
+                type="button"
+              >
+                {preset.label}
+              </button>
+            )
+          })}
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="w-5 shrink-0 text-right text-[11px] text-muted-foreground/60">
+              De
+            </span>
+            <Input
+              aria-label="Date de début"
+              className="h-9 flex-1 rounded-xl border-border/50 bg-muted/40 py-0 text-xs [&::-webkit-datetime-edit-fields-wrapper]:py-0 [&::-webkit-datetime-edit]:py-0"
+              onChange={(e) => onChange({ dateFrom: e.target.value })}
+              type="date"
+              value={value.dateFrom}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-5 shrink-0 text-right text-[11px] text-muted-foreground/60">
+              À
+            </span>
+            <Input
+              aria-label="Date de fin"
+              className="h-9 flex-1 rounded-xl border-border/50 bg-muted/40 py-0 text-xs [&::-webkit-datetime-edit-fields-wrapper]:py-0 [&::-webkit-datetime-edit]:py-0"
+              onChange={(e) => onChange({ dateTo: e.target.value })}
+              type="date"
+              value={value.dateTo}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Montant */}
+      <div className="px-4 py-4">
+        <SectionTitle>Montant</SectionTitle>
+        <div className={isMobile ? "space-y-2" : "flex items-center gap-2"}>
+          <div className="relative flex-1">
+            <Input
+              aria-label="Montant minimum"
+              className="h-9 rounded-xl border-border/50 bg-muted/40 pr-6 text-xs"
+              min={0}
+              onChange={(e) => onChange({ amountMin: e.target.value })}
+              placeholder="Min"
+              type="number"
+              value={value.amountMin}
+            />
+            <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-[11px] text-muted-foreground/50">
+              €
+            </span>
+          </div>
+          {isMobile ? null : (
+            <div className="h-px w-3 shrink-0 bg-muted-foreground/30" />
+          )}
+          <div className="relative flex-1">
+            <Input
+              aria-label="Montant maximum"
+              className="h-9 rounded-xl border-border/50 bg-muted/40 pr-6 text-xs"
+              min={0}
+              onChange={(e) => onChange({ amountMax: e.target.value })}
+              placeholder="Max"
+              type="number"
+              value={value.amountMax}
+            />
+            <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-[11px] text-muted-foreground/50">
+              €
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Comptes */}
+      {accounts.length > 0 ? (
+        <div className="px-4 py-4">
+          <SectionTitle>Comptes</SectionTitle>
+          <div className="flex flex-wrap gap-2">
+            {accounts.map((acc) => {
+              const selected = value.accountIds.includes(acc.id)
+              return (
+                <button
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-medium text-xs transition-all",
+                    selected
+                      ? "shadow-sm"
+                      : "border-border/50 bg-card text-muted-foreground hover:border-border hover:text-foreground"
+                  )}
+                  key={acc.id}
+                  onClick={() => toggleAccount(acc.id)}
+                  style={
+                    selected
+                      ? {
+                          backgroundColor: `${acc.color}18`,
+                          borderColor: `${acc.color}50`,
+                          color: acc.color,
+                        }
+                      : {}
+                  }
+                  type="button"
+                >
+                  <span
+                    className="size-2 shrink-0 rounded-full"
+                    style={{ backgroundColor: acc.color }}
+                  />
+                  {acc.name}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      ) : null}
+
+      {/* Catégories */}
+      {categories.length > 0 ? (
+        <div className="px-4 py-4">
+          <SectionTitle>Catégories</SectionTitle>
+          <div className="space-y-3">
+            {(["EXPENSE", "INCOME"] as const).map((type) => {
+              const group = categories.filter((c) => c.type === type)
+              if (group.length === 0) {
+                return null
+              }
+              return (
+                <div key={type}>
+                  <p className="mb-2 font-semibold text-[10px] text-muted-foreground/35 uppercase tracking-wider">
+                    {type === "EXPENSE" ? "Dépenses" : "Revenus"}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {group.map((cat) => {
+                      const selected = value.categoryIds.includes(cat.id)
+                      return (
+                        <button
+                          className={cn(
+                            "flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-medium text-xs transition-all",
+                            selected
+                              ? "shadow-sm"
+                              : "border-border/50 bg-card text-muted-foreground hover:border-border hover:text-foreground"
+                          )}
+                          key={cat.id}
+                          onClick={() => toggleCategory(cat.id)}
+                          style={
+                            selected
+                              ? {
+                                  backgroundColor: `${cat.color}18`,
+                                  borderColor: `${cat.color}50`,
+                                  color: cat.color,
+                                }
+                              : {}
+                          }
+                          type="button"
+                        >
+                          <span
+                            className="size-2 shrink-0 rounded-full"
+                            style={{ backgroundColor: cat.color }}
+                          />
+                          {cat.name}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      ) : null}
+
+      {/* Tags */}
+      <div className="px-4 py-4">
+        <SectionTitle>Tags</SectionTitle>
+        {value.tags.length > 0 ? (
+          <div className="mb-2.5 flex flex-wrap gap-1.5">
+            {value.tags.map((tag) => (
+              <span
+                className="inline-flex items-center gap-1 rounded-full border border-border/50 bg-muted px-2.5 py-1 text-xs"
+                key={tag}
+              >
+                <Tag className="size-2.5 text-muted-foreground/60" />
+                <span className="font-medium">{tag}</span>
+                <button
+                  aria-label={`Retirer ${tag}`}
+                  className="ml-0.5 text-muted-foreground/60 hover:text-destructive"
+                  onClick={() =>
+                    onChange({
+                      tags: value.tags.filter((t) => t !== tag),
+                    })
+                  }
+                  type="button"
+                >
+                  <X className="size-2.5" />
+                </button>
+              </span>
+            ))}
+          </div>
+        ) : null}
+        {(() => {
+          const suggestions = (usedTags ?? []).filter(
+            (t) =>
+              !value.tags.includes(t) &&
+              (!tagInput || t.toLowerCase().includes(tagInput.toLowerCase()))
+          )
+          return suggestions.length > 0 ? (
+            <div className="mb-2.5 flex flex-wrap gap-1.5">
+              {suggestions.map((tag) => (
+                <button
+                  className="inline-flex items-center gap-1 rounded-full border border-border/50 bg-card px-2.5 py-1 font-medium text-muted-foreground text-xs transition-colors hover:border-border hover:text-foreground"
+                  key={tag}
+                  onClick={() => {
+                    onChange({ tags: [...value.tags, tag] })
+                    setTagInput("")
+                  }}
+                  type="button"
+                >
+                  <Tag className="size-2.5" />
+                  {tag}
+                </button>
+              ))}
+            </div>
+          ) : null
+        })()}
+        <Input
+          className="h-9 rounded-xl border-border/50 bg-muted/40 text-xs"
+          onChange={(e) => setTagInput(e.target.value)}
+          onKeyDown={handleTagKeyDown}
+          placeholder={
+            usedTags?.length ? "Filtrer ou ajouter un tag…" : "Ajouter un tag…"
+          }
+          value={tagInput}
+        />
+      </div>
+    </div>
   )
 }
 
@@ -194,8 +512,10 @@ export function TransactionFilters({
   accounts,
   categories,
   activeCount,
+  usedTags,
 }: TransactionFiltersProps) {
-  const [popoverOpen, setPopoverOpen] = useState(false)
+  const isMobile = useIsMobile()
+  const [panelOpen, setPanelOpen] = useState(false)
   const [tagInput, setTagInput] = useState("")
   const [localSearch, setLocalSearch] = useState(value.search)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -224,26 +544,6 @@ export function TransactionFilters({
     [onChange]
   )
 
-  function toggleId(field: "accountIds" | "categoryIds", id: string) {
-    const current = value[field]
-    onChange({
-      [field]: current.includes(id)
-        ? current.filter((x) => x !== id)
-        : [...current, id],
-    })
-  }
-
-  function handleTagKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if ((e.key === "Enter" || e.key === ",") && tagInput.trim()) {
-      e.preventDefault()
-      const tag = tagInput.trim()
-      if (!value.tags.includes(tag)) {
-        onChange({ tags: [...value.tags, tag] })
-      }
-      setTagInput("")
-    }
-  }
-
   function clearAll() {
     onChange({
       type: "",
@@ -261,20 +561,32 @@ export function TransactionFilters({
 
   const activeChips = buildActiveChips(value, accounts, categories, onChange)
 
-  const currentPreset = DATE_PRESETS.find((p) => {
-    const { dateFrom, dateTo } = p.get()
-    return value.dateFrom === dateFrom && value.dateTo === dateTo
-  })
+  const sectionsProps: FilterSectionsProps = {
+    accounts,
+    categories,
+    onChange,
+    setTagInput,
+    tagInput,
+    usedTags,
+    value,
+  }
+
+  const filterBtnClass = cn(
+    "flex h-11 shrink-0 items-center gap-2 rounded-full border px-5 font-semibold text-sm transition-colors",
+    panelOpen
+      ? "border-primary/40 bg-primary/10 text-primary"
+      : "border-border/50 bg-muted/50 text-muted-foreground hover:text-foreground"
+  )
 
   return (
     <div className="space-y-2">
       {/* Barre recherche + bouton filtres */}
       <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
+        <div className="relative flex h-11 flex-1 items-center gap-2 rounded-full border border-border/50 bg-muted/50 px-4 transition-colors focus-within:border-primary/40 focus-within:bg-background">
+          <Search className="size-4 shrink-0 text-muted-foreground" />
+          <input
             aria-label="Rechercher une transaction"
-            className="pl-9"
+            className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/60"
             onChange={handleSearchChange}
             placeholder="Rechercher…"
             value={localSearch}
@@ -282,7 +594,7 @@ export function TransactionFilters({
           {localSearch ? (
             <button
               aria-label="Effacer la recherche"
-              className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="shrink-0 text-muted-foreground hover:text-foreground"
               onClick={() => {
                 setLocalSearch("")
                 onChange({ search: "" })
@@ -294,284 +606,144 @@ export function TransactionFilters({
           ) : null}
         </div>
 
-        <Popover onOpenChange={setPopoverOpen} open={popoverOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              aria-expanded={popoverOpen}
+        {/* Sheet sur mobile, Popover sur desktop */}
+        {isMobile ? (
+          <>
+            <button
+              aria-expanded={panelOpen}
+              aria-haspopup="dialog"
               aria-label="Filtres avancés"
-              className={cn(
-                "relative shrink-0 gap-2",
-                popoverOpen && "border-primary"
-              )}
-              size="default"
-              variant="outline"
+              className={filterBtnClass}
+              onClick={() => setPanelOpen(true)}
+              type="button"
             >
               <SlidersHorizontal className="size-4" />
-              <span className="hidden sm:inline">Filtres</span>
+              <span>Filtres</span>
               {activeCount > 0 ? (
                 <span className="flex size-5 items-center justify-center rounded-full bg-primary font-bold text-[10px] text-primary-foreground">
                   {activeCount}
                 </span>
               ) : null}
-            </Button>
-          </PopoverTrigger>
-
-          <PopoverContent
-            align="end"
-            className="w-[min(520px,calc(100vw-1rem))] p-0"
-            sideOffset={8}
-          >
-            {/* Contenu : 2 colonnes sur sm, 1 colonne sinon */}
-            <div className="grid divide-border/60 sm:grid-cols-2 sm:divide-x">
-              {/* Colonne gauche */}
-              <div className="min-w-0 space-y-5 p-4">
-                {/* Période */}
-                <div>
-                  <SectionLabel>Période</SectionLabel>
-                  <div className="mb-3 flex flex-wrap gap-1.5">
-                    {DATE_PRESETS.map((preset) => {
-                      const active = currentPreset?.label === preset.label
-                      return (
-                        <button
-                          className={cn(
-                            "rounded-md border px-2.5 py-1 font-medium text-xs transition-colors",
-                            active
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
-                          )}
-                          key={preset.label}
-                          onClick={() => {
-                            const { dateFrom, dateTo } = preset.get()
-                            onChange(
-                              active
-                                ? { dateFrom: "", dateTo: "" }
-                                : { dateFrom, dateTo }
-                            )
-                          }}
-                          type="button"
-                        >
-                          {preset.label}
-                        </button>
-                      )
-                    })}
-                  </div>
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <span className="w-5 shrink-0 text-right text-[11px] text-muted-foreground">
-                        De
-                      </span>
-                      <Input
-                        aria-label="Date de début"
-                        className="h-9 flex-1 rounded-lg border-border bg-card text-xs"
-                        onChange={(e) => onChange({ dateFrom: e.target.value })}
-                        type="date"
-                        value={value.dateFrom}
-                      />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-5 shrink-0 text-right text-[11px] text-muted-foreground">
-                        À
-                      </span>
-                      <Input
-                        aria-label="Date de fin"
-                        className="h-9 flex-1 rounded-lg border-border bg-card text-xs"
-                        onChange={(e) => onChange({ dateTo: e.target.value })}
-                        type="date"
-                        value={value.dateTo}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="h-px bg-border/60" />
-
-                {/* Montant */}
-                <div>
-                  <SectionLabel>Montant (€)</SectionLabel>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      aria-label="Montant minimum"
-                      className="h-9 rounded-lg border-border bg-card text-xs"
-                      min={0}
-                      onChange={(e) => onChange({ amountMin: e.target.value })}
-                      placeholder="Min"
-                      type="number"
-                      value={value.amountMin}
-                    />
-                    <span className="shrink-0 text-muted-foreground text-xs">
-                      –
+            </button>
+            <BottomSheet
+              ariaLabel="Filtres avancés"
+              noPadding
+              onOpenChange={setPanelOpen}
+              open={panelOpen}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 pb-3">
+                <div className="flex items-center gap-2">
+                  <h2 className="font-bold text-lg tracking-tight">Filtres</h2>
+                  {activeCount > 0 ? (
+                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 font-bold text-[10px] text-primary-foreground">
+                      {activeCount}
                     </span>
-                    <Input
-                      aria-label="Montant maximum"
-                      className="h-9 rounded-lg border-border bg-card text-xs"
-                      min={0}
-                      onChange={(e) => onChange({ amountMax: e.target.value })}
-                      placeholder="Max"
-                      type="number"
-                      value={value.amountMax}
-                    />
-                  </div>
-                </div>
-
-                <div className="h-px bg-border/60" />
-
-                {/* Tags */}
-                <div>
-                  <SectionLabel>Tags</SectionLabel>
-                  {value.tags.length > 0 ? (
-                    <div className="mb-2 flex flex-wrap gap-1">
-                      {value.tags.map((tag) => (
-                        <span
-                          className="inline-flex items-center gap-1 rounded-md border border-border bg-muted px-2 py-0.5 text-xs"
-                          key={tag}
-                        >
-                          <Tag className="size-2.5 text-muted-foreground" />
-                          {tag}
-                          <button
-                            aria-label={`Retirer ${tag}`}
-                            className="text-muted-foreground hover:text-destructive"
-                            onClick={() =>
-                              onChange({
-                                tags: value.tags.filter((t) => t !== tag),
-                              })
-                            }
-                            type="button"
-                          >
-                            <X className="size-2.5" />
-                          </button>
-                        </span>
-                      ))}
-                    </div>
                   ) : null}
-                  <Input
-                    className="h-9 rounded-lg border-border bg-card text-xs"
-                    onChange={(e) => setTagInput(e.target.value)}
-                    onKeyDown={handleTagKeyDown}
-                    placeholder="Ajouter un tag…"
-                    value={tagInput}
-                  />
+                </div>
+                <div className="flex items-center gap-1">
+                  {activeCount > 0 ? (
+                    <button
+                      className="rounded-full px-3 py-1.5 text-muted-foreground text-sm transition-colors hover:bg-muted hover:text-foreground"
+                      onClick={clearAll}
+                      type="button"
+                    >
+                      Réinitialiser
+                    </button>
+                  ) : null}
+                  <button
+                    aria-label="Fermer les filtres"
+                    className="flex size-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                    onClick={() => setPanelOpen(false)}
+                    type="button"
+                  >
+                    <X className="size-4" />
+                  </button>
                 </div>
               </div>
-
-              {/* Colonne droite */}
-              <div className="min-w-0 space-y-5 p-4">
-                {accounts.length > 0 ? (
-                  <div>
-                    <SectionLabel>Comptes</SectionLabel>
-                    <div className="space-y-2">
-                      {accounts.map((acc) => (
-                        <label
-                          className="flex cursor-pointer items-center gap-2.5"
-                          htmlFor={`acc-${acc.id}`}
-                          key={acc.id}
-                        >
-                          <Checkbox
-                            checked={value.accountIds.includes(acc.id)}
-                            id={`acc-${acc.id}`}
-                            onCheckedChange={() =>
-                              toggleId("accountIds", acc.id)
-                            }
-                          />
-                          <span
-                            className="size-2 shrink-0 rounded-full"
-                            style={{ backgroundColor: acc.color }}
-                          />
-                          <span className="truncate text-sm">{acc.name}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-
-                {accounts.length > 0 && categories.length > 0 ? (
-                  <div className="h-px bg-border/60" />
-                ) : null}
-
-                {categories.length > 0 ? (
-                  <div>
-                    <SectionLabel>Catégories</SectionLabel>
-                    <div className="max-h-52 space-y-4 overflow-y-auto pr-1">
-                      {(["EXPENSE", "INCOME"] as const).map((type) => {
-                        const group = categories.filter((c) => c.type === type)
-                        if (group.length === 0) {
-                          return null
-                        }
-                        return (
-                          <div key={type}>
-                            <p className="mb-1.5 font-medium text-[10px] text-muted-foreground/60 uppercase tracking-wider">
-                              {type === "EXPENSE" ? "Dépenses" : "Revenus"}
-                            </p>
-                            <div className="space-y-2">
-                              {group.map((cat) => (
-                                <label
-                                  className="flex cursor-pointer items-center gap-2.5"
-                                  htmlFor={`cat-${cat.id}`}
-                                  key={cat.id}
-                                >
-                                  <Checkbox
-                                    checked={value.categoryIds.includes(cat.id)}
-                                    id={`cat-${cat.id}`}
-                                    onCheckedChange={() =>
-                                      toggleId("categoryIds", cat.id)
-                                    }
-                                  />
-                                  <span
-                                    className="size-2 shrink-0 rounded-full"
-                                    style={{ backgroundColor: cat.color }}
-                                  />
-                                  <span className="truncate text-sm">
-                                    {cat.name}
-                                  </span>
-                                </label>
-                              ))}
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="flex items-center justify-between border-border/60 border-t px-4 py-3">
+              <FilterSections {...sectionsProps} />
+            </BottomSheet>
+          </>
+        ) : (
+          <Popover onOpenChange={setPanelOpen} open={panelOpen}>
+            <PopoverTrigger asChild>
               <button
-                className="text-muted-foreground text-xs hover:text-foreground"
-                onClick={clearAll}
+                aria-expanded={panelOpen}
+                aria-label="Filtres avancés"
+                className={filterBtnClass}
                 type="button"
               >
-                Tout effacer
+                <SlidersHorizontal className="size-4" />
+                <span className="hidden sm:inline">Filtres</span>
+                {activeCount > 0 ? (
+                  <span className="flex size-5 items-center justify-center rounded-full bg-primary font-bold text-[10px] text-primary-foreground">
+                    {activeCount}
+                  </span>
+                ) : null}
               </button>
-              <Button
-                className="h-7 px-3 text-xs"
-                onClick={() => setPopoverOpen(false)}
-                size="sm"
-              >
-                Fermer
-              </Button>
-            </div>
-          </PopoverContent>
-        </Popover>
+            </PopoverTrigger>
+            <PopoverContent
+              align="end"
+              className="w-[400px] overflow-hidden rounded-2xl p-0"
+              sideOffset={8}
+            >
+              {/* En-tête du popover */}
+              <div className="flex items-center justify-between border-border/40 border-b px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-sm">Filtres</span>
+                  {activeCount > 0 ? (
+                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 font-bold text-[10px] text-primary-foreground">
+                      {activeCount}
+                    </span>
+                  ) : null}
+                </div>
+                {activeCount > 0 ? (
+                  <button
+                    className="text-muted-foreground text-xs transition-colors hover:text-foreground"
+                    onClick={clearAll}
+                    type="button"
+                  >
+                    Réinitialiser
+                  </button>
+                ) : null}
+              </div>
+              {/* Sections */}
+              <div className="max-h-[65vh] overflow-y-auto">
+                <FilterSections {...sectionsProps} />
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
       </div>
 
       {/* Pills type */}
-      <div className="flex gap-1.5 overflow-x-auto pb-0.5">
-        {TYPE_OPTIONS.map((opt) => (
-          <button
-            className={cn(
-              "whitespace-nowrap rounded-full border px-3 py-1 font-medium text-xs transition-all duration-150",
-              value.type === opt.value
-                ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                : "border-border/60 bg-card text-muted-foreground hover:border-border hover:bg-surface-elevated hover:text-foreground"
-            )}
-            key={opt.value}
-            onClick={() => onChange({ type: opt.value })}
-            type="button"
-          >
-            {opt.label}
-          </button>
-        ))}
+      <div className="relative flex h-11 items-center rounded-full border border-border/50 bg-muted/50 p-1">
+        {TYPE_OPTIONS.map((opt) => {
+          const active = value.type === opt.value
+          return (
+            <button
+              className={cn(
+                "relative flex h-9 flex-1 items-center justify-center whitespace-nowrap rounded-full px-4 font-semibold text-sm transition-colors duration-150",
+                active
+                  ? "text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+              key={opt.value}
+              onClick={() => onChange({ type: opt.value })}
+              type="button"
+            >
+              {active ? (
+                <motion.span
+                  aria-hidden
+                  className="absolute inset-0 rounded-full bg-primary shadow-primary/30 shadow-sm"
+                  layoutId="tx-type-pill"
+                  transition={PILL_SPRING}
+                />
+              ) : null}
+              <span className="relative z-10">{opt.label}</span>
+            </button>
+          )
+        })}
       </div>
 
       {/* Chips filtres actifs */}

@@ -1,23 +1,8 @@
 "use client"
 
-import { MoreHorizontal, Trash2 } from "lucide-react"
+import { Trash2 } from "lucide-react"
 import { useState } from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 import { useTransactionForm } from "@/lib/context/transaction-form-context"
-import { cn } from "@/lib/utils"
 import { getCategoryIcon } from "@/lib/utils/category-icons"
 
 export interface TransactionItemData {
@@ -38,28 +23,11 @@ interface TransactionItemProps {
   transaction: TransactionItemData
 }
 
-
-function AccountChip({
-  account,
-  className,
-}: {
-  account: { name: string; color: string }
-  className?: string
-}) {
-  return (
-    <span
-      className={cn(
-        "inline-block min-w-0 shrink truncate rounded-full px-1.5 py-0.5 font-medium text-[11px] leading-none",
-        className
-      )}
-      style={{
-        backgroundColor: `${account.color}22`,
-        color: account.color,
-      }}
-    >
-      {account.name}
-    </span>
-  )
+function formatDate(date: string | Date) {
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "numeric",
+    month: "short",
+  }).format(new Date(date as string))
 }
 
 export function TransactionItem({
@@ -72,28 +40,38 @@ export function TransactionItem({
   const isTransfer = transaction.type === "TRANSFER"
   const isIncome = transaction.type === "INCOME"
 
-  const iconBgColor = isTransfer
+  const iconBg = isTransfer
     ? "color-mix(in oklch, var(--color-transfer) 15%, transparent)"
     : `${transaction.category?.color ?? "transparent"}22`
-
-  let amountPrefix = "-"
-  if (isIncome) amountPrefix = "+"
-  if (isTransfer) amountPrefix = ""
 
   const CategoryIcon = transaction.category
     ? getCategoryIcon(transaction.category.icon)
     : null
 
-  const amountClass = cn("font-mono font-semibold tabular-nums", {
-    "text-[var(--color-income)]": isIncome,
-    "text-[var(--color-expense)]": !(isIncome || isTransfer),
-    "text-[var(--color-transfer)]": isTransfer,
-  })
+  let amountPrefix = "-"
+  if (isIncome) {
+    amountPrefix = "+"
+  }
+  if (isTransfer) {
+    amountPrefix = ""
+  }
 
-  const amountFormatted = `${amountPrefix}${transaction.amount.toLocaleString("fr-FR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })} €`
+  let amountColor = "var(--color-expense)"
+  if (isIncome) {
+    amountColor = "var(--color-income)"
+  }
+  if (isTransfer) {
+    amountColor = "var(--color-transfer)"
+  }
+
+  const amountFormatted = `${amountPrefix}${transaction.amount.toLocaleString(
+    "fr-FR",
+    { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+  )} €`
+
+  const subtitle = isTransfer
+    ? `${transaction.account.name} → ${transaction.toAccount?.name ?? "?"} · ${formatDate(transaction.date)}`
+    : `${transaction.category?.name ?? transaction.account.name} · ${formatDate(transaction.date)}`
 
   function handleEdit() {
     openForm({
@@ -110,193 +88,95 @@ export function TransactionItem({
     })
   }
 
-  const chips = isTransfer ? (
-    <span className="flex items-center gap-1">
-      <AccountChip account={transaction.account} />
-      <span className="text-[11px] text-muted-foreground">→</span>
-      {transaction.toAccount ? (
-        <AccountChip account={transaction.toAccount} />
-      ) : null}
-    </span>
-  ) : (
-    <AccountChip account={transaction.account} />
-  )
-
   return (
-    <div
-      className="group flex cursor-pointer select-none [touch-action:manipulation] items-center gap-3 bg-transparent px-4 py-3.5 transition-colors duration-150 hover:bg-surface-elevated active:bg-surface-elevated/70"
-      onClick={handleEdit}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") handleEdit()
-      }}
-      role="button"
-      tabIndex={0}
-    >
-      {/* Icône */}
-      <div
-        className="flex size-10 shrink-0 items-center justify-center rounded-full"
-        style={{ backgroundColor: iconBgColor }}
+    <div className="group flex items-center gap-4 overflow-hidden rounded-2xl border border-border bg-card px-5 py-5 transition-colors hover:bg-muted/30">
+      {/* Bouton édition : icon + texte */}
+      <button
+        className="flex min-w-0 flex-1 items-center gap-4 text-left disabled:pointer-events-none"
+        disabled={confirmDelete}
+        onClick={handleEdit}
+        type="button"
       >
-        {isTransfer ? (
-          <svg
-            aria-hidden="true"
-            className="size-[18px]"
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            style={{ color: "var(--color-transfer)" }}
-            viewBox="0 0 24 24"
-          >
-            <path d="m16 3 4 4-4 4" />
-            <path d="M20 7H4" />
-            <path d="m8 21-4-4 4-4" />
-            <path d="M4 17h16" />
-          </svg>
-        ) : null}
-        {!isTransfer && CategoryIcon ? (
-          <CategoryIcon
-            aria-hidden="true"
-            className="size-[18px]"
-            style={{ color: transaction.category?.color }}
-          />
-        ) : null}
-      </div>
-
-      {/* ── MOBILE ── */}
-      <div className="min-w-0 flex-1 md:hidden">
-        <span className="block truncate font-semibold text-sm leading-tight">
-          {transaction.title}
-        </span>
-        <div className="mt-1 flex min-w-0 items-center gap-1.5 overflow-hidden">
+        <div
+          className="flex size-12 shrink-0 items-center justify-center rounded-2xl"
+          style={{ backgroundColor: iconBg }}
+        >
           {isTransfer ? (
-            <>
-              <AccountChip account={transaction.account} className="max-w-[44%]" />
-              <span className="shrink-0 text-[11px] text-muted-foreground">→</span>
-              {transaction.toAccount ? (
-                <AccountChip account={transaction.toAccount} className="max-w-[44%]" />
-              ) : null}
-            </>
-          ) : (
-            <>
-              <AccountChip account={transaction.account} className="max-w-[55%]" />
-              {transaction.tags.slice(0, 2).map((tag) => (
-                <Badge
-                  className="h-[18px] shrink-0 rounded-full px-1.5 text-[10px] font-normal"
-                  key={tag}
-                  variant="secondary"
-                >
-                  {tag}
-                </Badge>
-              ))}
-              {transaction.tags.length > 2 ? (
-                <span className="shrink-0 text-xs text-muted-foreground">
-                  +{transaction.tags.length - 2}
-                </span>
-              ) : null}
-            </>
-          )}
+            <svg
+              aria-hidden="true"
+              className="size-5"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              style={{ color: "var(--color-transfer)" }}
+              viewBox="0 0 24 24"
+            >
+              <path d="m16 3 4 4-4 4" />
+              <path d="M20 7H4" />
+              <path d="m8 21-4-4 4-4" />
+              <path d="M4 17h16" />
+            </svg>
+          ) : null}
+          {!isTransfer && CategoryIcon ? (
+            <CategoryIcon
+              aria-hidden="true"
+              className="size-5"
+              style={{ color: transaction.category?.color }}
+            />
+          ) : null}
         </div>
-      </div>
 
-      {/* ── DESKTOP : col gauche (titre + chips) ── */}
-      <div className="hidden min-w-0 flex-[2] md:block">
-        <span className="block truncate font-semibold text-sm leading-tight">
-          {transaction.title}
-        </span>
-        <div className="mt-1 flex flex-wrap items-center gap-1.5">
-          {chips}
-          {transaction.tags.map((tag) => (
-            <Badge
-              className="h-4 px-1.5 font-normal text-[10px]"
-              key={tag}
-              variant="outline"
-            >
-              {tag}
-            </Badge>
-          ))}
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-semibold text-sm leading-tight">
+            {transaction.title}
+          </p>
+          <p className="mt-1 truncate text-xs text-muted-foreground leading-tight">
+            {subtitle}
+          </p>
         </div>
-      </div>
+      </button>
 
-      {/* ── DESKTOP : col centre (note) ── */}
-      <div className="hidden min-w-0 flex-[2] overflow-hidden px-2 md:block">
-        {transaction.description ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="block truncate text-muted-foreground text-xs italic cursor-default">
-                {transaction.description}
-              </span>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="max-w-xs text-xs">
-              {transaction.description}
-            </TooltipContent>
-          </Tooltip>
-        ) : null}
-      </div>
-
-      {/* Montant — visible sur mobile et desktop */}
-      <div className="shrink-0 text-right">
-        <span className={cn(amountClass, "text-sm")}>{amountFormatted}</span>
-      </div>
-
-      {/* Actions (desktop uniquement — mobile : supprimer via le form d'édition) */}
-      <div
-        className="hidden shrink-0 items-center md:flex"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {confirmDelete ? (
-          <div className="flex items-center gap-1">
-            <Button
-              className="h-7 px-2 text-xs"
-              onClick={() => {
-                onDelete(transaction.id)
-                setConfirmDelete(false)
-              }}
-              size="sm"
-              variant="destructive"
-            >
-              Confirmer
-            </Button>
-            <Button
-              className="h-7 px-2 text-xs"
-              onClick={() => setConfirmDelete(false)}
-              size="sm"
-              variant="ghost"
-            >
-              Annuler
-            </Button>
-          </div>
-        ) : (
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
-              <Button
-                aria-label="Options"
-                className="size-7"
-                size="icon"
-                variant="ghost"
-              >
-                <MoreHorizontal className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="w-36"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <DropdownMenuItem onClick={handleEdit}>Modifier</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                onClick={() => setConfirmDelete(true)}
-              >
-                <Trash2 className="mr-2 size-3.5" />
-                Supprimer
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-      </div>
+      {/* Zone droite : montant + suppression */}
+      {confirmDelete ? (
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            className="h-7 rounded-lg bg-destructive/10 px-2 font-medium text-destructive text-xs"
+            onClick={() => {
+              onDelete(transaction.id)
+              setConfirmDelete(false)
+            }}
+            type="button"
+          >
+            Supprimer
+          </button>
+          <button
+            className="h-7 rounded-lg px-2 text-muted-foreground text-xs hover:text-foreground"
+            onClick={() => setConfirmDelete(false)}
+            type="button"
+          >
+            Annuler
+          </button>
+        </div>
+      ) : (
+        <div className="flex shrink-0 items-center gap-2">
+          <span
+            className="font-semibold text-sm tabular-nums"
+            style={{ color: amountColor }}
+          >
+            {amountFormatted}
+          </span>
+          <button
+            aria-label="Supprimer la transaction"
+            className="hidden size-7 items-center justify-center rounded-lg text-muted-foreground opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100 md:flex"
+            onClick={() => setConfirmDelete(true)}
+            type="button"
+          >
+            <Trash2 className="size-3.5" />
+          </button>
+        </div>
+      )}
     </div>
   )
 }
