@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion"
 import { Search, SlidersHorizontal, Tag, X } from "lucide-react"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { BottomSheet } from "@/components/shared/bottom-sheet"
 import { Input } from "@/components/ui/input"
 import {
@@ -519,6 +519,16 @@ export function TransactionFilters({
   const [tagInput, setTagInput] = useState("")
   const [localSearch, setLocalSearch] = useState(value.search)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pillTabRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const [pill, setPill] = useState<{ x: number; width: number } | null>(null)
+  const activePillIndex = TYPE_OPTIONS.findIndex((o) => o.value === value.type)
+
+  useLayoutEffect(() => {
+    if (activePillIndex < 0) return
+    const tab = pillTabRefs.current[activePillIndex]
+    if (!tab) return
+    setPill({ x: tab.offsetLeft, width: tab.offsetWidth })
+  }, [activePillIndex])
 
   useEffect(() => {
     return () => {
@@ -718,12 +728,24 @@ export function TransactionFilters({
 
       {/* Pills type */}
       <div className="relative flex h-11 items-center rounded-full border border-border/50 bg-muted/50 p-1">
-        {TYPE_OPTIONS.map((opt) => {
+        {pill ? (
+          <motion.span
+            animate={{ x: pill.x, width: pill.width }}
+            aria-hidden
+            className="pointer-events-none absolute top-1 bottom-1 left-0 rounded-full bg-primary shadow-primary/30 shadow-sm"
+            initial={false}
+            transition={PILL_SPRING}
+          />
+        ) : null}
+        {TYPE_OPTIONS.map((opt, i) => {
           const active = value.type === opt.value
           return (
             <button
+              ref={(el) => {
+                pillTabRefs.current[i] = el
+              }}
               className={cn(
-                "relative flex h-9 flex-1 items-center justify-center whitespace-nowrap rounded-full px-4 font-semibold text-sm transition-colors duration-150",
+                "relative z-10 flex h-9 flex-1 items-center justify-center whitespace-nowrap rounded-full px-4 font-semibold text-sm transition-colors duration-150",
                 active
                   ? "text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground"
@@ -732,15 +754,7 @@ export function TransactionFilters({
               onClick={() => onChange({ type: opt.value })}
               type="button"
             >
-              {active ? (
-                <motion.span
-                  aria-hidden
-                  className="absolute inset-0 rounded-full bg-primary shadow-primary/30 shadow-sm"
-                  layoutId="tx-type-pill"
-                  transition={PILL_SPRING}
-                />
-              ) : null}
-              <span className="relative z-10">{opt.label}</span>
+              {opt.label}
             </button>
           )
         })}

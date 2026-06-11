@@ -8,6 +8,7 @@ import {
   CreditCard,
   DollarSign,
   EllipsisVertical,
+  GripHorizontal,
   Home,
   Landmark,
   PiggyBank,
@@ -34,6 +35,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { deleteAccount } from "@/lib/actions/accounts"
+import { useCurrency } from "@/lib/context/currency-context"
 import type { AccountEditValues } from "./account-form-modal"
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -53,15 +55,18 @@ const ICON_MAP: Record<string, React.ElementType> = {
 
 const TYPE_CONFIG: Record<
   "CHECKING" | "SAVINGS",
-  { label: string; className: string }
+  { label: string; dotClass: string; badgeClass: string }
 > = {
   CHECKING: {
     label: "Courant",
-    className: "bg-amber-500/15 text-amber-400",
+    dotClass: "bg-amber-400",
+    badgeClass: "bg-amber-500/12 text-amber-500 dark:bg-amber-400/15 dark:text-amber-400",
   },
   SAVINGS: {
     label: "Épargne",
-    className: "bg-[var(--color-transfer)]/15 text-[var(--color-transfer)]",
+    dotClass: "bg-[var(--color-transfer)]",
+    badgeClass:
+      "bg-[var(--color-transfer)]/12 text-[var(--color-transfer)]",
   },
 }
 
@@ -77,14 +82,25 @@ interface AccountCardProps {
   dragListeners?: Record<string, React.EventHandler<React.SyntheticEvent>>
   isDragging?: boolean
   onEdit: (values: AccountEditValues) => void
+  totalBalance: number
 }
 
-export function AccountCard({ account, onEdit, dragListeners, isDragging }: AccountCardProps) {
+export function AccountCard({
+  account,
+  onEdit,
+  dragListeners,
+  isDragging,
+  totalBalance,
+}: AccountCardProps) {
   const [isPending, startTransition] = useTransition()
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const { currency } = useCurrency()
 
   const IconComponent = ICON_MAP[account.icon] ?? Wallet
   const c = account.color
+  const cfg = TYPE_CONFIG[account.type]
+  const proportion =
+    totalBalance > 0 ? Math.min((account.balance / totalBalance) * 100, 100) : 0
 
   function handleConfirmDelete() {
     startTransition(async () => {
@@ -95,94 +111,140 @@ export function AccountCard({ account, onEdit, dragListeners, isDragging }: Acco
 
   return (
     <>
-      <div className={`group/account overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-border-accent hover:bg-surface-elevated hover:shadow-lg hover:shadow-black/20 ${isDragging ? "opacity-60 shadow-2xl ring-1 ring-primary/50" : ""}`}>
-        {/* Bande de couleur — accent color du compte */}
+      <div
+        className={[
+          "group/account relative overflow-hidden rounded-3xl border border-border bg-card",
+          "transition-all duration-200",
+          "hover:border-border-accent hover:shadow-lg hover:shadow-black/8 dark:hover:shadow-black/30",
+          isDragging
+            ? "scale-[0.97] opacity-60 shadow-2xl ring-1 ring-primary/40"
+            : "",
+        ].join(" ")}
+      >
+        {/* Ambient glow using account color */}
         <div
-          className="h-1 w-full"
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 opacity-[0.07] dark:opacity-[0.12]"
           style={{
-            background: `linear-gradient(90deg, ${c}, ${c}40)`,
+            background: `radial-gradient(ellipse 80% 60% at 0% 0%, ${c}, transparent)`,
           }}
         />
-        <div className="p-4">
-          {/* Ligne 1 : icône + nom + actions */}
-          <div className="flex items-center gap-2.5">
-            <div
-              className="flex size-9 shrink-0 items-center justify-center rounded-lg"
-              style={{ backgroundColor: `${c}1f` }}
-            >
-              <IconComponent className="size-[18px]" style={{ color: c }} />
+
+        {/* Drag handle — top-center, shown on hover */}
+        {dragListeners ? (
+          <button
+            aria-label="Réorganiser"
+            className="absolute top-2 left-1/2 z-10 -translate-x-1/2 cursor-grab touch-none rounded-md px-2 py-0.5 text-muted-foreground/30 opacity-0 transition-all hover:text-muted-foreground/70 active:cursor-grabbing focus-visible:opacity-100 group-hover/account:opacity-100"
+            type="button"
+            {...dragListeners}
+          >
+            <GripHorizontal className="size-3.5" />
+          </button>
+        ) : null}
+
+        <div className="relative p-5">
+          {/* Header: icon + name + actions */}
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-3">
+              <div
+                className="flex size-11 shrink-0 items-center justify-center rounded-2xl"
+                style={{ backgroundColor: `${c}22` }}
+              >
+                <IconComponent className="size-5" style={{ color: c }} />
+              </div>
+              <div className="min-w-0">
+                <p className="truncate font-semibold text-sm leading-tight">
+                  {account.name}
+                </p>
+                <span
+                  className={`mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium text-[10px] ${cfg.badgeClass}`}
+                >
+                  <span
+                    aria-hidden="true"
+                    className={`inline-block size-1.5 rounded-full ${cfg.dotClass}`}
+                  />
+                  {cfg.label}
+                </span>
+              </div>
             </div>
 
-            {dragListeners ? (
-              <button
-                aria-label="Réorganiser"
-                className="-ml-1 cursor-grab touch-none text-muted-foreground/40 transition-colors hover:text-muted-foreground active:cursor-grabbing"
-                type="button"
-                {...dragListeners}
-              >
-                <svg aria-hidden="true" className="size-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z" />
-                </svg>
-              </button>
-            ) : null}
-
-            <p className="min-w-0 flex-1 truncate font-medium text-foreground text-sm">
-              {account.name}
-            </p>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  aria-label="Options du compte"
-                  className="-mr-1.5 size-7 text-muted-foreground opacity-0 transition-opacity hover:text-foreground focus-visible:opacity-100 group-hover/account:opacity-100"
-                  size="icon"
-                  variant="ghost"
-                >
-                  <EllipsisVertical className="size-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onSelect={() =>
-                    onEdit({
-                      id: account.id,
-                      name: account.name,
-                      type: account.type,
-                      color: account.color,
-                      icon: account.icon,
-                    })
-                  }
-                >
-                  Modifier
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="text-destructive focus:text-destructive"
-                  onSelect={() => setDeleteOpen(true)}
-                >
-                  Supprimer
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="flex shrink-0 items-center">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    aria-label="Options du compte"
+                    className="size-7 text-muted-foreground opacity-0 transition-opacity hover:text-foreground focus-visible:opacity-100 group-hover/account:opacity-100"
+                    size="icon"
+                    variant="ghost"
+                  >
+                    <EllipsisVertical className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onSelect={() =>
+                      onEdit({
+                        id: account.id,
+                        name: account.name,
+                        type: account.type,
+                        color: account.color,
+                        icon: account.icon,
+                      })
+                    }
+                  >
+                    Modifier
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="text-destructive focus:text-destructive"
+                    onSelect={() => setDeleteOpen(true)}
+                  >
+                    Supprimer
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
 
-          {/* Ligne 2 : solde */}
-          <AnimatedAmount
-            className="mt-3 block font-bold text-2xl"
-            currency="EUR"
-            value={account.balance}
-          />
+          {/* Divider */}
+          <div className="my-4 border-t border-border/50" />
 
-          {/* Ligne 3 : badge type */}
-          <span
-            className={`mt-2 inline-flex shrink-0 rounded-full px-2 py-0.5 font-medium text-[11px] ${TYPE_CONFIG[account.type].className}`}
-          >
-            {TYPE_CONFIG[account.type].label}
-          </span>
+          {/* Balance */}
+          <div>
+            <p className="section-title mb-2">Solde</p>
+            <AnimatedAmount
+              className="font-black text-2xl leading-none tracking-tight"
+              currency={currency}
+              value={account.balance}
+              variant="neutral"
+            />
+          </div>
+
+          {/* Proportion bar */}
+          {totalBalance > 0 ? (
+            <div className="mt-4">
+              <div className="mb-1.5 flex items-center justify-between">
+                <p className="text-[10px] text-muted-foreground">
+                  Part du total
+                </p>
+                <p className="font-semibold text-[10px] tabular-nums text-muted-foreground">
+                  {proportion.toFixed(0)}&nbsp;%
+                </p>
+              </div>
+              <div className="h-1 overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full transition-all duration-700 ease-out"
+                  style={{
+                    width: `${proportion}%`,
+                    backgroundColor: c,
+                  }}
+                />
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
 
-      {/* Dialog de confirmation de suppression */}
       <Dialog onOpenChange={setDeleteOpen} open={deleteOpen}>
         <DialogContent>
           <DialogHeader>
