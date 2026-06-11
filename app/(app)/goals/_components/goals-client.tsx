@@ -44,7 +44,7 @@ export function GoalsClient({
   checklistDismissed,
   initialGoals,
   tooltipsSeen,
-}: GoalsClientProps) {
+}: Readonly<GoalsClientProps>) {
   const showGuide = !(
     checklistDismissed ||
     checklistCompleted.includes("goal") ||
@@ -94,35 +94,45 @@ export function GoalsClient({
   const tabIndex = activeTab === "active" ? 0 : 1
 
   return (
-    <div className="flex flex-col gap-4 pb-24 md:pb-8">
-      {/* Header */}
-      <DiscoveryTooltip
-        actionLabel="Créer un objectif"
-        checklistCompleted={checklistCompleted}
-        checklistDismissed={checklistDismissed}
-        checklistStep="goal"
-        description="Cliquez ici, renseignez un nom, un montant cible et optionnellement une date limite pour suivre votre progression."
-        onAction={openCreate}
-        title="Objectifs d'épargne"
-        tooltipsSeen={tooltipsSeen}
-      >
-        <div className="flex items-center justify-end">
-          <Button className="gap-1.5" onClick={openCreate} size="sm">
-            <Plus className="size-4" />
-            <span className="hidden sm:inline">Nouveau</span>
-          </Button>
+    <div className="flex flex-col gap-5 pb-24 md:pb-8">
+      {/* Page header */}
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="font-black text-3xl tracking-tight">Objectifs</h1>
+          <p className="mt-1 text-muted-foreground text-sm">
+            Suivez vos objectifs d'épargne
+          </p>
         </div>
-      </DiscoveryTooltip>
+        <DiscoveryTooltip
+          actionLabel="Créer un objectif"
+          checklistCompleted={checklistCompleted}
+          checklistDismissed={checklistDismissed}
+          checklistStep="goal"
+          description="Cliquez ici, renseignez un nom, un montant cible et optionnellement une date limite pour suivre votre progression."
+          onAction={openCreate}
+          title="Objectifs d'épargne"
+          tooltipsSeen={tooltipsSeen}
+        >
+          <Button
+            className="btn-gradient-primary h-11 shrink-0 gap-2 rounded-full px-5 font-semibold shadow-md"
+            onClick={openCreate}
+          >
+            <Plus className="size-4" />
+            <span className="hidden sm:inline">Nouvel objectif</span>
+            <span className="sm:hidden">Nouveau</span>
+          </Button>
+        </DiscoveryTooltip>
+      </div>
 
       {isLoading ? (
         <GoalListSkeleton />
       ) : (
         <>
           {/* Tabs — sliding pill */}
-          <div className="relative flex rounded-xl border border-border bg-card p-1">
+          <div className="relative flex rounded-2xl border border-border bg-card p-1">
             <div
               aria-hidden
-              className="pointer-events-none absolute top-1 bottom-1 rounded-lg bg-primary/15 transition-all duration-200"
+              className="pointer-events-none absolute top-1 bottom-1 rounded-xl bg-primary/15 transition-all duration-200"
               style={{
                 width: "calc((100% - 8px) / 2)",
                 left: `calc(4px + ${tabIndex} * (100% - 8px) / 2)`,
@@ -145,7 +155,7 @@ export function GoalsClient({
           {/* Contenu */}
           {activeTab === "active" &&
             (active.length > 0 ? (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {active.map((goal) => (
                   <GoalCard
                     goal={goal}
@@ -163,7 +173,7 @@ export function GoalsClient({
 
           {activeTab === "completed" &&
             (completed.length > 0 ? (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {completed.map((goal) => (
                   <CompletedGoalCard
                     goal={goal}
@@ -197,16 +207,16 @@ function TabButton({
   count,
   label,
   onClick,
-}: {
+}: Readonly<{
   active: boolean
   count: number
   label: string
   onClick: () => void
-}) {
+}>) {
   return (
     <button
       className={cn(
-        "relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-lg py-1.5 font-medium text-sm transition-colors duration-150",
+        "relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 font-medium text-sm transition-colors duration-150",
         active
           ? "text-primary"
           : "text-muted-foreground hover:text-foreground"
@@ -234,10 +244,10 @@ function TabButton({
 function CompletedGoalCard({
   goal,
   onDeleted,
-}: {
+}: Readonly<{
   goal: GoalItem
   onDeleted: () => void
-}) {
+}>) {
   const [isPending, startTransition] = useTransition()
   const { currency } = useCurrency()
 
@@ -259,26 +269,26 @@ function CompletedGoalCard({
   return (
     <div
       className={cn(
-        "space-y-3 rounded-xl border border-border bg-card p-4 transition-all duration-200",
-        "hover:border-border-accent hover:bg-surface-elevated hover:shadow-lg hover:shadow-black/20",
+        "space-y-3 rounded-3xl border border-border bg-card p-4 transition-all duration-200",
+        "hover:border-border-accent hover:bg-surface-elevated hover:shadow-md hover:shadow-black/8 dark:hover:shadow-black/25",
         isPending && "pointer-events-none opacity-50"
       )}
     >
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2.5">
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[var(--color-income)]/15">
-            <Trophy className="size-4 text-[var(--color-income)]" />
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-(--color-income)/15">
+            <Trophy className="size-4 text-(--color-income)" />
           </span>
-          <span className="truncate font-medium text-sm">{goal.name}</span>
+          <span className="truncate font-semibold text-sm">{goal.name}</span>
         </div>
-        <div className="flex shrink-0 items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1.5">
           <Badge variant="success">Complété</Badge>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 aria-label="Options de l'objectif"
-                className="size-7"
+                className="size-9 touch-manipulation"
                 size="icon"
                 variant="ghost"
               >
@@ -299,55 +309,55 @@ function CompletedGoalCard({
       </div>
 
       {/* Montant + date */}
-      <div className="flex items-center justify-between text-xs">
-        <span className="flex items-center gap-1.5 font-medium text-foreground">
-          <CheckCircle2 className="size-3.5 text-[var(--color-income)]" />
+      <div className="flex items-center justify-between text-sm">
+        <span className="flex items-center gap-1.5 font-semibold text-foreground">
+          <CheckCircle2 className="size-4 text-(--color-income)" />
           {formatAmount(goal.targetAmount, currency)}
         </span>
         {completedDate ? (
-          <span className="text-muted-foreground">{completedDate}</span>
+          <span className="text-muted-foreground text-xs">{completedDate}</span>
         ) : null}
       </div>
     </div>
   )
 }
 
-function EmptyActive({ onAdd }: { onAdd: () => void }) {
+function EmptyActive({ onAdd }: Readonly<{ onAdd: () => void }>) {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-border/50 border-dashed py-20 text-center">
-      <div className="flex size-14 items-center justify-center rounded-2xl border border-border bg-card">
-        <Target className="size-6 text-muted-foreground" />
+    <div className="flex flex-col items-center justify-center gap-5 rounded-3xl border border-border/50 border-dashed py-20 text-center">
+      <div className="flex size-16 items-center justify-center rounded-2xl border border-border bg-card">
+        <Target className="size-7 text-muted-foreground" />
       </div>
-      <div className="space-y-1.5">
-        <p className="font-semibold text-foreground text-sm">Aucun objectif en cours</p>
-        <p className="text-muted-foreground text-xs">
+      <div className="space-y-2">
+        <p className="font-semibold text-foreground text-base">Aucun objectif en cours</p>
+        <p className="text-muted-foreground text-sm">
           Définissez un objectif d'épargne pour suivre votre progression.
         </p>
       </div>
-      <Button className="btn-gradient-primary hover:opacity-90" onClick={onAdd} size="sm">
-        <Plus className="size-4" />
+      <Button className="btn-gradient-primary h-11 gap-2 px-6 text-base hover:opacity-90" onClick={onAdd}>
+        <Plus className="size-5" />
         Créer un objectif
       </Button>
     </div>
   )
 }
 
-function EmptyCompleted({ onAdd }: { onAdd: () => void }) {
+function EmptyCompleted({ onAdd }: Readonly<{ onAdd: () => void }>) {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-border/50 border-dashed py-20 text-center">
-      <div className="flex size-14 items-center justify-center rounded-2xl border border-border bg-card">
-        <Trophy className="size-6 text-muted-foreground" />
+    <div className="flex flex-col items-center justify-center gap-5 rounded-3xl border border-border/50 border-dashed py-20 text-center">
+      <div className="flex size-16 items-center justify-center rounded-2xl border border-border bg-card">
+        <Trophy className="size-7 text-muted-foreground" />
       </div>
-      <div className="space-y-1.5">
-        <p className="font-semibold text-foreground text-sm">
+      <div className="space-y-2">
+        <p className="font-semibold text-foreground text-base">
           Aucun objectif atteint pour l'instant
         </p>
-        <p className="text-muted-foreground text-xs">
+        <p className="text-muted-foreground text-sm">
           Vos objectifs complétés apparaîtront ici.
         </p>
       </div>
-      <Button className="btn-gradient-primary hover:opacity-90" onClick={onAdd} size="sm">
-        <Plus className="size-4" />
+      <Button className="btn-gradient-primary h-11 gap-2 px-6 text-base hover:opacity-90" onClick={onAdd}>
+        <Plus className="size-5" />
         Créer un objectif
       </Button>
     </div>

@@ -64,7 +64,7 @@ export function BudgetsClient({
   initialData,
   initialMonth,
   tooltipsSeen,
-}: BudgetsClientProps) {
+}: Readonly<BudgetsClientProps>) {
   const showGuide = !(
     checklistDismissed ||
     checklistCompleted.includes("budget") ||
@@ -125,48 +125,58 @@ export function BudgetsClient({
   const showReconduction = currentIsEmpty && (prevBudgets?.length ?? 0) > 0
 
   return (
-    <div className="flex flex-col gap-4 pb-24 md:pb-8">
-      {/* Header */}
-      <DiscoveryTooltip
-        actionLabel="Créer un budget"
-        checklistCompleted={checklistCompleted}
-        checklistDismissed={checklistDismissed}
-        checklistStep="budget"
-        description="Cliquez ici, sélectionnez une catégorie de dépense et définissez le montant maximum pour ce mois."
-        onAction={openCreate}
-        title="Budgets mensuels"
-        tooltipsSeen={tooltipsSeen}
-      >
-        <div className="flex items-center justify-end">
-          <Button className="gap-1.5" onClick={openCreate} size="sm">
-            <Plus className="size-4" />
-            <span className="hidden sm:inline">Nouveau</span>
-          </Button>
+    <div className="flex flex-col gap-5 pb-24 md:pb-8">
+      {/* Page header */}
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="font-black text-3xl tracking-tight">Budgets</h1>
+          <p className="mt-1 text-muted-foreground text-sm">
+            Gérez vos plafonds mensuels par catégorie
+          </p>
         </div>
-      </DiscoveryTooltip>
+        <DiscoveryTooltip
+          actionLabel="Créer un budget"
+          checklistCompleted={checklistCompleted}
+          checklistDismissed={checklistDismissed}
+          checklistStep="budget"
+          description="Cliquez ici, sélectionnez une catégorie de dépense et définissez le montant maximum pour ce mois."
+          onAction={openCreate}
+          title="Budgets mensuels"
+          tooltipsSeen={tooltipsSeen}
+        >
+          <Button
+            className="btn-gradient-primary h-11 shrink-0 gap-2 rounded-full px-5 font-semibold shadow-md"
+            onClick={openCreate}
+          >
+            <Plus className="size-4" />
+            <span className="hidden sm:inline">Nouveau budget</span>
+            <span className="sm:hidden">Nouveau</span>
+          </Button>
+        </DiscoveryTooltip>
+      </div>
 
       {/* Sélecteur de mois */}
-      <div className="flex items-center justify-between rounded-lg border border-border bg-card px-2 py-1.5">
+      <div className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
         <Button
           aria-label="Mois précédent"
-          className="size-8"
+          className="size-10"
           onClick={prevMonthNav}
           size="icon"
           variant="ghost"
         >
-          <ChevronLeft className="size-4" />
+          <ChevronLeft className="size-5" />
         </Button>
-        <span className="font-medium text-sm tabular-nums">
+        <span className="font-semibold text-base tabular-nums capitalize">
           {monthLabel(month)}
         </span>
         <Button
           aria-label="Mois suivant"
-          className="size-8"
+          className="size-10"
           onClick={nextMonthNav}
           size="icon"
           variant="ghost"
         >
-          <ChevronRight className="size-4" />
+          <ChevronRight className="size-5" />
         </Button>
       </div>
 
@@ -174,7 +184,7 @@ export function BudgetsClient({
       {isLoading && <BudgetListSkeleton />}
 
       {!isLoading && budgets && budgets.length > 0 && (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {budgets.map((budget) => (
             <BudgetCard
               budget={budget}
@@ -223,12 +233,12 @@ function ReconductionBanner({
   fromMonth,
   toMonth,
   onSuccess,
-}: {
+}: Readonly<{
   count: number
   fromMonth: Date
   toMonth: Date
   onSuccess: () => void
-}) {
+}>) {
   const [isPending, startTransition] = useTransition()
 
   function handleCopy() {
@@ -239,16 +249,16 @@ function ReconductionBanner({
   }
 
   return (
-    <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-card p-4">
+    <div className="flex items-center justify-between gap-4 rounded-3xl border border-border bg-card px-5 py-5">
       <div className="flex min-w-0 items-center gap-3">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-          <CalendarCheck className="size-4 text-primary" />
+        <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10">
+          <CalendarCheck className="size-5 text-primary" />
         </span>
         <div className="min-w-0">
-          <p className="font-medium text-sm">
+          <p className="font-semibold text-base">
             Reprendre les budgets de {monthLabel(fromMonth)}
           </p>
-          <p className="truncate text-muted-foreground text-xs">
+          <p className="truncate text-muted-foreground text-sm">
             {count} budget{count > 1 ? "s" : ""} disponible
             {count > 1 ? "s" : ""}
           </p>
@@ -258,7 +268,6 @@ function ReconductionBanner({
         className="shrink-0"
         disabled={isPending}
         onClick={handleCopy}
-        size="sm"
         variant="outline"
       >
         {isPending ? "Copie…" : "Reprendre"}
@@ -267,20 +276,20 @@ function ReconductionBanner({
   )
 }
 
-function EmptyBudgets({ onAdd }: { onAdd: () => void }) {
+function EmptyBudgets({ onAdd }: Readonly<{ onAdd: () => void }>) {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-border/50 border-dashed py-20 text-center">
-      <div className="flex size-14 items-center justify-center rounded-2xl border border-border bg-card">
-        <Wallet className="size-6 text-muted-foreground" />
+    <div className="flex flex-col items-center justify-center gap-5 rounded-3xl border border-border/50 border-dashed py-20 text-center">
+      <div className="flex size-16 items-center justify-center rounded-2xl border border-border bg-card">
+        <Wallet className="size-7 text-muted-foreground" />
       </div>
-      <div className="space-y-1.5">
-        <p className="font-semibold text-foreground text-sm">Aucun budget ce mois-ci</p>
-        <p className="text-muted-foreground text-xs">
+      <div className="space-y-2">
+        <p className="font-semibold text-foreground text-base">Aucun budget ce mois-ci</p>
+        <p className="text-muted-foreground text-sm">
           Définissez un plafond par catégorie pour suivre vos dépenses.
         </p>
       </div>
-      <Button className="btn-gradient-primary hover:opacity-90" onClick={onAdd} size="sm">
-        <Plus className="size-4" />
+      <Button className="btn-gradient-primary h-11 gap-2 px-6 text-base hover:opacity-90" onClick={onAdd}>
+        <Plus className="size-5" />
         Créer un budget
       </Button>
     </div>

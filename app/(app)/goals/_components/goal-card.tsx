@@ -9,8 +9,8 @@ import {
   X,
 } from "lucide-react"
 import { useState, useTransition } from "react"
+import { AnimatedAmount } from "@/components/shared/animated-amount"
 import { AnimatedProgress } from "@/components/shared/animated-progress"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -34,40 +34,24 @@ interface GoalCardProps {
   onUpdated: () => void
 }
 
-function formatAmountFlexible(value: number, currency: string): string {
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(value)
-}
-
 function getDeadlineInfo(
   deadline: Date | null,
   currentAmount: number,
   targetAmount: number,
   currency: string
 ): string | null {
-  if (!deadline) {
-    return null
-  }
+  if (!deadline) return null
 
   const deadlineDate = new Date(deadline)
   const now = new Date()
 
   const endOfDay = new Date(deadlineDate)
   endOfDay.setHours(23, 59, 59, 999)
-  if (endOfDay < now) {
-    return "Échéance dépassée"
-  }
+  if (endOfDay < now) return "Échéance dépassée"
 
   const remaining = targetAmount - currentAmount
-  if (remaining <= 0) {
-    return null
-  }
+  if (remaining <= 0) return null
 
-  // Jours restants (basé sur les dates locales, sans heure)
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const deadlineStart = new Date(
     deadlineDate.getFullYear(),
@@ -84,23 +68,15 @@ function getDeadlineInfo(
   })
   const remainingStr = formatAmount(remaining, currency)
 
-  if (days === 0) {
-    return `Aujourd'hui (${dateStr}) — ${remainingStr} restant`
-  }
-  if (days === 1) {
-    return `Demain (${dateStr}) — ${remainingStr} restant`
-  }
-  if (days <= 13) {
-    return `Dans ${days} jours (${dateStr}) — ${remainingStr} restant`
-  }
+  if (days === 0) return `Aujourd'hui (${dateStr}) — ${remainingStr} restant`
+  if (days === 1) return `Demain (${dateStr}) — ${remainingStr} restant`
+  if (days <= 13) return `Dans ${days} jours (${dateStr}) — ${remainingStr} restant`
 
   const months =
     (deadlineDate.getFullYear() - now.getFullYear()) * 12 +
     (deadlineDate.getMonth() - now.getMonth())
 
-  if (months <= 0) {
-    return `Ce mois-ci (${dateStr}) — ${remainingStr} restant`
-  }
+  if (months <= 0) return `Ce mois-ci (${dateStr}) — ${remainingStr} restant`
 
   const perMonth = remaining / months
   return `${months} mois restant${months > 1 ? "s" : ""} (${dateStr}) — ${formatAmount(perMonth, currency)}/mois`
@@ -112,7 +88,7 @@ export function GoalCard({
   onDeleted,
   onEdit,
   onUpdated,
-}: GoalCardProps) {
+}: Readonly<GoalCardProps>) {
   const [isPending, startTransition] = useTransition()
   const [isEditingAmount, setIsEditingAmount] = useState(false)
   const [amountInput, setAmountInput] = useState("")
@@ -125,6 +101,7 @@ export function GoalCard({
     currency
   )
   const progressVariant = goal.percentage >= 90 ? "accent" : "auto"
+  const isComplete = goal.percentage >= 100
 
   function startEditing() {
     setAmountInput(String(goal.currentAmount))
@@ -137,19 +114,14 @@ export function GoalCard({
 
   function confirmUpdate() {
     const raw = Number.parseFloat(amountInput.replace(",", "."))
-    if (Number.isNaN(raw) || raw < 0) {
-      return
-    }
+    if (Number.isNaN(raw) || raw < 0) return
 
-    // Plafonne à la cible (le serveur fait de même)
     const newAmount = Math.min(raw, goal.targetAmount)
     const willComplete = !goal.isCompleted && newAmount >= goal.targetAmount
 
     startTransition(async () => {
       await updateGoalAmount(goal.id, newAmount)
-      if (willComplete) {
-        onCompleted(goal.id)
-      }
+      if (willComplete) onCompleted(goal.id)
       onUpdated()
       setIsEditingAmount(false)
     })
@@ -165,20 +137,22 @@ export function GoalCard({
   return (
     <div
       className={cn(
-        "group space-y-3 rounded-xl border border-border bg-card p-4 transition-all duration-200",
-        "hover:border-border-accent hover:bg-surface-elevated hover:shadow-lg hover:shadow-black/20",
+        "group/goal space-y-3 rounded-3xl border border-border bg-card p-4 transition-all duration-200",
+        "hover:border-border-accent hover:bg-surface-elevated hover:shadow-md hover:shadow-black/8 dark:hover:shadow-black/25",
         isPending && "pointer-events-none opacity-50"
       )}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between gap-2">
-        <span className="truncate font-semibold text-sm">{goal.name}</span>
+      {/* Header : nom + dropdown */}
+      <div className="flex items-start justify-between gap-2">
+        <p className="truncate pt-0.5 font-semibold text-sm leading-tight">
+          {goal.name}
+        </p>
         <div className="flex shrink-0 items-center gap-1.5">
           <span
             className={cn(
-              "font-bold font-mono tabular-nums text-base",
-              goal.percentage >= 100
-                ? "text-[var(--color-income)]"
+              "font-black font-mono tabular-nums text-lg leading-none",
+              isComplete
+                ? "text-(--color-income)"
                 : "text-foreground"
             )}
           >
@@ -188,7 +162,7 @@ export function GoalCard({
             <DropdownMenuTrigger asChild>
               <Button
                 aria-label="Options de l'objectif"
-                className="size-7"
+                className="size-9 touch-manipulation"
                 size="icon"
                 variant="ghost"
               >
@@ -213,27 +187,23 @@ export function GoalCard({
         </div>
       </div>
 
-      {/* Progress */}
-      <AnimatedProgress progressClassName="h-3" value={goal.percentage} variant={progressVariant} />
+      {/* Barre de progression */}
+      <AnimatedProgress progressClassName="h-2" value={goal.percentage} variant={progressVariant} />
 
-      {/* Amounts — montant actuel prominent + cible en grand */}
-      <div className="flex items-baseline justify-between gap-2">
-        <span
-          className={cn(
-            "font-mono font-bold text-lg tabular-nums",
-            goal.percentage >= 100
-              ? "text-[var(--color-income)]"
-              : "text-foreground"
-          )}
-        >
-          {formatAmountFlexible(goal.currentAmount, currency)}
-        </span>
-        <span className="font-mono font-semibold tabular-nums text-muted-foreground text-sm">
-          / {formatAmountFlexible(goal.targetAmount, currency)}
-        </span>
+      {/* Montant actuel */}
+      <div>
+        <AnimatedAmount
+          className="font-black text-xl leading-none tracking-tight"
+          currency={currency}
+          value={goal.currentAmount}
+          variant={isComplete ? "income" : "neutral"}
+        />
+        <p className="mt-0.5 text-xs text-muted-foreground">
+          sur {formatAmount(goal.targetAmount, currency)}
+        </p>
       </div>
 
-      {/* Deadline info avec icône */}
+      {/* Échéance */}
       {deadlineInfo ? (
         <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
           <CalendarClock className="size-3.5 shrink-0" />
@@ -241,13 +211,13 @@ export function GoalCard({
         </div>
       ) : null}
 
-      {/* Update amount — inline */}
+      {/* Mise à jour du montant */}
       {isEditingAmount ? (
         <div className="flex gap-1.5">
           <div className="relative flex-1">
             <Input
               autoFocus
-              className="h-8 pr-7 text-sm"
+              className="h-10 pr-7"
               inputMode="decimal"
               max={goal.targetAmount}
               min={0}
@@ -260,12 +230,8 @@ export function GoalCard({
                 }
               }}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  confirmUpdate()
-                }
-                if (e.key === "Escape") {
-                  cancelEditing()
-                }
+                if (e.key === "Enter") confirmUpdate()
+                if (e.key === "Escape") cancelEditing()
               }}
               step="0.01"
               type="number"
@@ -277,28 +243,27 @@ export function GoalCard({
           </div>
           <Button
             aria-label="Confirmer le montant"
-            className="size-8 shrink-0"
+            className="size-9 shrink-0 touch-manipulation"
             disabled={isPending}
             onClick={confirmUpdate}
             size="icon"
           >
-            <Check className="size-3.5" />
+            <Check className="size-4" />
           </Button>
           <Button
             aria-label="Annuler"
-            className="size-8 shrink-0"
+            className="size-9 shrink-0 touch-manipulation"
             onClick={cancelEditing}
             size="icon"
             variant="ghost"
           >
-            <X className="size-3.5" />
+            <X className="size-4" />
           </Button>
         </div>
       ) : (
         <Button
-          className="h-8 w-full text-xs"
+          className="h-10 w-full touch-manipulation"
           onClick={startEditing}
-          size="sm"
           variant="outline"
         >
           Mettre à jour le montant
