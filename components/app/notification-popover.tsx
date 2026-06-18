@@ -17,7 +17,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Separator } from "@/components/ui/separator"
 import {
   deleteAllNotifications,
   deleteNotification,
@@ -37,12 +36,7 @@ type NotificationType = Notification["type"]
 
 const TYPE_CONFIG: Record<
   NotificationType,
-  {
-    icon: React.ElementType
-    iconClass: string
-    bgClass: string
-    barClass: string
-  }
+  { icon: React.ElementType; iconClass: string; bgClass: string; barClass: string }
 > = {
   WARNING: {
     icon: AlertTriangle,
@@ -75,27 +69,19 @@ const TYPE_CONFIG: Record<
 function relativeTime(date: Date): string {
   const diff = Date.now() - new Date(date).getTime()
   const minutes = Math.floor(diff / 60_000)
-  if (minutes < 1) {
-    return "À l'instant"
-  }
-  if (minutes < 60) {
-    return `il y a ${minutes} min`
-  }
+  if (minutes < 1) return "À l'instant"
+  if (minutes < 60) return `il y a ${minutes} min`
   const hours = Math.floor(minutes / 60)
-  if (hours < 24) {
-    return `il y a ${hours}h`
-  }
+  if (hours < 24) return `il y a ${hours}h`
   return `il y a ${Math.floor(hours / 24)}j`
 }
 
 /* ── Sous-composants ────────────────────────────────────────────────────── */
 
-function NotificationBadge({ count }: { count: number }) {
-  if (count === 0) {
-    return null
-  }
+function NotificationBadge({ count }: Readonly<{ count: number }>) {
+  if (count === 0) return null
   return (
-    <span className="absolute top-1 right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-0.5 font-semibold text-[10px] text-white leading-none">
+    <span className="absolute top-0.5 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-0.5 font-semibold text-[10px] text-white leading-none">
       {count > 9 ? "9+" : count}
     </span>
   )
@@ -105,78 +91,56 @@ function NotificationItem({
   notification,
   onMarkRead,
   onDelete,
-}: {
+}: Readonly<{
   notification: Notification
   onMarkRead: (id: string) => void
   onDelete: (id: string) => void
-}) {
-  const {
-    icon: Icon,
-    iconClass,
-    bgClass,
-    barClass,
-  } = TYPE_CONFIG[notification.type]
+}>) {
+  const { icon: Icon, iconClass, bgClass, barClass } = TYPE_CONFIG[notification.type]
   const unread = !notification.isRead
 
   return (
     <div
       className={cn(
-        "group relative flex items-start gap-3 px-4 py-3 transition-colors hover:bg-muted/50",
-        unread && "bg-muted/30"
+        "group relative flex items-start gap-3.5 px-5 py-4 transition-colors hover:bg-muted/40",
+        unread && "bg-muted/20"
       )}
     >
       {/* Barre colorée gauche pour non-lues */}
       {unread && (
-        <div
-          className={cn(
-            "absolute top-3 bottom-3 left-0 w-0.5 rounded-r-full",
-            barClass
-          )}
-        />
+        <div className={cn("absolute top-4 bottom-4 left-0 w-0.75 rounded-r-full", barClass)} />
       )}
 
       {/* Icône */}
-      <div
-        className={cn(
-          "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg",
-          bgClass
-        )}
-      >
-        <Icon className={cn("size-4", iconClass)} />
+      <div className={cn("mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-xl", bgClass)}>
+        <Icon className={cn("size-5", iconClass)} />
       </div>
 
       {/* Contenu cliquable */}
       <button
         className="min-w-0 flex-1 text-left"
         onClick={() => {
-          if (unread) {
-            onMarkRead(notification.id)
-          }
+          if (unread) onMarkRead(notification.id)
         }}
         type="button"
       >
         <div className="flex items-start justify-between gap-2">
-          <p
-            className={cn(
-              "text-sm leading-snug",
-              unread ? "font-medium text-foreground" : "text-muted-foreground"
-            )}
-          >
+          <p className={cn("text-sm leading-snug", unread ? "font-semibold text-foreground" : "font-medium text-muted-foreground")}>
             {notification.title}
           </p>
           <span className="shrink-0 whitespace-nowrap text-[11px] text-muted-foreground">
             {relativeTime(notification.createdAt)}
           </span>
         </div>
-        <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs">
+        <p className="mt-1 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
           {notification.body}
         </p>
       </button>
 
-      {/* Bouton supprimer — toujours visible mobile, hover sur desktop */}
+      {/* Bouton supprimer */}
       <button
         aria-label="Supprimer"
-        className="shrink-0 rounded-md p-1 text-muted-foreground opacity-100 transition-all hover:bg-muted hover:text-foreground md:opacity-0 md:group-hover:opacity-100"
+        className="shrink-0 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:opacity-0 md:group-hover:opacity-100"
         onClick={() => onDelete(notification.id)}
         type="button"
       >
@@ -188,12 +152,12 @@ function NotificationItem({
 
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center gap-3 py-12 text-center">
-      <div className="flex size-12 items-center justify-center rounded-full bg-muted">
-        <Bell className="size-5 text-muted-foreground" />
+    <div className="flex flex-col items-center gap-4 py-14 text-center">
+      <div className="flex size-14 items-center justify-center rounded-2xl border border-border bg-muted/30">
+        <Bell className="size-6 text-muted-foreground" />
       </div>
       <div>
-        <p className="font-medium text-sm">Vous êtes à jour</p>
+        <p className="font-semibold text-sm">Vous êtes à jour</p>
         <p className="mt-0.5 text-muted-foreground text-xs">
           Aucune notification pour le moment.
         </p>
@@ -207,15 +171,13 @@ function HeaderActions({
   hasNotifications,
   onMarkAll,
   onDeleteAll,
-}: {
+}: Readonly<{
   hasUnread: boolean
   hasNotifications: boolean
   onMarkAll: () => void
   onDeleteAll: () => void
-}) {
-  if (!(hasUnread || hasNotifications)) {
-    return null
-  }
+}>) {
+  if (!(hasUnread || hasNotifications)) return null
 
   return (
     <div className="flex items-center gap-3">
@@ -254,8 +216,6 @@ export function NotificationPopover() {
     staleTime: 30_000,
   })
 
-  /* Mutations avec mise à jour optimiste du cache */
-
   const { mutate: markAll } = useMutation({
     mutationFn: markAllNotificationsAsRead,
     onMutate: () =>
@@ -288,31 +248,27 @@ export function NotificationPopover() {
 
   function handleOpenChange(next: boolean) {
     setOpen(next)
-    if (next) {
-      refetch()
-    }
+    if (next) refetch()
   }
 
   const unreadCount = notifications.filter((n) => !n.isRead).length
   const hasUnread = unreadCount > 0
   const hasNotifications = notifications.length > 0
 
-  /* ── Contenu de la liste (partagé mobile / desktop) ── */
-
   const list =
     notifications.length === 0 ? (
       <EmptyState />
     ) : (
-      notifications.map((n, i) => (
-        <div key={n.id}>
+      <div className="divide-y divide-border/50">
+        {notifications.map((n) => (
           <NotificationItem
+            key={n.id}
             notification={n}
             onDelete={(id) => deleteOne(id)}
             onMarkRead={(id) => markOne(id)}
           />
-          {i < notifications.length - 1 && <Separator />}
-        </div>
-      ))
+        ))}
+      </div>
     )
 
   /* ── Mobile — BottomSheet ── */
@@ -322,12 +278,12 @@ export function NotificationPopover() {
       <>
         <Button
           aria-label="Notifications"
-          className="relative"
+          className="relative flex h-10 w-10 items-center justify-center rounded-full bg-background text-muted-foreground shadow-sm transition-all hover:text-foreground hover:shadow-md"
           onClick={() => setOpen(true)}
           size="icon"
           variant="ghost"
         >
-          <Bell className="h-[18px] w-[18px]" />
+          <Bell className="size-4.5" />
           <NotificationBadge count={unreadCount} />
         </Button>
 
@@ -344,7 +300,7 @@ export function NotificationPopover() {
               onMarkAll={() => markAll()}
             />
             <div className="-mx-6">
-              <Separator />
+              <div className="h-px bg-border/50" />
               {list}
             </div>
           </div>
@@ -363,18 +319,26 @@ export function NotificationPopover() {
           className="relative flex h-10 w-10 items-center justify-center rounded-full bg-background text-muted-foreground shadow-sm transition-all hover:text-foreground hover:shadow-md"
           type="button"
         >
-          <Bell className="h-[18px] w-[18px]" />
+          <Bell className="size-4.5" />
           <NotificationBadge count={unreadCount} />
         </button>
       </PopoverTrigger>
 
       <PopoverContent
         align="end"
-        className="w-[360px] gap-0 p-0"
-        sideOffset={8}
+        className="w-100 gap-0 overflow-hidden rounded-2xl p-0"
+        sideOffset={10}
       >
-        <div className="flex items-center justify-between px-4 py-3">
-          <span className="font-semibold text-sm">Notifications</span>
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-base">Notifications</span>
+            {hasUnread && (
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 font-semibold text-[10px] text-white">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </div>
           <HeaderActions
             hasNotifications={hasNotifications}
             hasUnread={hasUnread}
@@ -383,9 +347,9 @@ export function NotificationPopover() {
           />
         </div>
 
-        <Separator />
+        <div className="h-px bg-border/50" />
 
-        <div className="max-h-[420px] overflow-y-auto">{list}</div>
+        <div className="max-h-110 overflow-y-auto">{list}</div>
       </PopoverContent>
     </Popover>
   )

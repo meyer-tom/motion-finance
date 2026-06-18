@@ -5,7 +5,7 @@ import { AlertCircle, Bug, ImagePlus, Loader2, Upload, X } from "lucide-react"
 import Image from "next/image"
 import { useCallback, useEffect, useRef, useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
-import { toast } from "sonner"
+import { toast } from "@/lib/toast"
 import { BottomSheet } from "@/components/shared/bottom-sheet"
 import { Button } from "@/components/ui/button"
 import {

@@ -10,6 +10,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
+import { useEffect, useState } from "react"
 import { useCurrency } from "@/lib/context/currency-context"
 import { formatAmount } from "@/lib/utils/format"
 
@@ -73,6 +74,12 @@ function BarChartTooltip({
 
 export function MonthlyBarChart({ chart }: Props) {
   const { currency } = useCurrency()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   const data = chart.labels.map((label, i) => ({
     label,
     Revenus: chart.income[i] ?? 0,
@@ -87,6 +94,10 @@ export function MonthlyBarChart({ chart }: Props) {
         Aucune donnée sur cette période
       </div>
     )
+  }
+
+  if (!mounted) {
+    return <div className="h-62.5" />
   }
 
   return (

@@ -11,6 +11,7 @@ import type {
   CategoryOption,
 } from "@/components/transactions/transaction-form-sheet"
 import { TransactionFormSheet } from "@/components/transactions/transaction-form-sheet"
+import { Toaster } from "@/components/ui/toaster"
 import type { User } from "@/lib/auth"
 import { TransactionFormProvider } from "@/lib/context/transaction-form-context"
 
@@ -33,7 +34,7 @@ export function AppShell({
     <TransactionFormProvider>
       <div className="flex min-h-svh flex-col">
         <TopNav user={user} />
-        <main className="mx-auto w-full max-w-screen-2xl flex-1 px-4 pb-[calc(1.5rem+80px)] pt-6 md:pb-8 lg:px-6">
+        <main className="mx-auto w-full max-w-screen-2xl flex-1 px-4 pb-26 pt-6 md:pb-8 lg:px-6">
           {children}
         </main>
         <BottomNav />
@@ -47,6 +48,7 @@ export function AppShell({
         />
       </Suspense>
       <InstallBanner />
+      <Toaster />
     </TransactionFormProvider>
   )
 }

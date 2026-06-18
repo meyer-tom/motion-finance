@@ -103,11 +103,20 @@ async function evaluateBudgets(userId: string): Promise<{
 
     const spent = spendingMap.get(budget.categoryId) ?? 0
     const ratio = spent / budgetAmount
+    const isOver100 = ratio >= 1
 
     for (const threshold of [80, 100] as const) {
       const key = `${budget.id}:${threshold}`
       const existingId = existingMap.get(key)
-      const isActive = threshold === 100 ? ratio >= 1 : ratio >= 0.8
+
+      // Quand le budget est dépassé (≥100%), l'alerte 80% est redondante :
+      // on la supprime si elle existe et on ne la crée pas.
+      if (threshold === 80 && isOver100) {
+        if (existingId) toDelete.push(existingId)
+        continue
+      }
+
+      const isActive = threshold === 100 ? isOver100 : ratio >= 0.8
 
       if (isActive && !existingId) {
         const isOver = threshold === 100

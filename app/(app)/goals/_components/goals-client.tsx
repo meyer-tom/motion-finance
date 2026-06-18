@@ -10,7 +10,7 @@ import {
   Trophy,
 } from "lucide-react"
 import { useState, useTransition } from "react"
-import { toast } from "sonner"
+import { toast } from "@/lib/toast"
 import { DiscoveryTooltip } from "@/components/app/discovery-tooltip"
 import { GoalCompletionCelebration } from "@/components/shared/goal-completion-celebration"
 import { Badge } from "@/components/ui/badge"

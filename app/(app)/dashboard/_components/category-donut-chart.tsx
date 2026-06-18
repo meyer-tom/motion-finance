@@ -1,6 +1,6 @@
 "use client"
 
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts"
+import { Pie, PieChart, Tooltip } from "recharts"
 import { useCurrency } from "@/lib/context/currency-context"
 import { formatAmount } from "@/lib/utils/format"
 import { getCategoryIcon } from "@/lib/utils/category-icons"
@@ -28,11 +28,11 @@ function CustomTooltip({
   active,
   currency,
   payload,
-}: {
+}: Readonly<{
   active?: boolean
   currency: string
   payload?: TooltipItem[]
-}) {
+}>) {
   if (!(active && payload?.length)) {
     return null
   }
@@ -54,7 +54,7 @@ function CustomTooltip({
   )
 }
 
-export function CategoryDonutChart({ categoryBreakdown }: Props) {
+export function CategoryDonutChart({ categoryBreakdown }: Readonly<Props>) {
   const { currency } = useCurrency()
 
   if (categoryBreakdown.length === 0) {
@@ -74,27 +74,21 @@ export function CategoryDonutChart({ categoryBreakdown }: Props) {
 
   return (
     <div className="flex items-center gap-5">
-      {/* Anneau */}
-      <div className="h-[160px] w-[160px] shrink-0">
-        <ResponsiveContainer height="100%" width="100%">
-          <PieChart>
-            <Pie
-              cx="50%"
-              cy="50%"
-              data={data}
-              dataKey="value"
-              innerRadius="52%"
-              outerRadius="82%"
-              paddingAngle={2}
-              stroke="none"
-            >
-              {data.map((entry) => (
-                <Cell fill={entry.fill} key={entry.categoryName} />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip currency={currency} />} />
-          </PieChart>
-        </ResponsiveContainer>
+      {/* Anneau — dimensions fixes, pas de ResponsiveContainer */}
+      <div className="shrink-0">
+        <PieChart height={160} width={160}>
+          <Pie
+            cx="50%"
+            cy="50%"
+            data={data}
+            dataKey="value"
+            innerRadius="52%"
+            outerRadius="82%"
+            paddingAngle={2}
+            stroke="none"
+          />
+          <Tooltip content={<CustomTooltip currency={currency} />} />
+        </PieChart>
       </div>
 
       {/* Légende à droite */}

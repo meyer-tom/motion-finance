@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { ArrowRightLeft, Calendar, Minus, Plus, Trash2, X } from "lucide-react"
 import { useEffect, useRef, useState, useTransition } from "react"
 import { type Resolver, useForm, useWatch } from "react-hook-form"
-import { toast } from "sonner"
+import { toast } from "@/lib/toast"
 import { FormStepGuide } from "@/components/app/form-step-guide"
 import { BottomSheet } from "@/components/shared/bottom-sheet"
 import {
