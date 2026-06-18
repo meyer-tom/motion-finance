@@ -7,7 +7,7 @@ export default function OnboardingLayout({ children }: { children: ReactNode }) 
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,oklch(0.92_0.05_293)_0%,transparent_60%)] dark:bg-[radial-gradient(ellipse_at_top,oklch(0.22_0.04_293)_0%,transparent_60%)]"
       />
-      <div className="w-full max-w-sm">{children}</div>
+      <div className="w-full max-w-md">{children}</div>
     </div>
   )
 }

@@ -17,7 +17,7 @@ import {
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
-import { useLayoutEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import { GlobalSearch } from "@/components/app/global-search"
 import { NotificationPopover } from "@/components/app/notification-popover"
@@ -62,12 +62,12 @@ function CenteredTabs() {
     ({ href }) => pathname === href || pathname.startsWith(`${href}/`)
   )
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (activeIndex < 0) return
     const tab = tabRefs.current[activeIndex]
     if (!tab) return
     setPill({ x: tab.offsetLeft, width: tab.offsetWidth })
-  }, [activeIndex])
+  }, [activeIndex, pathname])
 
   return (
     <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 rounded-full border border-border/50 bg-muted/50 px-2 py-2 md:flex">

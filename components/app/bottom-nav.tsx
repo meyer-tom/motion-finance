@@ -12,7 +12,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useLayoutEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import { useTransactionForm } from "@/lib/context/transaction-form-context"
 import { cn } from "@/lib/utils"
@@ -48,7 +48,7 @@ export function BottomNav() {
     ({ href }) => pathname === href || pathname.startsWith(`${href}/`)
   )
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (activeIndex < 0) return
     const el = navRefs.current[activeIndex]
     if (!el) return
@@ -58,7 +58,7 @@ export function BottomNav() {
       width: el.offsetWidth,
       height: el.offsetHeight,
     })
-  }, [activeIndex])
+  }, [activeIndex, pathname])
 
   return (
     <nav
