@@ -19,7 +19,7 @@ export default function AuthLayout({
       </div>
 
       <div className="mb-8 flex flex-col items-center gap-3">
-        <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-violet-700 shadow-lg shadow-primary/30">
+        <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-linear-to-br from-primary to-violet-700 shadow-lg shadow-primary/30">
           <BarChartSvg size={32} />
         </div>
         <span className="font-bold text-2xl tracking-[-0.02em]">

@@ -29,37 +29,16 @@ export function BarChartSvg({ size }: { readonly size: number }) {
       viewBox="0 0 32 32"
       width={size}
     >
-      <rect
-        className="fill-violet-300"
-        height="10"
-        rx="1.5"
-        width="4"
-        x="5"
-        y="18"
+      {/* Spark — éclair stylisé, orienté haut-droite */}
+      <path
+        d="M21.5 3L7 18.5H15.5L10.5 29L25 13.5H16.5L21.5 3Z"
+        fill="white"
       />
-      <rect
-        className="fill-violet-200"
-        height="18"
-        rx="1.5"
-        width="4"
-        x="11"
-        y="10"
-      />
-      <rect
-        className="fill-violet-300"
-        height="14"
-        rx="1.5"
-        width="4"
-        x="17"
-        y="14"
-      />
-      <rect
-        className="fill-white"
-        height="22"
-        rx="1.5"
-        width="4"
-        x="23"
-        y="6"
+      {/* Reflet intérieur subtil pour la profondeur */}
+      <path
+        d="M19.5 8.5L12.5 18.5H16.5L14 24.5L21.5 16H17.5L19.5 8.5Z"
+        fill="white"
+        opacity="0.18"
       />
     </svg>
   )
@@ -73,7 +52,7 @@ function SidebarLogo() {
       className="flex h-16 items-center gap-3 border-border border-b px-4"
       href="/dashboard"
     >
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-violet-700 shadow-sm">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-primary to-violet-700 shadow-sm">
         <BarChartSvg size={20} />
       </div>
       <span className="font-bold text-base text-foreground tracking-[-0.02em]">
@@ -132,7 +111,7 @@ export function UserAvatar({ user, size = "md" }: UserAvatarProps) {
   return (
     <span
       className={cn(
-        "flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-violet-700 font-semibold text-primary-foreground",
+        "flex shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary to-violet-700 font-semibold text-primary-foreground",
         dim
       )}
     >
@@ -194,7 +173,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                   ) : null}
                   <Icon
                     className={cn(
-                      "relative z-10 size-[18px] shrink-0",
+                      "relative z-10 size-4.5 shrink-0",
                       isActive && "stroke-[2.5]"
                     )}
                   />
