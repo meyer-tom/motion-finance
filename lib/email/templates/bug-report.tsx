@@ -35,6 +35,7 @@ interface BugReportEmailProps {
   readonly screenshotUrl?: string
   readonly severity: string
   readonly title: string
+  readonly type?: string
 }
 
 export function BugReportEmail({
@@ -46,35 +47,41 @@ export function BugReportEmail({
   reporterName,
   reporterEmail,
   screenshotUrl,
+  type = "BUG",
 }: BugReportEmailProps) {
+  const isFeature = type === "FEATURE_REQUEST"
   const severityLabel = SEVERITY_LABELS[severity] ?? severity
   const severityColor = SEVERITY_COLORS[severity] ?? "#6b7280"
+  const headerColor = isFeature ? "#7c3aed" : "#ef4444"
+  const headerSubLabel = isFeature ? "Demande de fonctionnalité" : "Rapport de bug"
   const adminUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/admin/bugs`
 
   return (
     <Html lang="fr">
       <Head />
       <Preview>
-        [Bug #{reportId.slice(-6)}] {title} — Motion Finance
+        [{isFeature ? "Feature" : "Bug"} #{reportId.slice(-6)}] {title} — Motion Finance
       </Preview>
       <Body style={main}>
         <Container style={container}>
-          <Section style={header}>
+          <Section style={{ ...header, backgroundColor: headerColor }}>
             <Text style={headerLogo}>Motion Finance</Text>
-            <Text style={headerSub}>Rapport de bug</Text>
+            <Text style={headerSub}>{headerSubLabel}</Text>
           </Section>
 
           <Section style={card}>
-            <Section style={badgeRow}>
-              <Text
-                style={{
-                  ...severityBadge,
-                  backgroundColor: severityColor,
-                }}
-              >
-                {severityLabel}
-              </Text>
-            </Section>
+            {isFeature ? null : (
+              <Section style={badgeRow}>
+                <Text
+                  style={{
+                    ...severityBadge,
+                    backgroundColor: severityColor,
+                  }}
+                >
+                  {severityLabel}
+                </Text>
+              </Section>
+            )}
 
             <Heading style={titleStyle}>{title}</Heading>
 

@@ -34,24 +34,29 @@ export async function submitBugReport(data: BugReportInput) {
   const report = await prisma.bugReport.create({
     data: {
       userId: user.id,
+      type: parsed.data.type,
       title: parsed.data.title,
       description: parsed.data.description,
-      severity: parsed.data.severity,
+      severity: parsed.data.type === "BUG" ? (parsed.data.severity ?? "MEDIUM") : null,
       pageUrl: parsed.data.pageUrl,
       userAgent: parsed.data.userAgent,
       screenshotUrl: parsed.data.screenshotUrl,
     },
   })
 
+  const emailPrefix = parsed.data.type === "FEATURE_REQUEST" ? "[Feature]" : "[Bug]"
+
   await sendBugReportEmail({
     reportId: report.id,
+    type: parsed.data.type,
     title: report.title,
     description: report.description,
-    severity: report.severity,
+    severity: report.severity ?? "N/A",
     pageUrl: report.pageUrl,
     reporterName: `${user.firstName} ${user.lastName}`.trim(),
     reporterEmail: user.email,
     screenshotUrl: report.screenshotUrl ?? undefined,
+    emailPrefix,
   })
 
   return { id: report.id }
@@ -65,6 +70,7 @@ export async function getBugReports(status?: string) {
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
+      type: true,
       title: true,
       description: true,
       severity: true,

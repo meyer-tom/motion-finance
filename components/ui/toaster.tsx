@@ -54,27 +54,22 @@ function Toast({
   return (
     <motion.div
       animate={{ x: 0, opacity: 1 }}
-      exit={{ x: 48, opacity: 0, transition: { duration: 0.2 } }}
-      initial={{ x: 48, opacity: 0 }}
+      exit={{ x: 40, opacity: 0, transition: { duration: 0.18 } }}
+      initial={{ x: 40, opacity: 0 }}
       layout
       transition={SPRING}
     >
-      <div className="flex w-full items-start gap-3 rounded-2xl border border-border bg-card px-4 py-4 shadow-xl shadow-black/8 dark:shadow-black/30">
-        <div
-          className={cn(
-            "mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl",
-            bgClass
-          )}
-        >
-          <Icon className={cn("size-5", iconClass)} />
+      <div className="flex w-full items-center gap-2.5 rounded-xl border border-border bg-card px-3 py-2.5 shadow-lg shadow-black/6 dark:shadow-black/25">
+        <div className={cn("flex size-6 shrink-0 items-center justify-center rounded-lg", bgClass)}>
+          <Icon className={cn("size-3.5", iconClass)} />
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="font-semibold text-sm leading-snug text-foreground">
+          <p className="font-medium text-sm leading-snug text-foreground">
             {item.title}
           </p>
           {item.description ? (
-            <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+            <p className="text-xs leading-relaxed text-muted-foreground">
               {item.description}
             </p>
           ) : null}
@@ -82,11 +77,11 @@ function Toast({
 
         <button
           aria-label="Fermer"
-          className="mt-0.5 shrink-0 rounded-lg p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          className="shrink-0 rounded-md p-0.5 text-muted-foreground/60 transition-colors hover:text-foreground"
           onClick={() => onDismiss(item.id)}
           type="button"
         >
-          <X className="size-3.5" />
+          <X className="size-3" />
         </button>
       </div>
     </motion.div>
@@ -110,7 +105,7 @@ export function Toaster() {
     <div
       aria-label="Notifications"
       aria-live="polite"
-      className="pointer-events-none fixed right-4 bottom-24 z-50 flex w-80 flex-col-reverse gap-2 md:bottom-6 md:right-6"
+      className="pointer-events-none fixed right-4 bottom-24 z-50 flex w-72 flex-col-reverse gap-2 md:bottom-6 md:right-6"
     >
       <AnimatePresence initial={false} mode="sync">
         {toasts.map((item) => (

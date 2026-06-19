@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 export const bugReportSchema = z.object({
+  type: z.enum(["BUG", "FEATURE_REQUEST"]).default("BUG"),
   title: z
     .string()
     .min(5, "Le titre doit contenir au moins 5 caractères")
@@ -9,10 +10,10 @@ export const bugReportSchema = z.object({
     .string()
     .min(10, "La description doit contenir au moins 10 caractères")
     .max(5000, "Description trop longue (max 5000 caractères)"),
-  severity: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]),
+  severity: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]).optional(),
   pageUrl: z.string().max(500),
   userAgent: z.string().max(500),
-  screenshotUrl: z.string().url().optional(),
+  screenshotUrl: z.string().optional(),
 })
 
 export type BugReportInput = z.infer<typeof bugReportSchema>

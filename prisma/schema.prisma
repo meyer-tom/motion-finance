@@ -269,9 +269,10 @@ model OnboardingProgress {
 model BugReport {
   id            String          @id @default(cuid())
   userId        String
+  type          FeedbackType    @default(BUG)
   title         String
   description   String          @db.Text
-  severity      BugSeverity     @default(MEDIUM)
+  severity      BugSeverity?    @default(MEDIUM)
   status        BugReportStatus @default(OPEN)
   pageUrl       String
   userAgent     String
@@ -281,6 +282,11 @@ model BugReport {
   updatedAt     DateTime        @updatedAt
 
   user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum FeedbackType {
+  BUG
+  FEATURE_REQUEST
 }
 
 enum BugSeverity {

@@ -82,6 +82,7 @@ export async function sendEmailChangeVerification({
 
 interface SendBugReportEmailParams {
   description: string
+  emailPrefix: string
   pageUrl: string
   reportId: string
   reporterEmail: string
@@ -89,6 +90,7 @@ interface SendBugReportEmailParams {
   screenshotUrl?: string
   severity: string
   title: string
+  type: string
 }
 
 export async function sendBugReportEmail({
@@ -100,12 +102,14 @@ export async function sendBugReportEmail({
   reporterName,
   reporterEmail,
   screenshotUrl,
+  emailPrefix,
+  type,
 }: SendBugReportEmailParams): Promise<void> {
   try {
     const { error } = await resend.emails.send({
       from: process.env.EMAIL_FROM!,
       to: "tom31.meyer@gmail.com",
-      subject: `[Bug] ${title}`,
+      subject: `${emailPrefix} ${title}`,
       react: BugReportEmail({
         reportId,
         title,
@@ -115,6 +119,7 @@ export async function sendBugReportEmail({
         reporterName,
         reporterEmail,
         screenshotUrl,
+        type,
       }),
     })
 

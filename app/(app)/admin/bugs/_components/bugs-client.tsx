@@ -8,6 +8,7 @@ import {
   ChevronDown,
   Clock,
   ExternalLink,
+  Lightbulb,
   MinusCircle,
   Trash2,
 } from "lucide-react"
@@ -27,6 +28,7 @@ import { cn } from "@/lib/utils"
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
+type FeedbackType = "BUG" | "FEATURE_REQUEST"
 type Severity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
 type Status = "OPEN" | "IN_PROGRESS" | "RESOLVED" | "WONT_FIX"
 
@@ -36,9 +38,10 @@ interface BugReportRow {
   id: string
   pageUrl: string
   screenshotUrl: string | null
-  severity: Severity
+  severity: Severity | null
   status: Status
   title: string
+  type: FeedbackType
   user: { email: string; firstName: string; lastName: string }
   userAgent: string
 }
@@ -57,6 +60,12 @@ const STATUS_FILTERS = [
   { label: "Won't fix", value: "WONT_FIX" },
 ] as const
 
+const TYPE_FILTERS = [
+  { label: "Tout", value: undefined },
+  { label: "Bugs", value: "BUG" },
+  { label: "Features", value: "FEATURE_REQUEST" },
+] as const
+
 const STATUS_CONFIG: Record<Status, { icon: React.ElementType; label: string; className: string }> = {
   OPEN: { icon: AlertCircle, label: "Ouvert", className: "bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400" },
   IN_PROGRESS: { icon: Clock, label: "En cours", className: "bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400" },
@@ -71,6 +80,11 @@ const SEVERITY_CONFIG: Record<Severity, { label: string; className: string }> = 
   CRITICAL: { label: "Critique", className: "bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400" },
 }
 
+const TYPE_CONFIG: Record<FeedbackType, { icon: React.ElementType; label: string; className: string }> = {
+  BUG: { icon: Bug, label: "Bug", className: "bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400" },
+  FEATURE_REQUEST: { icon: Lightbulb, label: "Feature", className: "bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-400" },
+}
+
 const STATUS_OPTIONS: { value: Status; label: string }[] = [
   { value: "OPEN", label: "Ouvert" },
   { value: "IN_PROGRESS", label: "En cours" },
@@ -78,16 +92,17 @@ const STATUS_OPTIONS: { value: Status; label: string }[] = [
   { value: "WONT_FIX", label: "Won't fix" },
 ]
 
-/* ── Bug Report Card ────────────────────────────────────────────────────────── */
+/* ── Report Card ────────────────────────────────────────────────────────────── */
 
-function BugCard({ report, onStatusChange, onDelete }: {
+function ReportCard({ report, onStatusChange, onDelete }: {
   readonly report: BugReportRow
   readonly onStatusChange: (id: string, status: Status) => void
   readonly onDelete: (id: string) => void
 }) {
   const [expanded, setExpanded] = useState(false)
   const statusCfg = STATUS_CONFIG[report.status]
-  const severityCfg = SEVERITY_CONFIG[report.severity]
+  const typeCfg = TYPE_CONFIG[report.type]
+  const TypeIcon = typeCfg.icon
   const StatusIcon = statusCfg.icon
   const reporterName = `${report.user.firstName} ${report.user.lastName}`.trim()
 
@@ -97,9 +112,15 @@ function BugCard({ report, onStatusChange, onDelete }: {
       <div className="flex flex-wrap items-start gap-3 p-4">
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge className={cn("shrink-0 gap-1 text-xs font-medium", severityCfg.className)}>
-              {severityCfg.label}
+            <Badge className={cn("shrink-0 gap-1 text-xs font-medium", typeCfg.className)}>
+              <TypeIcon className="size-3" />
+              {typeCfg.label}
             </Badge>
+            {report.severity ? (
+              <Badge className={cn("shrink-0 gap-1 text-xs font-medium", SEVERITY_CONFIG[report.severity].className)}>
+                {SEVERITY_CONFIG[report.severity].label}
+              </Badge>
+            ) : null}
             <Badge className={cn("shrink-0 gap-1 text-xs font-medium", statusCfg.className)}>
               <StatusIcon className="size-3" />
               {statusCfg.label}
@@ -181,7 +202,7 @@ function BugCard({ report, onStatusChange, onDelete }: {
             <a href={report.screenshotUrl} rel="noopener noreferrer" target="_blank">
               <Image
                 alt="Capture d'écran"
-                className="rounded-lg border object-cover hover:opacity-90 transition-opacity"
+                className="rounded-lg border object-cover transition-opacity hover:opacity-90"
                 height={200}
                 src={report.screenshotUrl}
                 width={400}
@@ -194,19 +215,40 @@ function BugCard({ report, onStatusChange, onDelete }: {
   )
 }
 
+/* ── Updater helpers (avoid deep nesting) ───────────────────────────────────── */
+
+function applyStatusUpdate(rows: BugReportRow[], id: string, status: Status): BugReportRow[] {
+  return rows.map((r) => r.id === id ? { ...r, status } : r)
+}
+
+function removeRow(rows: BugReportRow[], id: string): BugReportRow[] {
+  return rows.filter((r) => r.id !== id)
+}
+
+function getTypeCount(value: FeedbackType | undefined, bugCount: number, featureCount: number, total: number): number {
+  if (value === "BUG") return bugCount
+  if (value === "FEATURE_REQUEST") return featureCount
+  return total
+}
+
 /* ── Main client component ──────────────────────────────────────────────────── */
 
 export function BugsClient({ initialReports }: BugsClientProps) {
   const [reports, setReports] = useState(initialReports)
-  const [filter, setFilter] = useState<Status | undefined>(undefined)
+  const [statusFilter, setStatusFilter] = useState<Status | undefined>(undefined)
+  const [typeFilter, setTypeFilter] = useState<FeedbackType | undefined>(undefined)
   const [isPending, startTransition] = useTransition()
 
-  const filtered = filter ? reports.filter((r) => r.status === filter) : reports
+  const filtered = reports.filter((r) => {
+    const matchStatus = statusFilter ? r.status === statusFilter : true
+    const matchType = typeFilter ? r.type === typeFilter : true
+    return matchStatus && matchType
+  })
 
   function handleStatusChange(id: string, status: Status) {
     startTransition(async () => {
       try {
-        setReports((prev) => prev.map((r) => r.id === id ? { ...r, status } : r))
+        setReports((prev) => applyStatusUpdate(prev, id, status))
         await updateBugReportStatus(id, status)
       } catch {
         toast.error("Erreur lors de la mise à jour du statut")
@@ -218,7 +260,7 @@ export function BugsClient({ initialReports }: BugsClientProps) {
   function handleDelete(id: string) {
     startTransition(async () => {
       try {
-        setReports((prev) => prev.filter((r) => r.id !== id))
+        setReports((prev) => removeRow(prev, id))
         await deleteBugReport(id)
         toast.success("Rapport supprimé")
       } catch {
@@ -228,38 +270,67 @@ export function BugsClient({ initialReports }: BugsClientProps) {
     })
   }
 
+  const bugCount = reports.filter((r) => r.type === "BUG").length
+  const featureCount = reports.filter((r) => r.type === "FEATURE_REQUEST").length
+
   return (
     <div className="flex flex-col gap-4">
-      {/* Filtre */}
+      {/* Filtres type */}
       <div className="flex flex-wrap gap-2">
-        {STATUS_FILTERS.map(({ label, value }) => (
-          <button
-            className={cn(
-              "rounded-full px-3 py-1 text-xs font-medium transition-colors",
-              filter === value
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
-            )}
-            key={label}
-            onClick={() => setFilter(value as Status | undefined)}
-            type="button"
-          >
-            {label}
-            {value === undefined ? ` (${reports.length})` : ` (${reports.filter((r) => r.status === value).length})`}
-          </button>
-        ))}
+        {TYPE_FILTERS.map(({ label, value }) => {
+          const count = getTypeCount(value, bugCount, featureCount, reports.length)
+          return (
+            <button
+              className={cn(
+                "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                typeFilter === value
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              )}
+              key={label}
+              onClick={() => setTypeFilter(value as FeedbackType | undefined)}
+              type="button"
+            >
+              {label} ({count})
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Filtres statut */}
+      <div className="flex flex-wrap gap-2">
+        {STATUS_FILTERS.map(({ label, value }) => {
+          const count = value === undefined
+            ? filtered.length
+            : filtered.filter((r) => r.status === value).length
+          return (
+            <button
+              className={cn(
+                "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                statusFilter === value
+                  ? "bg-foreground text-background"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              )}
+              key={label}
+              onClick={() => setStatusFilter(value as Status | undefined)}
+              type="button"
+            >
+              {label} ({count})
+            </button>
+          )
+        })}
       </div>
 
       {/* Liste */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-2 rounded-xl border bg-card py-16 text-center">
-          <Bug className="size-10 text-muted-foreground/40" />
-          <p className="font-medium text-muted-foreground text-sm">Aucun rapport{filter ? " avec ce statut" : ""}</p>
+          <AlertTriangle className="size-10 text-muted-foreground/40" />
+          <p className="font-medium text-muted-foreground text-sm">Aucun rapport avec ces filtres</p>
         </div>
       ) : (
-        <div className={cn("flex flex-col gap-3", isPending && "opacity-70 pointer-events-none")}>
+        <div className={cn("flex flex-col gap-3", isPending && "pointer-events-none opacity-70")}>
           {filtered.map((report) => (
-            <BugCard
+            <ReportCard
               key={report.id}
               onDelete={handleDelete}
               onStatusChange={handleStatusChange}

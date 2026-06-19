@@ -1,7 +1,7 @@
 "use client"
 
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { AlertCircle, Bug, ImagePlus, Loader2, Upload, X } from "lucide-react"
+import { AlertCircle, Bug, ImagePlus, Lightbulb, Loader2, Send, Upload, X } from "lucide-react"
 import Image from "next/image"
 import { useCallback, useEffect, useRef, useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
@@ -32,12 +32,14 @@ import { Input } from "../ui/input"
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
-interface BugReportDialogProps {
+interface FeedbackDialogProps {
   readonly onOpenChange: (open: boolean) => void
   readonly open: boolean
 }
 
-/* ── Severity config ───────────────────────────────────────────────────────── */
+type FeedbackType = "BUG" | "FEATURE_REQUEST"
+
+/* ── Config ─────────────────────────────────────────────────────────────────── */
 
 const SEVERITIES = [
   { value: "LOW", label: "Faible", description: "Problème mineur, n'affecte pas l'usage" },
@@ -91,7 +93,6 @@ function ScreenshotZone({ url, onUpload, onRemove, isOpen }: ScreenshotZoneProps
     }
   }, [onUpload])
 
-  // Paste from clipboard
   useEffect(() => {
     if (!isOpen) return
     function handlePaste(e: ClipboardEvent) {
@@ -196,9 +197,55 @@ function ScreenshotZone({ url, onUpload, onRemove, isOpen }: ScreenshotZoneProps
   )
 }
 
+/* ── Type selector tabs ─────────────────────────────────────────────────────── */
+
+function TypeSelector({
+  value,
+  onChange,
+}: {
+  readonly value: FeedbackType
+  readonly onChange: (v: FeedbackType) => void
+}) {
+  return (
+    <div className="flex gap-2 rounded-xl bg-muted p-1">
+      <button
+        className={cn(
+          "flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 font-medium text-sm transition-all",
+          value === "BUG"
+            ? "bg-background text-foreground shadow-sm"
+            : "text-muted-foreground hover:text-foreground"
+        )}
+        onClick={() => onChange("BUG")}
+        type="button"
+      >
+        <Bug className="size-4 text-destructive" />
+        Bug
+      </button>
+      <button
+        className={cn(
+          "flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 font-medium text-sm transition-all",
+          value === "FEATURE_REQUEST"
+            ? "bg-background text-foreground shadow-sm"
+            : "text-muted-foreground hover:text-foreground"
+        )}
+        onClick={() => onChange("FEATURE_REQUEST")}
+        type="button"
+      >
+        <Lightbulb className="size-4 text-amber-500" />
+        Fonctionnalité
+      </button>
+    </div>
+  )
+}
+
+function SubmitLabel({ isPending, isBug }: { readonly isPending: boolean; readonly isBug: boolean }) {
+  if (isPending) return "Envoi…"
+  return isBug ? "Envoyer le rapport" : "Envoyer la suggestion"
+}
+
 /* ── Form ───────────────────────────────────────────────────────────────────── */
 
-function BugReportForm({
+function FeedbackForm({
   onClose,
   isOpen,
 }: {
@@ -207,22 +254,34 @@ function BugReportForm({
 }) {
   const [isPending, startTransition] = useTransition()
   const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null)
+  const [feedbackType, setFeedbackType] = useState<FeedbackType>("BUG")
 
   const {
     register,
     handleSubmit,
     setValue,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: standardSchemaResolver(bugReportSchema),
     defaultValues: {
+      type: "BUG" as FeedbackType,
       severity: "MEDIUM" as BugReportInput["severity"],
-      pageUrl: typeof window !== "undefined" ? window.location.href : "",
-      userAgent: typeof window !== "undefined" ? navigator.userAgent : "",
+      pageUrl: globalThis.window ? globalThis.window.location.href : "",
+      userAgent: "navigator" in globalThis ? globalThis.navigator.userAgent : "",
       title: "",
       description: "",
     },
   })
+
+  function handleTypeChange(v: FeedbackType) {
+    setFeedbackType(v)
+    setValue("type", v)
+    if (v === "FEATURE_REQUEST") {
+      setScreenshotUrl(null)
+      setValue("screenshotUrl", undefined)
+    }
+  }
 
   const handleScreenshotUpload = useCallback((url: string) => {
     setScreenshotUrl(url)
@@ -238,7 +297,13 @@ function BugReportForm({
     startTransition(async () => {
       try {
         await submitBugReport(data)
-        toast.success("Rapport envoyé, merci !")
+        const msg = data.type === "FEATURE_REQUEST"
+          ? "Suggestion envoyée, merci !"
+          : "Rapport envoyé, merci !"
+        toast.success(msg)
+        reset()
+        setFeedbackType("BUG")
+        setScreenshotUrl(null)
         onClose()
       } catch {
         toast.error("Une erreur est survenue, réessaye.")
@@ -246,14 +311,25 @@ function BugReportForm({
     })
   }
 
+  const isBug = feedbackType === "BUG"
+
   return (
     <form className="flex flex-col gap-4 pt-2" onSubmit={handleSubmit(onSubmit)}>
+      {/* Type selector */}
+      <TypeSelector onChange={handleTypeChange} value={feedbackType} />
+
       {/* Titre */}
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="bug-title">Titre du problème</Label>
+        <Label htmlFor="feedback-title">
+          {isBug ? "Titre du problème" : "Titre de la fonctionnalité"}
+        </Label>
         <Input
-          id="bug-title"
-          placeholder="Ex : Le solde ne se met pas à jour après une transaction"
+          id="feedback-title"
+          placeholder={
+            isBug
+              ? "Ex : Le solde ne se met pas à jour après une transaction"
+              : "Ex : Exporter les transactions en PDF"
+          }
           {...register("title")}
         />
         {errors.title ? (
@@ -266,11 +342,15 @@ function BugReportForm({
 
       {/* Description */}
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="bug-description">Description</Label>
+        <Label htmlFor="feedback-description">Description</Label>
         <Textarea
-          className="min-h-[100px] resize-none"
-          id="bug-description"
-          placeholder="Décris le problème : ce que tu faisais, ce qui s'est passé, ce que tu attendais…"
+          className="min-h-25 resize-none"
+          id="feedback-description"
+          placeholder={
+            isBug
+              ? "Décris le problème : ce que tu faisais, ce qui s'est passé, ce que tu attendais…"
+              : "Décris la fonctionnalité souhaitée, le problème qu'elle résoudrait et comment tu l'imagines…"
+          }
           {...register("description")}
         />
         {errors.description ? (
@@ -281,40 +361,44 @@ function BugReportForm({
         ) : null}
       </div>
 
-      {/* Sévérité */}
-      <div className="flex flex-col gap-1.5">
-        <Label>Sévérité</Label>
-        <Select
-          defaultValue="MEDIUM"
-          onValueChange={(v) => setValue("severity", v as BugReportInput["severity"])}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {SEVERITIES.map(({ value, label, description }) => (
-              <SelectItem key={value} value={value}>
-                <span className="font-medium">{label}</span>
-                <span className="ml-2 text-muted-foreground text-xs">{description}</span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {/* Sévérité — bugs uniquement */}
+      {isBug ? (
+        <div className="flex flex-col gap-1.5">
+          <Label>Sévérité</Label>
+          <Select
+            defaultValue="MEDIUM"
+            onValueChange={(v) => setValue("severity", v as BugReportInput["severity"])}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SEVERITIES.map(({ value, label, description }) => (
+                <SelectItem key={value} value={value}>
+                  <span className="font-medium">{label}</span>
+                  <span className="ml-2 text-muted-foreground text-xs">{description}</span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      ) : null}
 
-      {/* Screenshot */}
-      <div className="flex flex-col gap-1.5">
-        <Label>Capture d&apos;écran</Label>
-        <ScreenshotZone
-          isOpen={isOpen}
-          onRemove={handleScreenshotRemove}
-          onUpload={handleScreenshotUpload}
-          url={screenshotUrl}
-        />
-        <p className="text-muted-foreground text-xs">
-          Optionnel — aide à identifier le problème visuel. Sur Mac : ⌘⇧4, puis ⌘V.
-        </p>
-      </div>
+      {/* Screenshot — bugs uniquement */}
+      {isBug ? (
+        <div className="flex flex-col gap-1.5">
+          <Label>Capture d&apos;écran</Label>
+          <ScreenshotZone
+            isOpen={isOpen}
+            onRemove={handleScreenshotRemove}
+            onUpload={handleScreenshotUpload}
+            url={screenshotUrl}
+          />
+          <p className="text-muted-foreground text-xs">
+            Optionnel — aide à identifier le problème visuel. Sur Mac : ⌘⇧4, puis ⌘V.
+          </p>
+        </div>
+      ) : null}
 
       {/* Actions */}
       <div className={cn("flex gap-2 pt-1", "flex-col-reverse sm:flex-row sm:justify-end")}>
@@ -325,9 +409,9 @@ function BugReportForm({
           {isPending ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
-            <Bug className="size-4" />
+            <Send className="size-4" />
           )}
-          {isPending ? "Envoi…" : "Envoyer le rapport"}
+          <SubmitLabel isBug={isBug} isPending={isPending} />
         </Button>
       </div>
     </form>
@@ -336,7 +420,7 @@ function BugReportForm({
 
 /* ── Main component ─────────────────────────────────────────────────────────── */
 
-export function BugReportDialog({ open, onOpenChange }: BugReportDialogProps) {
+export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
   const isMobile = useIsMobile()
 
   const handleClose = useCallback(() => onOpenChange(false), [onOpenChange])
@@ -344,12 +428,12 @@ export function BugReportDialog({ open, onOpenChange }: BugReportDialogProps) {
   if (isMobile) {
     return (
       <BottomSheet
-        description="Décris le problème rencontré et nous le corrigerons rapidement."
+        description="Signale un bug ou suggère une amélioration."
         onOpenChange={onOpenChange}
         open={open}
-        title="Signaler un bug"
+        title="Feedback"
       >
-        <BugReportForm isOpen={open} onClose={handleClose} />
+        <FeedbackForm isOpen={open} onClose={handleClose} />
       </BottomSheet>
     )
   }
@@ -358,16 +442,16 @@ export function BugReportDialog({ open, onOpenChange }: BugReportDialogProps) {
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Bug className="size-4 text-destructive" />
-            Signaler un bug
-          </DialogTitle>
+          <DialogTitle>Feedback</DialogTitle>
           <DialogDescription>
-            Décris le problème rencontré et nous le corrigerons rapidement.
+            Signale un bug ou suggère une nouvelle fonctionnalité.
           </DialogDescription>
         </DialogHeader>
-        <BugReportForm isOpen={open} onClose={handleClose} />
+        <FeedbackForm isOpen={open} onClose={handleClose} />
       </DialogContent>
     </Dialog>
   )
 }
+
+/** @deprecated Use FeedbackDialog instead */
+export const BugReportDialog = FeedbackDialog
