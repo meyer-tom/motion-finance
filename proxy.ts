@@ -1,7 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server"
 
 export function proxy(request: NextRequest) {
-  const sessionToken = request.cookies.get("better-auth.session_token")
+  // Better Auth préfixe les cookies avec "__Secure-" en production (HTTPS)
+  const sessionToken =
+    request.cookies.get("__Secure-better-auth.session_token") ??
+    request.cookies.get("better-auth.session_token")
   const { pathname } = request.nextUrl
 
   // Routes publiques (pas de protection)
@@ -38,6 +41,6 @@ export const config = {
      * - sw.js (Service Worker)
      * - manifest.webmanifest (PWA manifest)
      */
-    "/((?!api|_next/static|_next/image|favicon\\.ico|icon\\.png|icons/|sw\\.js|manifest\\.webmanifest).*)",
+    String.raw`/((?!api|_next/static|_next/image|favicon\.ico|icon\.png|icons/|sw\.js|manifest\.webmanifest).*)`,
   ],
 }
