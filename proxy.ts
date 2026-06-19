@@ -41,6 +41,6 @@ export const config = {
      * - sw.js (Service Worker)
      * - manifest.webmanifest (PWA manifest)
      */
-    String.raw`/((?!api|_next/static|_next/image|favicon\.ico|icon\.png|icons/|sw\.js|manifest\.webmanifest).*)`,
+    "/((?!api|_next/static|_next/image|favicon\\.ico|icon\\.png|icons/|sw\\.js|manifest\\.webmanifest).*)",
   ],
 }
