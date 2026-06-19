@@ -23,8 +23,8 @@ import { Input } from "@/components/ui/input"
 import type { GoalItem } from "@/lib/actions/goals"
 import { deleteGoal, updateGoalAmount } from "@/lib/actions/goals"
 import { useCurrency } from "@/lib/context/currency-context"
-import { formatAmount } from "@/lib/utils/format"
 import { cn } from "@/lib/utils"
+import { formatAmount } from "@/lib/utils/format"
 
 interface GoalCardProps {
   goal: GoalItem
@@ -40,17 +40,23 @@ function getDeadlineInfo(
   targetAmount: number,
   currency: string
 ): string | null {
-  if (!deadline) return null
+  if (!deadline) {
+    return null
+  }
 
   const deadlineDate = new Date(deadline)
   const now = new Date()
 
   const endOfDay = new Date(deadlineDate)
   endOfDay.setHours(23, 59, 59, 999)
-  if (endOfDay < now) return "Échéance dépassée"
+  if (endOfDay < now) {
+    return "Échéance dépassée"
+  }
 
   const remaining = targetAmount - currentAmount
-  if (remaining <= 0) return null
+  if (remaining <= 0) {
+    return null
+  }
 
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const deadlineStart = new Date(
@@ -68,15 +74,23 @@ function getDeadlineInfo(
   })
   const remainingStr = formatAmount(remaining, currency)
 
-  if (days === 0) return `Aujourd'hui (${dateStr}) — ${remainingStr} restant`
-  if (days === 1) return `Demain (${dateStr}) — ${remainingStr} restant`
-  if (days <= 13) return `Dans ${days} jours (${dateStr}) — ${remainingStr} restant`
+  if (days === 0) {
+    return `Aujourd'hui (${dateStr}) — ${remainingStr} restant`
+  }
+  if (days === 1) {
+    return `Demain (${dateStr}) — ${remainingStr} restant`
+  }
+  if (days <= 13) {
+    return `Dans ${days} jours (${dateStr}) — ${remainingStr} restant`
+  }
 
   const months =
     (deadlineDate.getFullYear() - now.getFullYear()) * 12 +
     (deadlineDate.getMonth() - now.getMonth())
 
-  if (months <= 0) return `Ce mois-ci (${dateStr}) — ${remainingStr} restant`
+  if (months <= 0) {
+    return `Ce mois-ci (${dateStr}) — ${remainingStr} restant`
+  }
 
   const perMonth = remaining / months
   return `${months} mois restant${months > 1 ? "s" : ""} (${dateStr}) — ${formatAmount(perMonth, currency)}/mois`
@@ -114,14 +128,18 @@ export function GoalCard({
 
   function confirmUpdate() {
     const raw = Number.parseFloat(amountInput.replace(",", "."))
-    if (Number.isNaN(raw) || raw < 0) return
+    if (Number.isNaN(raw) || raw < 0) {
+      return
+    }
 
     const newAmount = Math.min(raw, goal.targetAmount)
     const willComplete = !goal.isCompleted && newAmount >= goal.targetAmount
 
     startTransition(async () => {
       await updateGoalAmount(goal.id, newAmount)
-      if (willComplete) onCompleted(goal.id)
+      if (willComplete) {
+        onCompleted(goal.id)
+      }
       onUpdated()
       setIsEditingAmount(false)
     })
@@ -138,7 +156,7 @@ export function GoalCard({
     <div
       className={cn(
         "group/goal space-y-3 rounded-3xl border border-border bg-card p-4 transition-all duration-200",
-        "hover:border-border-accent hover:bg-surface-elevated hover:shadow-md hover:shadow-black/8 dark:hover:shadow-black/25",
+        "hover:border-border-accent hover:bg-surface-elevated hover:shadow-black/8 hover:shadow-md dark:hover:shadow-black/25",
         isPending && "pointer-events-none opacity-50"
       )}
     >
@@ -150,10 +168,8 @@ export function GoalCard({
         <div className="flex shrink-0 items-center gap-1.5">
           <span
             className={cn(
-              "font-black font-mono tabular-nums text-lg leading-none",
-              isComplete
-                ? "text-(--color-income)"
-                : "text-foreground"
+              "font-black font-mono text-lg tabular-nums leading-none",
+              isComplete ? "text-(--color-income)" : "text-foreground"
             )}
           >
             {goal.percentage}%
@@ -188,7 +204,11 @@ export function GoalCard({
       </div>
 
       {/* Barre de progression */}
-      <AnimatedProgress progressClassName="h-2" value={goal.percentage} variant={progressVariant} />
+      <AnimatedProgress
+        progressClassName="h-2"
+        value={goal.percentage}
+        variant={progressVariant}
+      />
 
       {/* Montant actuel */}
       <div>
@@ -198,7 +218,7 @@ export function GoalCard({
           value={goal.currentAmount}
           variant={isComplete ? "income" : "neutral"}
         />
-        <p className="mt-0.5 text-xs text-muted-foreground">
+        <p className="mt-0.5 text-muted-foreground text-xs">
           sur {formatAmount(goal.targetAmount, currency)}
         </p>
       </div>
@@ -230,8 +250,12 @@ export function GoalCard({
                 }
               }}
               onKeyDown={(e) => {
-                if (e.key === "Enter") confirmUpdate()
-                if (e.key === "Escape") cancelEditing()
+                if (e.key === "Enter") {
+                  confirmUpdate()
+                }
+                if (e.key === "Escape") {
+                  cancelEditing()
+                }
               }}
               step="0.01"
               type="number"

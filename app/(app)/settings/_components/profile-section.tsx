@@ -4,7 +4,6 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { Camera, Loader2, Upload } from "lucide-react"
 import { useRef, useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
-import { toast } from "@/lib/toast"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { updateProfile } from "@/lib/actions/settings"
 import { authClient } from "@/lib/auth/client"
+import { toast } from "@/lib/toast"
 import { useUploadProfilePicture } from "@/lib/upload"
 import { cn } from "@/lib/utils"
 import {
@@ -145,7 +145,7 @@ export function ProfileSection({ user }: ProfileSectionProps) {
     <div className="space-y-6">
       {/* Photo de profil */}
       <div className="overflow-hidden rounded-2xl border border-border bg-card">
-        <div className="border-b border-border/60 px-6 py-5">
+        <div className="border-border/60 border-b px-6 py-5">
           <h2 className="font-semibold text-base">Photo de profil</h2>
           <p className="mt-1 text-muted-foreground text-sm">
             JPEG, PNG, WebP — 2 Mo max
@@ -213,7 +213,7 @@ export function ProfileSection({ user }: ProfileSectionProps) {
 
       {/* Informations personnelles */}
       <div className="overflow-hidden rounded-2xl border border-border bg-card">
-        <div className="border-b border-border/60 px-6 py-5">
+        <div className="border-border/60 border-b px-6 py-5">
           <h2 className="font-semibold text-base">Informations personnelles</h2>
           <p className="mt-1 text-muted-foreground text-sm">
             Votre prénom et nom affichés dans l'application
@@ -268,7 +268,7 @@ export function ProfileSection({ user }: ProfileSectionProps) {
 
       {/* Adresse email */}
       <div className="overflow-hidden rounded-2xl border border-border bg-card">
-        <div className="border-b border-border/60 px-6 py-5">
+        <div className="border-border/60 border-b px-6 py-5">
           <h2 className="font-semibold text-base">Adresse email</h2>
           <p className="mt-1 text-muted-foreground text-sm">
             Adresse actuelle : <strong>{user.email}</strong>

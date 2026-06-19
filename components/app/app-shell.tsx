@@ -34,7 +34,7 @@ export function AppShell({
     <TransactionFormProvider>
       <div className="flex min-h-svh flex-col">
         <TopNav user={user} />
-        <main className="mx-auto w-full max-w-screen-2xl flex-1 px-4 pb-26 pt-6 md:pb-8 lg:px-6">
+        <main className="mx-auto w-full max-w-screen-2xl flex-1 px-4 pt-6 pb-26 md:pb-8 lg:px-6">
           {children}
         </main>
         <BottomNav />

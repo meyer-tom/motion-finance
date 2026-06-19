@@ -27,7 +27,7 @@ export function BalanceSkeleton() {
   return (
     <div className="overflow-hidden rounded-3xl border border-border bg-card">
       <div className="flex flex-col lg:flex-row">
-        <div className="px-6 pb-5 pt-6 lg:min-w-[280px] lg:border-r lg:border-border/40">
+        <div className="px-6 pt-6 pb-5 lg:min-w-[280px] lg:border-border/40 lg:border-r">
           <Skeleton className="mb-3 h-3 w-20" />
           <Skeleton className="h-12 w-52" />
           <div className="mt-4 flex items-center gap-2">
@@ -35,10 +35,10 @@ export function BalanceSkeleton() {
             <Skeleton className="h-3 w-36" />
           </div>
         </div>
-        <div className="flex flex-1 border-t border-border/40 lg:border-t-0">
+        <div className="flex flex-1 border-border/40 border-t lg:border-t-0">
           {Array.from({ length: 2 }).map((_, i) => (
             <div
-              className="flex flex-1 items-center gap-3 border-r border-border/30 px-5 py-4 last:border-r-0"
+              className="flex flex-1 items-center gap-3 border-border/30 border-r px-5 py-4 last:border-r-0"
               key={i}
             >
               <Skeleton className="size-9 shrink-0 rounded-xl" />

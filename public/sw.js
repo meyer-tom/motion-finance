@@ -37,11 +37,15 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url)
 
   // Ignorer les requêtes non-HTTP (extensions, data:, etc.)
-  if (!url.protocol.startsWith("http")) return
+  if (!url.protocol.startsWith("http")) {
+    return
+  }
 
   // Ne jamais intercepter les requêtes non-GET (POST auth, Server Actions,
   // mutations API). cache.put() rejette les non-GET avec un TypeError.
-  if (request.method !== "GET") return
+  if (request.method !== "GET") {
+    return
+  }
 
   // Stale-While-Revalidate — assets Next.js versionnés
   // (les hashes changent à chaque build, SWR garantit la fraîcheur)
@@ -85,7 +89,9 @@ async function staleWhileRevalidate(request, cacheName) {
 // ── Cache First ───────────────────────────────────────────────────────────────
 async function cacheFirst(request, cacheName) {
   const cached = await caches.match(request)
-  if (cached) return cached
+  if (cached) {
+    return cached
+  }
 
   try {
     const response = await fetch(request)
@@ -111,7 +117,9 @@ async function networkFirstNavigate(request) {
   } catch {
     // Fallback : page mise en cache précédemment
     const cached = await caches.match(request)
-    if (cached) return cached
+    if (cached) {
+      return cached
+    }
 
     // Dernier recours : page offline dédiée
     const offline = await caches.match(OFFLINE_URL)

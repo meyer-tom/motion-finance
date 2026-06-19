@@ -1,5 +1,7 @@
 "use client"
 
+const URL_ORIGIN_RE = /^https?:\/\/[^/]+/
+
 import {
   AlertCircle,
   AlertTriangle,
@@ -14,7 +16,6 @@ import {
 } from "lucide-react"
 import Image from "next/image"
 import { useState, useTransition } from "react"
-import { toast } from "@/lib/toast"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -23,7 +24,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { deleteBugReport, updateBugReportStatus } from "@/lib/actions/bug-reports"
+import {
+  deleteBugReport,
+  updateBugReportStatus,
+} from "@/lib/actions/bug-reports"
+import { toast } from "@/lib/toast"
 import { cn } from "@/lib/utils"
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
@@ -66,23 +71,68 @@ const TYPE_FILTERS = [
   { label: "Features", value: "FEATURE_REQUEST" },
 ] as const
 
-const STATUS_CONFIG: Record<Status, { icon: React.ElementType; label: string; className: string }> = {
-  OPEN: { icon: AlertCircle, label: "Ouvert", className: "bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400" },
-  IN_PROGRESS: { icon: Clock, label: "En cours", className: "bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400" },
-  RESOLVED: { icon: CheckCircle2, label: "Résolu", className: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400" },
-  WONT_FIX: { icon: MinusCircle, label: "Won't fix", className: "bg-muted text-muted-foreground" },
+const STATUS_CONFIG: Record<
+  Status,
+  { icon: React.ElementType; label: string; className: string }
+> = {
+  OPEN: {
+    icon: AlertCircle,
+    label: "Ouvert",
+    className: "bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400",
+  },
+  IN_PROGRESS: {
+    icon: Clock,
+    label: "En cours",
+    className:
+      "bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400",
+  },
+  RESOLVED: {
+    icon: CheckCircle2,
+    label: "Résolu",
+    className:
+      "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400",
+  },
+  WONT_FIX: {
+    icon: MinusCircle,
+    label: "Won't fix",
+    className: "bg-muted text-muted-foreground",
+  },
 }
 
-const SEVERITY_CONFIG: Record<Severity, { label: string; className: string }> = {
-  LOW: { label: "Faible", className: "bg-muted text-muted-foreground" },
-  MEDIUM: { label: "Moyen", className: "bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400" },
-  HIGH: { label: "Élevé", className: "bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-400" },
-  CRITICAL: { label: "Critique", className: "bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400" },
-}
+const SEVERITY_CONFIG: Record<Severity, { label: string; className: string }> =
+  {
+    LOW: { label: "Faible", className: "bg-muted text-muted-foreground" },
+    MEDIUM: {
+      label: "Moyen",
+      className:
+        "bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400",
+    },
+    HIGH: {
+      label: "Élevé",
+      className:
+        "bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-400",
+    },
+    CRITICAL: {
+      label: "Critique",
+      className: "bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400",
+    },
+  }
 
-const TYPE_CONFIG: Record<FeedbackType, { icon: React.ElementType; label: string; className: string }> = {
-  BUG: { icon: Bug, label: "Bug", className: "bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400" },
-  FEATURE_REQUEST: { icon: Lightbulb, label: "Feature", className: "bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-400" },
+const TYPE_CONFIG: Record<
+  FeedbackType,
+  { icon: React.ElementType; label: string; className: string }
+> = {
+  BUG: {
+    icon: Bug,
+    label: "Bug",
+    className: "bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400",
+  },
+  FEATURE_REQUEST: {
+    icon: Lightbulb,
+    label: "Feature",
+    className:
+      "bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-400",
+  },
 }
 
 const STATUS_OPTIONS: { value: Status; label: string }[] = [
@@ -94,7 +144,11 @@ const STATUS_OPTIONS: { value: Status; label: string }[] = [
 
 /* ── Report Card ────────────────────────────────────────────────────────────── */
 
-function ReportCard({ report, onStatusChange, onDelete }: {
+function ReportCard({
+  report,
+  onStatusChange,
+  onDelete,
+}: {
   readonly report: BugReportRow
   readonly onStatusChange: (id: string, status: Status) => void
   readonly onDelete: (id: string) => void
@@ -112,29 +166,54 @@ function ReportCard({ report, onStatusChange, onDelete }: {
       <div className="flex flex-wrap items-start gap-3 p-4">
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge className={cn("shrink-0 gap-1 text-xs font-medium", typeCfg.className)}>
+            <Badge
+              className={cn(
+                "shrink-0 gap-1 font-medium text-xs",
+                typeCfg.className
+              )}
+            >
               <TypeIcon className="size-3" />
               {typeCfg.label}
             </Badge>
             {report.severity ? (
-              <Badge className={cn("shrink-0 gap-1 text-xs font-medium", SEVERITY_CONFIG[report.severity].className)}>
+              <Badge
+                className={cn(
+                  "shrink-0 gap-1 font-medium text-xs",
+                  SEVERITY_CONFIG[report.severity].className
+                )}
+              >
                 {SEVERITY_CONFIG[report.severity].label}
               </Badge>
             ) : null}
-            <Badge className={cn("shrink-0 gap-1 text-xs font-medium", statusCfg.className)}>
+            <Badge
+              className={cn(
+                "shrink-0 gap-1 font-medium text-xs",
+                statusCfg.className
+              )}
+            >
               <StatusIcon className="size-3" />
               {statusCfg.label}
             </Badge>
           </div>
           <h3 className="font-semibold text-sm leading-snug">{report.title}</h3>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground text-xs">
-            <span>{reporterName} · {report.user.email}</span>
-            <span>{new Date(report.createdAt).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+            <span>
+              {reporterName} · {report.user.email}
+            </span>
+            <span>
+              {new Date(report.createdAt).toLocaleDateString("fr-FR", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex shrink-0 items-center gap-1">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button className="h-8 gap-1 text-xs" size="sm" variant="outline">
@@ -169,8 +248,13 @@ function ReportCard({ report, onStatusChange, onDelete }: {
       </div>
 
       {/* Body */}
-      <div className="border-t px-4 pb-4 pt-3">
-        <p className={cn("text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap", !expanded && "line-clamp-3")}>
+      <div className="border-t px-4 pt-3 pb-4">
+        <p
+          className={cn(
+            "whitespace-pre-wrap text-muted-foreground text-sm leading-relaxed",
+            !expanded && "line-clamp-3"
+          )}
+        >
           {report.description}
         </p>
         {report.description.length > 200 ? (
@@ -192,14 +276,18 @@ function ReportCard({ report, onStatusChange, onDelete }: {
             target="_blank"
           >
             <ExternalLink className="size-3" />
-            {report.pageUrl.replace(/^https?:\/\/[^/]+/, "") || "/"}
+            {report.pageUrl.replace(URL_ORIGIN_RE, "") || "/"}
           </a>
         </div>
 
         {/* Screenshot */}
         {report.screenshotUrl ? (
           <div className="mt-3">
-            <a href={report.screenshotUrl} rel="noopener noreferrer" target="_blank">
+            <a
+              href={report.screenshotUrl}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
               <Image
                 alt="Capture d'écran"
                 className="rounded-lg border object-cover transition-opacity hover:opacity-90"
@@ -217,17 +305,30 @@ function ReportCard({ report, onStatusChange, onDelete }: {
 
 /* ── Updater helpers (avoid deep nesting) ───────────────────────────────────── */
 
-function applyStatusUpdate(rows: BugReportRow[], id: string, status: Status): BugReportRow[] {
-  return rows.map((r) => r.id === id ? { ...r, status } : r)
+function applyStatusUpdate(
+  rows: BugReportRow[],
+  id: string,
+  status: Status
+): BugReportRow[] {
+  return rows.map((r) => (r.id === id ? { ...r, status } : r))
 }
 
 function removeRow(rows: BugReportRow[], id: string): BugReportRow[] {
   return rows.filter((r) => r.id !== id)
 }
 
-function getTypeCount(value: FeedbackType | undefined, bugCount: number, featureCount: number, total: number): number {
-  if (value === "BUG") return bugCount
-  if (value === "FEATURE_REQUEST") return featureCount
+function getTypeCount(
+  value: FeedbackType | undefined,
+  bugCount: number,
+  featureCount: number,
+  total: number
+): number {
+  if (value === "BUG") {
+    return bugCount
+  }
+  if (value === "FEATURE_REQUEST") {
+    return featureCount
+  }
   return total
 }
 
@@ -235,8 +336,12 @@ function getTypeCount(value: FeedbackType | undefined, bugCount: number, feature
 
 export function BugsClient({ initialReports }: BugsClientProps) {
   const [reports, setReports] = useState(initialReports)
-  const [statusFilter, setStatusFilter] = useState<Status | undefined>(undefined)
-  const [typeFilter, setTypeFilter] = useState<FeedbackType | undefined>(undefined)
+  const [statusFilter, setStatusFilter] = useState<Status | undefined>(
+    undefined
+  )
+  const [typeFilter, setTypeFilter] = useState<FeedbackType | undefined>(
+    undefined
+  )
   const [isPending, startTransition] = useTransition()
 
   const filtered = reports.filter((r) => {
@@ -271,18 +376,25 @@ export function BugsClient({ initialReports }: BugsClientProps) {
   }
 
   const bugCount = reports.filter((r) => r.type === "BUG").length
-  const featureCount = reports.filter((r) => r.type === "FEATURE_REQUEST").length
+  const featureCount = reports.filter(
+    (r) => r.type === "FEATURE_REQUEST"
+  ).length
 
   return (
     <div className="flex flex-col gap-4">
       {/* Filtres type */}
       <div className="flex flex-wrap gap-2">
         {TYPE_FILTERS.map(({ label, value }) => {
-          const count = getTypeCount(value, bugCount, featureCount, reports.length)
+          const count = getTypeCount(
+            value,
+            bugCount,
+            featureCount,
+            reports.length
+          )
           return (
             <button
               className={cn(
-                "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                "rounded-full px-3 py-1 font-medium text-xs transition-colors",
                 typeFilter === value
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted text-muted-foreground hover:bg-muted/80"
@@ -300,13 +412,14 @@ export function BugsClient({ initialReports }: BugsClientProps) {
       {/* Filtres statut */}
       <div className="flex flex-wrap gap-2">
         {STATUS_FILTERS.map(({ label, value }) => {
-          const count = value === undefined
-            ? filtered.length
-            : filtered.filter((r) => r.status === value).length
+          const count =
+            value === undefined
+              ? filtered.length
+              : filtered.filter((r) => r.status === value).length
           return (
             <button
               className={cn(
-                "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                "rounded-full px-3 py-1 font-medium text-xs transition-colors",
                 statusFilter === value
                   ? "bg-foreground text-background"
                   : "bg-muted text-muted-foreground hover:bg-muted/80"
@@ -325,10 +438,17 @@ export function BugsClient({ initialReports }: BugsClientProps) {
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-2 rounded-xl border bg-card py-16 text-center">
           <AlertTriangle className="size-10 text-muted-foreground/40" />
-          <p className="font-medium text-muted-foreground text-sm">Aucun rapport avec ces filtres</p>
+          <p className="font-medium text-muted-foreground text-sm">
+            Aucun rapport avec ces filtres
+          </p>
         </div>
       ) : (
-        <div className={cn("flex flex-col gap-3", isPending && "pointer-events-none opacity-70")}>
+        <div
+          className={cn(
+            "flex flex-col gap-3",
+            isPending && "pointer-events-none opacity-70"
+          )}
+        >
           {filtered.map((report) => (
             <ReportCard
               key={report.id}

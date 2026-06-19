@@ -114,7 +114,9 @@ function AccountFormBody({
     formState: { errors, isSubmitting },
   } = useForm<CreateAccountInput>({
     // Cast nécessaire : standardSchemaResolver infère startingBalance: unknown avec z.coerce.number() en Zod v4
-    resolver: standardSchemaResolver(createAccountSchema) as Resolver<CreateAccountInput>,
+    resolver: standardSchemaResolver(
+      createAccountSchema
+    ) as Resolver<CreateAccountInput>,
     defaultValues: {
       name: initialValues?.name ?? "",
       type: initialValues?.type ?? "CHECKING",

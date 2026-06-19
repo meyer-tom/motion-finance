@@ -16,17 +16,25 @@ function formatDate(iso: string) {
 }
 
 function getPeriodLabel(periodKey: string) {
-  if (periodKey === "week") return "cette semaine"
-  if (periodKey === "quarter") return "ce trimestre"
-  if (periodKey === "year") return "cette année"
-  if (periodKey.startsWith("custom:")) return "sur la période"
+  if (periodKey === "week") {
+    return "cette semaine"
+  }
+  if (periodKey === "quarter") {
+    return "ce trimestre"
+  }
+  if (periodKey === "year") {
+    return "cette année"
+  }
+  if (periodKey.startsWith("custom:")) {
+    return "sur la période"
+  }
   return "ce mois"
 }
 
 export function TransfersSection({ currency, periodKey, transfers }: Props) {
   return (
     <div className="overflow-hidden rounded-3xl border border-border bg-card">
-      <div className="flex items-center justify-between border-b border-border/60 px-5 py-3.5">
+      <div className="flex items-center justify-between border-border/60 border-b px-5 py-3.5">
         <div className="flex items-center gap-2">
           <span className="section-title">Virements</span>
           <span className="text-[11px] text-muted-foreground">
@@ -34,7 +42,7 @@ export function TransfersSection({ currency, periodKey, transfers }: Props) {
           </span>
         </div>
         {transfers.total > 0 && (
-          <span className="font-semibold text-[13px] tabular-nums text-[var(--color-transfer)]">
+          <span className="font-semibold text-[13px] text-[var(--color-transfer)] tabular-nums">
             {formatAmount(transfers.total, currency)}
           </span>
         )}

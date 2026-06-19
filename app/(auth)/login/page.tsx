@@ -106,7 +106,7 @@ export default function LoginPage() {
         </p>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-xl shadow-black/5">
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-black/5 shadow-xl">
         <form
           className="flex flex-col gap-5"
           method="post"
@@ -115,7 +115,7 @@ export default function LoginPage() {
         >
           <div className="flex flex-col gap-2">
             <Label
-              className="text-xs font-medium text-muted-foreground uppercase tracking-wider"
+              className="font-medium text-muted-foreground text-xs uppercase tracking-wider"
               htmlFor="email"
             >
               Email
@@ -140,7 +140,7 @@ export default function LoginPage() {
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <Label
-                className="text-xs font-medium text-muted-foreground uppercase tracking-wider"
+                className="font-medium text-muted-foreground text-xs uppercase tracking-wider"
                 htmlFor="password"
               >
                 Mot de passe
@@ -158,7 +158,7 @@ export default function LoginPage() {
               <Input
                 aria-invalid={!!errors.password}
                 autoComplete="current-password"
-                className="h-11 border-border bg-background/80 pl-10 pr-10"
+                className="h-11 border-border bg-background/80 pr-10 pl-10"
                 id="password"
                 placeholder="••••••••"
                 type={showPassword ? "text" : "password"}

@@ -3,8 +3,8 @@ import { AnimatedAmount } from "@/components/shared/animated-amount"
 import { getDashboardData } from "@/lib/actions/dashboard"
 import { getServerCurrency } from "@/lib/actions/settings"
 import { cn } from "@/lib/utils"
-import { formatAmount } from "@/lib/utils/format"
 import { getAccountIcon } from "@/lib/utils/account-icons"
+import { formatAmount } from "@/lib/utils/format"
 
 interface Props {
   periodKey: string
@@ -24,8 +24,8 @@ export async function BalanceSection({ periodKey }: Props) {
     <div className="overflow-hidden rounded-3xl border border-border bg-card">
       <div className="flex flex-col md:flex-row">
         {/* Solde total */}
-        <div className="flex flex-col justify-center px-6 py-6 md:min-w-[240px] md:border-r md:border-border/50 md:py-7 lg:min-w-[280px]">
-          <p className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+        <div className="flex flex-col justify-center px-6 py-6 md:min-w-[240px] md:border-border/50 md:border-r md:py-7 lg:min-w-[280px]">
+          <p className="mb-3 font-semibold text-[11px] text-muted-foreground uppercase tracking-widest">
             Solde total
           </p>
           <AnimatedAmount
@@ -60,7 +60,7 @@ export async function BalanceSection({ periodKey }: Props) {
 
         {/* Comptes */}
         {data.accounts.length > 0 && (
-          <div className="grid flex-1 auto-rows-fr divide-y divide-border/40 border-t border-border/50 md:grid-cols-2 md:divide-x md:divide-y-0 md:border-t-0 lg:grid-cols-3">
+          <div className="grid flex-1 auto-rows-fr divide-y divide-border/40 border-border/50 border-t md:grid-cols-2 md:divide-x md:divide-y-0 md:border-t-0 lg:grid-cols-3">
             {data.accounts.map((acc) => {
               const IconComp = getAccountIcon(acc.icon)
               return (
@@ -75,15 +75,15 @@ export async function BalanceSection({ periodKey }: Props) {
                     <IconComp className="size-4" style={{ color: acc.color }} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-medium leading-tight">
+                    <p className="truncate font-medium text-[13px] leading-tight">
                       {acc.name}
                     </p>
-                    <p className="text-[11px] leading-tight text-muted-foreground">
+                    <p className="text-[11px] text-muted-foreground leading-tight">
                       {acc.type === "CHECKING" ? "Courant" : "Épargne"}
                     </p>
                   </div>
                   <AnimatedAmount
-                    className="shrink-0 text-[13px] font-semibold tabular-nums"
+                    className="shrink-0 font-semibold text-[13px] tabular-nums"
                     currency={currency}
                     value={acc.balance}
                     variant="neutral"

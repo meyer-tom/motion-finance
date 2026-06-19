@@ -10,7 +10,6 @@ import {
   Trophy,
 } from "lucide-react"
 import { useState, useTransition } from "react"
-import { toast } from "@/lib/toast"
 import { DiscoveryTooltip } from "@/components/app/discovery-tooltip"
 import { GoalCompletionCelebration } from "@/components/shared/goal-completion-celebration"
 import { Badge } from "@/components/ui/badge"
@@ -24,6 +23,7 @@ import {
 import type { GoalItem } from "@/lib/actions/goals"
 import { deleteGoal, getGoals } from "@/lib/actions/goals"
 import { useCurrency } from "@/lib/context/currency-context"
+import { toast } from "@/lib/toast"
 import { cn } from "@/lib/utils"
 import { formatAmount } from "@/lib/utils/format"
 import { GoalCard } from "./goal-card"
@@ -217,9 +217,7 @@ function TabButton({
     <button
       className={cn(
         "relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 font-medium text-sm transition-colors duration-150",
-        active
-          ? "text-primary"
-          : "text-muted-foreground hover:text-foreground"
+        active ? "text-primary" : "text-muted-foreground hover:text-foreground"
       )}
       onClick={onClick}
       type="button"
@@ -270,7 +268,7 @@ function CompletedGoalCard({
     <div
       className={cn(
         "space-y-3 rounded-3xl border border-border bg-card p-4 transition-all duration-200",
-        "hover:border-border-accent hover:bg-surface-elevated hover:shadow-md hover:shadow-black/8 dark:hover:shadow-black/25",
+        "hover:border-border-accent hover:bg-surface-elevated hover:shadow-black/8 hover:shadow-md dark:hover:shadow-black/25",
         isPending && "pointer-events-none opacity-50"
       )}
     >
@@ -329,12 +327,17 @@ function EmptyActive({ onAdd }: Readonly<{ onAdd: () => void }>) {
         <Target className="size-7 text-muted-foreground" />
       </div>
       <div className="space-y-2">
-        <p className="font-semibold text-foreground text-base">Aucun objectif en cours</p>
+        <p className="font-semibold text-base text-foreground">
+          Aucun objectif en cours
+        </p>
         <p className="text-muted-foreground text-sm">
           Définissez un objectif d'épargne pour suivre votre progression.
         </p>
       </div>
-      <Button className="btn-gradient-primary h-11 gap-2 px-6 text-base hover:opacity-90" onClick={onAdd}>
+      <Button
+        className="btn-gradient-primary h-11 gap-2 px-6 text-base hover:opacity-90"
+        onClick={onAdd}
+      >
         <Plus className="size-5" />
         Créer un objectif
       </Button>
@@ -349,14 +352,17 @@ function EmptyCompleted({ onAdd }: Readonly<{ onAdd: () => void }>) {
         <Trophy className="size-7 text-muted-foreground" />
       </div>
       <div className="space-y-2">
-        <p className="font-semibold text-foreground text-base">
+        <p className="font-semibold text-base text-foreground">
           Aucun objectif atteint pour l'instant
         </p>
         <p className="text-muted-foreground text-sm">
           Vos objectifs complétés apparaîtront ici.
         </p>
       </div>
-      <Button className="btn-gradient-primary h-11 gap-2 px-6 text-base hover:opacity-90" onClick={onAdd}>
+      <Button
+        className="btn-gradient-primary h-11 gap-2 px-6 text-base hover:opacity-90"
+        onClick={onAdd}
+      >
         <Plus className="size-5" />
         Créer un objectif
       </Button>

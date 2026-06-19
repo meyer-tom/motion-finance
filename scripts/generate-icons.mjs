@@ -93,13 +93,21 @@ await generatePng(buildIcon(512), join(ICONS_DIR, "icon-512.png"))
 await generatePng(buildIcon(180), join(ICONS_DIR, "apple-touch-icon.png"))
 
 // ── Icônes maskable : fond violet + barres blanches (Android adaptive icons) ──
-await generatePng(buildMaskableIcon(192), join(ICONS_DIR, "icon-192-maskable.png"))
-await generatePng(buildMaskableIcon(512), join(ICONS_DIR, "icon-512-maskable.png"))
+await generatePng(
+  buildMaskableIcon(192),
+  join(ICONS_DIR, "icon-192-maskable.png")
+)
+await generatePng(
+  buildMaskableIcon(512),
+  join(ICONS_DIR, "icon-512-maskable.png")
+)
 
 // ── Favicon (onglet navigateur) ───────────────────────────────────────────────
 await generatePng(buildIcon(512), join(APP_DIR, "icon.png"))
 
-const faviconPng = await sharp(Buffer.from(buildIcon(32))).png().toBuffer()
+const faviconPng = await sharp(Buffer.from(buildIcon(32)))
+  .png()
+  .toBuffer()
 await writeFile(join(PUBLIC_DIR, "favicon.ico"), wrapInIco(faviconPng))
 console.log("✓ favicon.ico")
 

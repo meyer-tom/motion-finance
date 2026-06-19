@@ -22,14 +22,14 @@ const item = {
   },
 }
 
-export function LandingAnimations({ children }: { readonly children: ReactNode }) {
+export function LandingAnimations({
+  children,
+}: {
+  readonly children: ReactNode
+}) {
   const nodes = Array.isArray(children) ? children : [children]
   return (
-    <motion.div
-      animate="show"
-      initial="hidden"
-      variants={container}
-    >
+    <motion.div animate="show" initial="hidden" variants={container}>
       {nodes.map((child, i) => (
         <motion.div key={i} variants={item}>
           {child}

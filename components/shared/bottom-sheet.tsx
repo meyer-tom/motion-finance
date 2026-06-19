@@ -129,12 +129,14 @@ export function BottomSheet({
   }
 
   const isDragging = dragY > 0
-  const sheetY = visible ? (isDragging ? dragY : 0) : "100%"
-  const backdropOpacity = visible
-    ? isDragging
-      ? Math.max(0, 1 - dragY / 300)
-      : 1
-    : 0
+  let sheetY: number | string = "100%"
+  if (visible) {
+    sheetY = isDragging ? dragY : 0
+  }
+  let backdropOpacity = 0
+  if (visible) {
+    backdropOpacity = isDragging ? Math.max(0, 1 - dragY / 300) : 1
+  }
 
   return createPortal(
     <div
@@ -159,7 +161,6 @@ export function BottomSheet({
 
       {/* Panel — scrollable container, no flex needed */}
       <div
-        aria-modal="true"
         className="absolute inset-x-0 bottom-0 max-h-[90dvh] rounded-t-2xl border-t bg-popover text-popover-foreground text-sm shadow-lg"
         onTouchEnd={handleTouchEnd}
         onTouchMove={handleTouchMove}

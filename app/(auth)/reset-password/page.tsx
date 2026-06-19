@@ -43,13 +43,16 @@ function ResetPasswordForm() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/15">
             <XCircle className="h-7 w-7 text-destructive" />
           </div>
-          <h2 className="font-bold text-xl text-foreground tracking-tight">
+          <h2 className="font-bold text-foreground text-xl tracking-tight">
             Lien invalide
           </h2>
           <p className="mx-auto mt-2 max-w-xs text-muted-foreground text-sm leading-relaxed">
             Ce lien de réinitialisation est invalide ou a expiré.
           </p>
-          <Button asChild className="btn-gradient-primary mt-6 w-full hover:opacity-90">
+          <Button
+            asChild
+            className="btn-gradient-primary mt-6 w-full hover:opacity-90"
+          >
             <Link href="/forgot-password">Nouvelle demande</Link>
           </Button>
         </div>
@@ -64,13 +67,16 @@ function ResetPasswordForm() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-income)]/15">
             <CheckCircle2 className="h-7 w-7 text-[var(--color-income)]" />
           </div>
-          <h2 className="font-bold text-xl text-foreground tracking-tight">
+          <h2 className="font-bold text-foreground text-xl tracking-tight">
             Mot de passe modifié
           </h2>
           <p className="mx-auto mt-2 max-w-xs text-muted-foreground text-sm leading-relaxed">
             Votre mot de passe a été réinitialisé avec succès.
           </p>
-          <Button asChild className="btn-gradient-primary mt-6 w-full hover:opacity-90">
+          <Button
+            asChild
+            className="btn-gradient-primary mt-6 w-full hover:opacity-90"
+          >
             <Link href="/login">Se connecter</Link>
           </Button>
         </div>
@@ -85,13 +91,16 @@ function ResetPasswordForm() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/15">
             <XCircle className="h-7 w-7 text-destructive" />
           </div>
-          <h2 className="font-bold text-xl text-foreground tracking-tight">
+          <h2 className="font-bold text-foreground text-xl tracking-tight">
             Lien expiré
           </h2>
           <p className="mx-auto mt-2 max-w-xs text-muted-foreground text-sm leading-relaxed">
             {tokenError}
           </p>
-          <Button asChild className="btn-gradient-primary mt-6 w-full hover:opacity-90">
+          <Button
+            asChild
+            className="btn-gradient-primary mt-6 w-full hover:opacity-90"
+          >
             <Link href="/forgot-password">Nouvelle demande</Link>
           </Button>
         </div>
@@ -137,7 +146,10 @@ function ResetPasswordForm() {
           onSubmit={handleSubmit(onSubmit)}
         >
           <div className="flex flex-col gap-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider" htmlFor="newPassword">
+            <Label
+              className="font-medium text-muted-foreground text-xs uppercase tracking-wider"
+              htmlFor="newPassword"
+            >
               Nouveau mot de passe
             </Label>
             <div className="relative">
@@ -145,7 +157,7 @@ function ResetPasswordForm() {
               <Input
                 aria-invalid={!!errors.newPassword}
                 autoComplete="new-password"
-                className="pl-10 pr-10 h-11 bg-background/50 border-border focus:border-primary"
+                className="h-11 border-border bg-background/50 pr-10 pl-10 focus:border-primary"
                 id="newPassword"
                 placeholder="••••••••"
                 type={showNew ? "text" : "password"}
@@ -157,7 +169,11 @@ function ResetPasswordForm() {
                 onClick={() => setShowNew((v) => !v)}
                 type="button"
               >
-                {showNew ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                {showNew ? (
+                  <EyeOff className="size-4" />
+                ) : (
+                  <Eye className="size-4" />
+                )}
               </button>
             </div>
             {errors.newPassword ? (
@@ -168,7 +184,10 @@ function ResetPasswordForm() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider" htmlFor="confirmPassword">
+            <Label
+              className="font-medium text-muted-foreground text-xs uppercase tracking-wider"
+              htmlFor="confirmPassword"
+            >
               Confirmer
             </Label>
             <div className="relative">
@@ -176,7 +195,7 @@ function ResetPasswordForm() {
               <Input
                 aria-invalid={!!errors.confirmPassword}
                 autoComplete="new-password"
-                className="pl-10 pr-10 h-11 bg-background/50 border-border focus:border-primary"
+                className="h-11 border-border bg-background/50 pr-10 pl-10 focus:border-primary"
                 id="confirmPassword"
                 placeholder="••••••••"
                 type={showConfirm ? "text" : "password"}
@@ -188,7 +207,11 @@ function ResetPasswordForm() {
                 onClick={() => setShowConfirm((v) => !v)}
                 type="button"
               >
-                {showConfirm ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                {showConfirm ? (
+                  <EyeOff className="size-4" />
+                ) : (
+                  <Eye className="size-4" />
+                )}
               </button>
             </div>
             {errors.confirmPassword ? (

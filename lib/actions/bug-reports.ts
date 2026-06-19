@@ -6,20 +6,24 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import { sendBugReportEmail } from "@/lib/email"
 import {
+  type BugReportInput,
   bugReportSchema,
   updateBugStatusSchema,
-  type BugReportInput,
 } from "@/lib/validations/bug-reports"
 
 async function requireAuth() {
   const session = await auth.api.getSession({ headers: await headers() })
-  if (!session) throw new Error("Non authentifié")
+  if (!session) {
+    throw new Error("Non authentifié")
+  }
   return session.user
 }
 
 async function requireAdmin() {
   const user = await requireAuth()
-  if (user.role !== "ADMIN") throw new Error("Accès refusé")
+  if (user.role !== "ADMIN") {
+    throw new Error("Accès refusé")
+  }
   return user
 }
 
@@ -37,14 +41,18 @@ export async function submitBugReport(data: BugReportInput) {
       type: parsed.data.type,
       title: parsed.data.title,
       description: parsed.data.description,
-      severity: parsed.data.type === "BUG" ? (parsed.data.severity ?? "MEDIUM") : null,
+      severity:
+        parsed.data.type === "BUG"
+          ? (parsed.data.severity ?? "MEDIUM")
+          : undefined,
       pageUrl: parsed.data.pageUrl,
       userAgent: parsed.data.userAgent,
       screenshotUrl: parsed.data.screenshotUrl,
     },
   })
 
-  const emailPrefix = parsed.data.type === "FEATURE_REQUEST" ? "[Feature]" : "[Bug]"
+  const emailPrefix =
+    parsed.data.type === "FEATURE_REQUEST" ? "[Feature]" : "[Bug]"
 
   await sendBugReportEmail({
     reportId: report.id,
@@ -90,7 +98,9 @@ export async function updateBugReportStatus(id: string, status: string) {
   await requireAdmin()
 
   const parsed = updateBugStatusSchema.safeParse({ id, status })
-  if (!parsed.success) throw new Error("Données invalides")
+  if (!parsed.success) {
+    throw new Error("Données invalides")
+  }
 
   await prisma.bugReport.update({
     where: { id: parsed.data.id },

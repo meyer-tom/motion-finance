@@ -1,6 +1,6 @@
-import type React from "react"
 import { ArrowRight, Target } from "lucide-react"
 import Link from "next/link"
+import type React from "react"
 import { Progress } from "@/components/ui/progress"
 import { getDashboardData } from "@/lib/actions/dashboard"
 import { getServerCurrency } from "@/lib/actions/settings"
@@ -27,14 +27,16 @@ export async function GoalsSection({ periodKey }: Props) {
   if (goals.length === 0) {
     return (
       <div className="overflow-hidden rounded-3xl border border-border bg-card">
-        <div className="border-b border-border/60 px-5 py-3.5">
+        <div className="border-border/60 border-b px-5 py-3.5">
           <span className="section-title">Objectifs d'épargne</span>
         </div>
         <div className="flex flex-col items-center gap-2.5 px-5 py-8 text-center">
           <div className="flex size-10 items-center justify-center rounded-full bg-muted">
             <Target className="size-5 text-muted-foreground" />
           </div>
-          <p className="text-muted-foreground text-sm">Aucun objectif d'épargne</p>
+          <p className="text-muted-foreground text-sm">
+            Aucun objectif d'épargne
+          </p>
           <Link
             className="text-primary text-sm underline-offset-4 hover:underline"
             href="/goals"
@@ -48,7 +50,7 @@ export async function GoalsSection({ periodKey }: Props) {
 
   return (
     <div className="overflow-hidden rounded-3xl border border-border bg-card">
-      <div className="flex items-center justify-between border-b border-border/60 px-5 py-3.5">
+      <div className="flex items-center justify-between border-border/60 border-b px-5 py-3.5">
         <span className="section-title">Objectifs d'épargne</span>
         <Link
           className="flex items-center gap-1 text-[12px] text-muted-foreground transition-colors hover:text-primary"
@@ -72,7 +74,9 @@ export async function GoalsSection({ periodKey }: Props) {
                       backgroundColor: isComplete
                         ? "color-mix(in oklch, var(--color-income) 15%, transparent)"
                         : "color-mix(in oklch, var(--primary) 12%, transparent)",
-                      color: isComplete ? "var(--color-income)" : "var(--primary)",
+                      color: isComplete
+                        ? "var(--color-income)"
+                        : "var(--primary)",
                     } as React.CSSProperties
                   }
                 >

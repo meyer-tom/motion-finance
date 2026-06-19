@@ -2,8 +2,8 @@
 
 import { Pie, PieChart, Tooltip } from "recharts"
 import { useCurrency } from "@/lib/context/currency-context"
-import { formatAmount } from "@/lib/utils/format"
 import { getCategoryIcon } from "@/lib/utils/category-icons"
+import { formatAmount } from "@/lib/utils/format"
 
 interface CategoryItem {
   categoryColor: string
@@ -42,8 +42,8 @@ function CustomTooltip({
   }
   const IconComp = getCategoryIcon(entry.categoryIcon)
   return (
-    <div className="rounded-xl border border-border bg-card px-3 py-2 shadow-xl shadow-black/30">
-      <div className="flex items-center gap-1.5 font-medium text-sm text-foreground">
+    <div className="rounded-xl border border-border bg-card px-3 py-2 shadow-black/30 shadow-xl">
+      <div className="flex items-center gap-1.5 font-medium text-foreground text-sm">
         <IconComp className="size-3.5" style={{ color: entry.fill }} />
         <span>{entry.categoryName}</span>
       </div>

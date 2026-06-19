@@ -2,7 +2,6 @@
 
 import { Download, Loader2, Trash2 } from "lucide-react"
 import { useState, useTransition } from "react"
-import { toast } from "@/lib/toast"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -16,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { deleteUserAccount } from "@/lib/actions/settings"
+import { toast } from "@/lib/toast"
 
 export function DataSection() {
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -42,7 +42,7 @@ export function DataSection() {
     <div className="space-y-6">
       {/* Export */}
       <div className="overflow-hidden rounded-2xl border border-border bg-card">
-        <div className="border-b border-border/60 px-6 py-5">
+        <div className="border-border/60 border-b px-6 py-5">
           <h2 className="font-semibold text-base">Exporter mes données</h2>
           <p className="mt-1 text-muted-foreground text-sm">
             Téléchargez toutes vos transactions au format CSV (compatible Excel)
@@ -61,7 +61,7 @@ export function DataSection() {
 
       {/* Suppression du compte */}
       <div className="overflow-hidden rounded-2xl border border-destructive/20 bg-card">
-        <div className="border-b border-destructive/15 px-6 py-5">
+        <div className="border-destructive/15 border-b px-6 py-5">
           <h2 className="font-semibold text-base text-destructive">
             Supprimer mon compte
           </h2>

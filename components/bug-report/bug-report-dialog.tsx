@@ -1,11 +1,19 @@
 "use client"
 
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { AlertCircle, Bug, ImagePlus, Lightbulb, Loader2, Send, Upload, X } from "lucide-react"
+import {
+  AlertCircle,
+  Bug,
+  ImagePlus,
+  Lightbulb,
+  Loader2,
+  Send,
+  Upload,
+  X,
+} from "lucide-react"
 import Image from "next/image"
 import { useCallback, useEffect, useRef, useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
-import { toast } from "@/lib/toast"
 import { BottomSheet } from "@/components/shared/bottom-sheet"
 import { Button } from "@/components/ui/button"
 import {
@@ -26,8 +34,12 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { submitBugReport } from "@/lib/actions/bug-reports"
 import { useIsMobile } from "@/lib/hooks/use-is-mobile"
+import { toast } from "@/lib/toast"
 import { cn } from "@/lib/utils"
-import { bugReportSchema, type BugReportInput } from "@/lib/validations/bug-reports"
+import {
+  type BugReportInput,
+  bugReportSchema,
+} from "@/lib/validations/bug-reports"
 import { Input } from "../ui/input"
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
@@ -42,22 +54,45 @@ type FeedbackType = "BUG" | "FEATURE_REQUEST"
 /* ── Config ─────────────────────────────────────────────────────────────────── */
 
 const SEVERITIES = [
-  { value: "LOW", label: "Faible", description: "Problème mineur, n'affecte pas l'usage" },
-  { value: "MEDIUM", label: "Moyen", description: "Gêne l'utilisation mais une solution de contournement existe" },
-  { value: "HIGH", label: "Élevé", description: "Problème important, fonctionnalité inutilisable" },
-  { value: "CRITICAL", label: "Critique", description: "Perte de données ou blocage total" },
+  {
+    value: "LOW",
+    label: "Faible",
+    description: "Problème mineur, n'affecte pas l'usage",
+  },
+  {
+    value: "MEDIUM",
+    label: "Moyen",
+    description: "Gêne l'utilisation mais une solution de contournement existe",
+  },
+  {
+    value: "HIGH",
+    label: "Élevé",
+    description: "Problème important, fonctionnalité inutilisable",
+  },
+  {
+    value: "CRITICAL",
+    label: "Critique",
+    description: "Perte de données ou blocage total",
+  },
 ] as const
 
 /* ── Upload helper ──────────────────────────────────────────────────────────── */
 
 async function uploadImageFile(file: File): Promise<string | null> {
-  if (!file.type.startsWith("image/")) return null
+  if (!file.type.startsWith("image/")) {
+    return null
+  }
   const formData = new FormData()
   formData.append("file", file, file.name)
   try {
-    const res = await fetch("/api/upload/screenshot", { method: "POST", body: formData })
-    if (!res.ok) return null
-    const json = await res.json() as { url?: string }
+    const res = await fetch("/api/upload/screenshot", {
+      method: "POST",
+      body: formData,
+    })
+    if (!res.ok) {
+      return null
+    }
+    const json = (await res.json()) as { url?: string }
     return json.url ?? null
   } catch {
     return null
@@ -67,41 +102,55 @@ async function uploadImageFile(file: File): Promise<string | null> {
 /* ── Screenshot zone ────────────────────────────────────────────────────────── */
 
 interface ScreenshotZoneProps {
-  readonly onUpload: (url: string) => void
-  readonly onRemove: () => void
-  readonly url: string | null
   readonly isOpen: boolean
+  readonly onRemove: () => void
+  readonly onUpload: (url: string) => void
+  readonly url: string | null
 }
 
-function ScreenshotZone({ url, onUpload, onRemove, isOpen }: ScreenshotZoneProps) {
+function ScreenshotZone({
+  url,
+  onUpload,
+  onRemove,
+  isOpen,
+}: ScreenshotZoneProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
 
-  const handleFile = useCallback(async (file: File) => {
-    if (!file.type.startsWith("image/")) {
-      toast.error("Seules les images sont acceptées")
-      return
-    }
-    setIsUploading(true)
-    const uploadedUrl = await uploadImageFile(file)
-    setIsUploading(false)
-    if (uploadedUrl) {
-      onUpload(uploadedUrl)
-    } else {
-      toast.error("Impossible d'uploader l'image")
-    }
-  }, [onUpload])
+  const handleFile = useCallback(
+    async (file: File) => {
+      if (!file.type.startsWith("image/")) {
+        toast.error("Seules les images sont acceptées")
+        return
+      }
+      setIsUploading(true)
+      const uploadedUrl = await uploadImageFile(file)
+      setIsUploading(false)
+      if (uploadedUrl) {
+        onUpload(uploadedUrl)
+      } else {
+        toast.error("Impossible d'uploader l'image")
+      }
+    },
+    [onUpload]
+  )
 
   useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen) {
+      return
+    }
     function handlePaste(e: ClipboardEvent) {
       const items = e.clipboardData?.items
-      if (!items) return
+      if (!items) {
+        return
+      }
       for (const item of items) {
         if (item.type.startsWith("image/")) {
           const file = item.getAsFile()
-          if (file) handleFile(file)
+          if (file) {
+            handleFile(file)
+          }
           break
         }
       }
@@ -123,12 +172,16 @@ function ScreenshotZone({ url, onUpload, onRemove, isOpen }: ScreenshotZoneProps
     e.preventDefault()
     setIsDragging(false)
     const file = e.dataTransfer.files[0]
-    if (file) handleFile(file)
+    if (file) {
+      handleFile(file)
+    }
   }
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (file) handleFile(file)
+    if (file) {
+      handleFile(file)
+    }
     e.target.value = ""
   }
 
@@ -172,10 +225,10 @@ function ScreenshotZone({ url, onUpload, onRemove, isOpen }: ScreenshotZoneProps
           isUploading && "pointer-events-none opacity-60"
         )}
         disabled={isUploading}
+        onClick={() => fileInputRef.current?.click()}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        onClick={() => fileInputRef.current?.click()}
         type="button"
       >
         {isUploading ? (
@@ -238,8 +291,16 @@ function TypeSelector({
   )
 }
 
-function SubmitLabel({ isPending, isBug }: { readonly isPending: boolean; readonly isBug: boolean }) {
-  if (isPending) return "Envoi…"
+function SubmitLabel({
+  isPending,
+  isBug,
+}: {
+  readonly isPending: boolean
+  readonly isBug: boolean
+}) {
+  if (isPending) {
+    return "Envoi…"
+  }
   return isBug ? "Envoyer le rapport" : "Envoyer la suggestion"
 }
 
@@ -268,7 +329,8 @@ function FeedbackForm({
       type: "BUG" as FeedbackType,
       severity: "MEDIUM" as BugReportInput["severity"],
       pageUrl: globalThis.window ? globalThis.window.location.href : "",
-      userAgent: "navigator" in globalThis ? globalThis.navigator.userAgent : "",
+      userAgent:
+        "navigator" in globalThis ? globalThis.navigator.userAgent : "",
       title: "",
       description: "",
     },
@@ -283,10 +345,13 @@ function FeedbackForm({
     }
   }
 
-  const handleScreenshotUpload = useCallback((url: string) => {
-    setScreenshotUrl(url)
-    setValue("screenshotUrl", url)
-  }, [setValue])
+  const handleScreenshotUpload = useCallback(
+    (url: string) => {
+      setScreenshotUrl(url)
+      setValue("screenshotUrl", url)
+    },
+    [setValue]
+  )
 
   const handleScreenshotRemove = useCallback(() => {
     setScreenshotUrl(null)
@@ -297,9 +362,10 @@ function FeedbackForm({
     startTransition(async () => {
       try {
         await submitBugReport(data)
-        const msg = data.type === "FEATURE_REQUEST"
-          ? "Suggestion envoyée, merci !"
-          : "Rapport envoyé, merci !"
+        const msg =
+          data.type === "FEATURE_REQUEST"
+            ? "Suggestion envoyée, merci !"
+            : "Rapport envoyé, merci !"
         toast.success(msg)
         reset()
         setFeedbackType("BUG")
@@ -314,7 +380,10 @@ function FeedbackForm({
   const isBug = feedbackType === "BUG"
 
   return (
-    <form className="flex flex-col gap-4 pt-2" onSubmit={handleSubmit(onSubmit)}>
+    <form
+      className="flex flex-col gap-4 pt-2"
+      onSubmit={handleSubmit(onSubmit)}
+    >
       {/* Type selector */}
       <TypeSelector onChange={handleTypeChange} value={feedbackType} />
 
@@ -367,7 +436,9 @@ function FeedbackForm({
           <Label>Sévérité</Label>
           <Select
             defaultValue="MEDIUM"
-            onValueChange={(v) => setValue("severity", v as BugReportInput["severity"])}
+            onValueChange={(v) =>
+              setValue("severity", v as BugReportInput["severity"])
+            }
           >
             <SelectTrigger>
               <SelectValue />
@@ -376,7 +447,9 @@ function FeedbackForm({
               {SEVERITIES.map(({ value, label, description }) => (
                 <SelectItem key={value} value={value}>
                   <span className="font-medium">{label}</span>
-                  <span className="ml-2 text-muted-foreground text-xs">{description}</span>
+                  <span className="ml-2 text-muted-foreground text-xs">
+                    {description}
+                  </span>
                 </SelectItem>
               ))}
             </SelectContent>
@@ -395,14 +468,25 @@ function FeedbackForm({
             url={screenshotUrl}
           />
           <p className="text-muted-foreground text-xs">
-            Optionnel — aide à identifier le problème visuel. Sur Mac : ⌘⇧4, puis ⌘V.
+            Optionnel — aide à identifier le problème visuel. Sur Mac : ⌘⇧4,
+            puis ⌘V.
           </p>
         </div>
       ) : null}
 
       {/* Actions */}
-      <div className={cn("flex gap-2 pt-1", "flex-col-reverse sm:flex-row sm:justify-end")}>
-        <Button disabled={isPending} onClick={onClose} type="button" variant="outline">
+      <div
+        className={cn(
+          "flex gap-2 pt-1",
+          "flex-col-reverse sm:flex-row sm:justify-end"
+        )}
+      >
+        <Button
+          disabled={isPending}
+          onClick={onClose}
+          type="button"
+          variant="outline"
+        >
           Annuler
         </Button>
         <Button className="gap-2" disabled={isPending} type="submit">

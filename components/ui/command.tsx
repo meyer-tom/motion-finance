@@ -28,8 +28,8 @@ function Command({
 }
 
 interface CommandDialogProps extends React.ComponentProps<typeof Dialog> {
-  title?: string
   description?: string
+  title?: string
 }
 
 function CommandDialog({

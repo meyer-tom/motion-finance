@@ -2,9 +2,9 @@ import { ArrowRight } from "lucide-react"
 import Link from "next/link"
 import { getDashboardData } from "@/lib/actions/dashboard"
 import { getServerCurrency } from "@/lib/actions/settings"
-import { formatAmount } from "@/lib/utils/format"
 import { getAccountIcon } from "@/lib/utils/account-icons"
 import { getCategoryIcon } from "@/lib/utils/category-icons"
+import { formatAmount } from "@/lib/utils/format"
 
 interface Props {
   periodKey: string
@@ -34,7 +34,9 @@ function formatDate(iso: string) {
   }).format(new Date(iso))
 }
 
-type Tx = Awaited<ReturnType<typeof getDashboardData>>["recentTransactions"][number]
+type Tx = Awaited<
+  ReturnType<typeof getDashboardData>
+>["recentTransactions"][number]
 
 function TxIcon({ tx }: { tx: Tx }) {
   if (tx.category) {
@@ -44,7 +46,10 @@ function TxIcon({ tx }: { tx: Tx }) {
         className="flex size-10 shrink-0 items-center justify-center rounded-xl"
         style={{ backgroundColor: `${tx.category.color}20` }}
       >
-        <IconComp className="size-[18px]" style={{ color: tx.category.color }} />
+        <IconComp
+          className="size-[18px]"
+          style={{ color: tx.category.color }}
+        />
       </div>
     )
   }
@@ -68,7 +73,7 @@ export async function RecentTransactionsSection({ periodKey }: Props) {
 
   return (
     <div className="flex flex-col overflow-hidden rounded-3xl border border-border bg-card">
-      <div className="flex items-center justify-between border-b border-border/60 px-5 py-3.5">
+      <div className="flex items-center justify-between border-border/60 border-b px-5 py-3.5">
         <span className="section-title">Transactions récentes</span>
         <Link
           className="flex items-center gap-1 text-[12px] text-muted-foreground transition-colors hover:text-primary"
@@ -80,7 +85,9 @@ export async function RecentTransactionsSection({ periodKey }: Props) {
       </div>
       {txs.length === 0 ? (
         <div className="flex flex-col items-center gap-2 px-6 py-14 text-center">
-          <p className="text-muted-foreground text-sm">Aucune transaction sur la période</p>
+          <p className="text-muted-foreground text-sm">
+            Aucune transaction sur la période
+          </p>
         </div>
       ) : (
         <ul className="divide-y divide-border/60">
@@ -94,7 +101,7 @@ export async function RecentTransactionsSection({ periodKey }: Props) {
                 <p className="truncate font-semibold text-[13px] leading-tight">
                   {tx.title}
                 </p>
-                <p className="mt-0.5 text-[11px] leading-tight text-muted-foreground">
+                <p className="mt-0.5 text-[11px] text-muted-foreground leading-tight">
                   {tx.category?.name ?? tx.accountName} · {formatDate(tx.date)}
                 </p>
               </div>

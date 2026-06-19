@@ -30,7 +30,10 @@ export default async function AppLayout({
     getAccounts(),
     getCategoriesForUser(userId),
     getUsedTags(),
-    prisma.user.findUnique({ where: { id: userId }, select: { currency: true } }),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { currency: true },
+    }),
   ])
 
   const currency = userRecord?.currency ?? "EUR"
@@ -41,8 +44,8 @@ export default async function AppLayout({
         <AppShell
           accounts={accounts}
           categories={categories}
-          user={session.user}
           usedTags={usedTags}
+          user={session.user}
         >
           {children}
         </AppShell>

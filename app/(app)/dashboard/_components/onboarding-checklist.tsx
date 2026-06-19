@@ -11,7 +11,11 @@ import Link from "next/link"
 import { useState } from "react"
 
 const STEPS = [
-  { id: "account", label: "Créer votre premier compte courant", href: "/accounts" },
+  {
+    id: "account",
+    label: "Créer votre premier compte courant",
+    href: "/accounts",
+  },
   { id: "savings", label: "Ajouter un compte épargne", href: "/accounts" },
   { id: "profile", label: "Compléter votre profil", href: "/settings" },
   {
@@ -19,10 +23,24 @@ const STEPS = [
     label: "Créer une catégorie personnalisée",
     href: "/settings?tab=categories",
   },
-  { id: "first-expense", label: "Enregistrer votre première dépense", href: "/transactions" },
+  {
+    id: "first-expense",
+    label: "Enregistrer votre première dépense",
+    href: "/transactions",
+  },
   { id: "budget", label: "Créer votre premier budget", href: "/budgets" },
   { id: "goal", label: "Définir un objectif d'épargne", href: "/goals" },
 ] as const
+
+function stepTextClass(isCompleted: boolean, isNext: boolean): string {
+  if (isCompleted) {
+    return "text-muted-foreground line-through"
+  }
+  if (isNext) {
+    return "font-semibold text-foreground"
+  }
+  return "text-foreground/70"
+}
 
 interface Props {
   completedSteps: string[]
@@ -35,17 +53,23 @@ export function OnboardingChecklist({ completedSteps }: Readonly<Props>) {
   const completedCount = STEPS.filter((s) => completedSet.has(s.id)).length
   const progress = Math.round((completedCount / STEPS.length) * 100)
   const firstPendingId = STEPS.find((s) => !completedSet.has(s.id))?.id
+  const remaining = STEPS.length - completedCount
+  const pluralS = remaining > 1 ? "s" : ""
+  const remainingLabel =
+    remaining > 0
+      ? `${remaining} étape${pluralS} restante${pluralS}`
+      : "Toutes les étapes complétées !"
 
   return (
     <div className="overflow-hidden rounded-3xl border border-primary/20 shadow-sm">
       {/* Header — entièrement cliquable */}
       <button
-        className="block w-full cursor-pointer select-none bg-transparent text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+        className="block w-full cursor-pointer select-none bg-transparent text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
         onClick={() => setCollapsed((c) => !c)}
         type="button"
       >
         <div className="relative overflow-hidden bg-linear-to-br from-primary to-blue-600 px-5 py-5">
-          <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/5" />
+          <div className="pointer-events-none absolute -top-8 -right-8 h-32 w-32 rounded-full bg-white/5" />
           <div className="pointer-events-none absolute -bottom-10 -left-4 h-24 w-24 rounded-full bg-white/5" />
 
           <div className="relative flex items-center gap-4">
@@ -55,14 +79,10 @@ export function OnboardingChecklist({ completedSteps }: Readonly<Props>) {
             </div>
 
             <div className="min-w-0 flex-1">
-              <p className="font-semibold text-sm leading-tight text-white">
+              <p className="font-semibold text-sm text-white leading-tight">
                 Démarrage
               </p>
-              <p className="mt-0.5 text-blue-100 text-xs">
-                {STEPS.length - completedCount > 0
-                  ? `${STEPS.length - completedCount} étape${STEPS.length - completedCount > 1 ? "s" : ""} restante${STEPS.length - completedCount > 1 ? "s" : ""}`
-                  : "Toutes les étapes complétées !"}
-              </p>
+              <p className="mt-0.5 text-blue-100 text-xs">{remainingLabel}</p>
             </div>
 
             {/* Barre de progression */}
@@ -79,9 +99,15 @@ export function OnboardingChecklist({ completedSteps }: Readonly<Props>) {
             </div>
 
             {collapsed ? (
-              <ChevronDown aria-hidden="true" className="size-4 shrink-0 text-white/70" />
+              <ChevronDown
+                aria-hidden="true"
+                className="size-4 shrink-0 text-white/70"
+              />
             ) : (
-              <ChevronUp aria-hidden="true" className="size-4 shrink-0 text-white/70" />
+              <ChevronUp
+                aria-hidden="true"
+                className="size-4 shrink-0 text-white/70"
+              />
             )}
           </div>
         </div>
@@ -99,7 +125,7 @@ export function OnboardingChecklist({ completedSteps }: Readonly<Props>) {
 
       {/* Liste des étapes */}
       {!collapsed && (
-        <div className="bg-card px-3 pb-3 pt-2">
+        <div className="bg-card px-3 pt-2 pb-3">
           <ul className="space-y-0.5">
             {STEPS.map((step) => {
               const isCompleted = completedSet.has(step.id)
@@ -136,13 +162,7 @@ export function OnboardingChecklist({ completedSteps }: Readonly<Props>) {
                       />
                     )}
                     <span
-                      className={`flex-1 text-sm leading-snug ${
-                        isCompleted
-                          ? "text-muted-foreground line-through"
-                          : isNext
-                            ? "font-semibold text-foreground"
-                            : "text-foreground/70"
-                      }`}
+                      className={`flex-1 text-sm leading-snug ${stepTextClass(isCompleted, isNext)}`}
                     >
                       {step.label}
                     </span>

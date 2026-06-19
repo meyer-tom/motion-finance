@@ -112,7 +112,9 @@ async function evaluateBudgets(userId: string): Promise<{
       // Quand le budget est dépassé (≥100%), l'alerte 80% est redondante :
       // on la supprime si elle existe et on ne la crée pas.
       if (threshold === 80 && isOver100) {
-        if (existingId) toDelete.push(existingId)
+        if (existingId) {
+          toDelete.push(existingId)
+        }
         continue
       }
 

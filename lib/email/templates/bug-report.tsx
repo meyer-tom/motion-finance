@@ -29,9 +29,9 @@ const SEVERITY_COLORS: Record<string, string> = {
 interface BugReportEmailProps {
   readonly description: string
   readonly pageUrl: string
-  readonly reportId: string
   readonly reporterEmail: string
   readonly reporterName: string
+  readonly reportId: string
   readonly screenshotUrl?: string
   readonly severity: string
   readonly title: string
@@ -53,14 +53,17 @@ export function BugReportEmail({
   const severityLabel = SEVERITY_LABELS[severity] ?? severity
   const severityColor = SEVERITY_COLORS[severity] ?? "#6b7280"
   const headerColor = isFeature ? "#7c3aed" : "#ef4444"
-  const headerSubLabel = isFeature ? "Demande de fonctionnalité" : "Rapport de bug"
+  const headerSubLabel = isFeature
+    ? "Demande de fonctionnalité"
+    : "Rapport de bug"
   const adminUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/admin/bugs`
 
   return (
     <Html lang="fr">
       <Head />
       <Preview>
-        [{isFeature ? "Feature" : "Bug"} #{reportId.slice(-6)}] {title} — Motion Finance
+        [{isFeature ? "Feature" : "Bug"} #{reportId.slice(-6)}] {title} — Motion
+        Finance
       </Preview>
       <Body style={main}>
         <Container style={container}>

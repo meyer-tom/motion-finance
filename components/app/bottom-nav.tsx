@@ -49,24 +49,28 @@ export function BottomNav() {
   )
 
   useEffect(() => {
-    if (activeIndex < 0) return
+    if (activeIndex < 0) {
+      return
+    }
     const el = navRefs.current[activeIndex]
-    if (!el) return
+    if (!el) {
+      return
+    }
     setPill({
       x: el.offsetLeft,
       y: el.offsetTop,
       width: el.offsetWidth,
       height: el.offsetHeight,
     })
-  }, [activeIndex, pathname])
+  }, [activeIndex])
 
   return (
     <nav
       aria-label="Navigation principale"
-      className="fixed bottom-0 left-0 right-0 z-50 flex justify-center md:hidden"
-      style={{ paddingBottom: `max(env(safe-area-inset-bottom), 16px)` }}
+      className="fixed right-0 bottom-0 left-0 z-50 flex justify-center md:hidden"
+      style={{ paddingBottom: "max(env(safe-area-inset-bottom), 16px)" }}
     >
-      <div className="relative flex items-center gap-0.5 rounded-full border border-border/50 bg-card/90 px-2 py-2 shadow-xl shadow-black/15 backdrop-blur-xl">
+      <div className="relative flex items-center gap-0.5 rounded-full border border-border/50 bg-card/90 px-2 py-2 shadow-black/15 shadow-xl backdrop-blur-xl">
         {pill ? (
           <motion.span
             animate={{ x: pill.x, width: pill.width }}
@@ -82,9 +86,6 @@ export function BottomNav() {
           const isActive = pathname === href || pathname.startsWith(`${href}/`)
           return (
             <Link
-              ref={(el) => {
-                navRefs.current[i] = el
-              }}
               aria-current={isActive ? "page" : undefined}
               aria-label={label}
               className={cn(
@@ -95,12 +96,12 @@ export function BottomNav() {
               )}
               href={href}
               key={href}
+              ref={(el) => {
+                navRefs.current[i] = el
+              }}
             >
               <Icon
-                className={cn(
-                  "h-[21px] w-[21px]",
-                  isActive && "stroke-[2.5]"
-                )}
+                className={cn("h-[21px] w-[21px]", isActive && "stroke-[2.5]")}
               />
             </Link>
           )
@@ -121,9 +122,6 @@ export function BottomNav() {
           const refIndex = NAV_LEFT.length + i
           return (
             <Link
-              ref={(el) => {
-                navRefs.current[refIndex] = el
-              }}
               aria-current={isActive ? "page" : undefined}
               aria-label={label}
               className={cn(
@@ -134,12 +132,12 @@ export function BottomNav() {
               )}
               href={href}
               key={href}
+              ref={(el) => {
+                navRefs.current[refIndex] = el
+              }}
             >
               <Icon
-                className={cn(
-                  "h-[21px] w-[21px]",
-                  isActive && "stroke-[2.5]"
-                )}
+                className={cn("h-[21px] w-[21px]", isActive && "stroke-[2.5]")}
               />
             </Link>
           )

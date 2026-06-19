@@ -36,7 +36,12 @@ type NotificationType = Notification["type"]
 
 const TYPE_CONFIG: Record<
   NotificationType,
-  { icon: React.ElementType; iconClass: string; bgClass: string; barClass: string }
+  {
+    icon: React.ElementType
+    iconClass: string
+    bgClass: string
+    barClass: string
+  }
 > = {
   WARNING: {
     icon: AlertTriangle,
@@ -69,17 +74,25 @@ const TYPE_CONFIG: Record<
 function relativeTime(date: Date): string {
   const diff = Date.now() - new Date(date).getTime()
   const minutes = Math.floor(diff / 60_000)
-  if (minutes < 1) return "À l'instant"
-  if (minutes < 60) return `il y a ${minutes} min`
+  if (minutes < 1) {
+    return "À l'instant"
+  }
+  if (minutes < 60) {
+    return `il y a ${minutes} min`
+  }
   const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `il y a ${hours}h`
+  if (hours < 24) {
+    return `il y a ${hours}h`
+  }
   return `il y a ${Math.floor(hours / 24)}j`
 }
 
 /* ── Sous-composants ────────────────────────────────────────────────────── */
 
 function NotificationBadge({ count }: Readonly<{ count: number }>) {
-  if (count === 0) return null
+  if (count === 0) {
+    return null
+  }
   return (
     <span className="absolute top-0.5 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-0.5 font-semibold text-[10px] text-white leading-none">
       {count > 9 ? "9+" : count}
@@ -96,7 +109,12 @@ function NotificationItem({
   onMarkRead: (id: string) => void
   onDelete: (id: string) => void
 }>) {
-  const { icon: Icon, iconClass, bgClass, barClass } = TYPE_CONFIG[notification.type]
+  const {
+    icon: Icon,
+    iconClass,
+    bgClass,
+    barClass,
+  } = TYPE_CONFIG[notification.type]
   const unread = !notification.isRead
 
   return (
@@ -108,11 +126,21 @@ function NotificationItem({
     >
       {/* Barre colorée gauche pour non-lues */}
       {unread && (
-        <div className={cn("absolute top-4 bottom-4 left-0 w-0.75 rounded-r-full", barClass)} />
+        <div
+          className={cn(
+            "absolute top-4 bottom-4 left-0 w-0.75 rounded-r-full",
+            barClass
+          )}
+        />
       )}
 
       {/* Icône */}
-      <div className={cn("mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-xl", bgClass)}>
+      <div
+        className={cn(
+          "mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-xl",
+          bgClass
+        )}
+      >
         <Icon className={cn("size-5", iconClass)} />
       </div>
 
@@ -120,12 +148,21 @@ function NotificationItem({
       <button
         className="min-w-0 flex-1 text-left"
         onClick={() => {
-          if (unread) onMarkRead(notification.id)
+          if (unread) {
+            onMarkRead(notification.id)
+          }
         }}
         type="button"
       >
         <div className="flex items-start justify-between gap-2">
-          <p className={cn("text-sm leading-snug", unread ? "font-semibold text-foreground" : "font-medium text-muted-foreground")}>
+          <p
+            className={cn(
+              "text-sm leading-snug",
+              unread
+                ? "font-semibold text-foreground"
+                : "font-medium text-muted-foreground"
+            )}
+          >
             {notification.title}
           </p>
           <span className="shrink-0 whitespace-nowrap text-[11px] text-muted-foreground">
@@ -177,7 +214,9 @@ function HeaderActions({
   onMarkAll: () => void
   onDeleteAll: () => void
 }>) {
-  if (!(hasUnread || hasNotifications)) return null
+  if (!(hasUnread || hasNotifications)) {
+    return null
+  }
 
   return (
     <div className="flex items-center gap-3">
@@ -248,7 +287,9 @@ export function NotificationPopover() {
 
   function handleOpenChange(next: boolean) {
     setOpen(next)
-    if (next) refetch()
+    if (next) {
+      refetch()
+    }
   }
 
   const unreadCount = notifications.filter((n) => !n.isRead).length

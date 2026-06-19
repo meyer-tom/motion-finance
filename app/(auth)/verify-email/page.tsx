@@ -26,13 +26,16 @@ export default function VerifyEmailPage() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-income)]/15">
             <CheckCircle2 className="h-7 w-7 text-[var(--color-income)]" />
           </div>
-          <h2 className="font-bold text-xl text-foreground tracking-tight">
+          <h2 className="font-bold text-foreground text-xl tracking-tight">
             Email vérifié !
           </h2>
           <p className="mx-auto mt-2 max-w-xs text-muted-foreground text-sm leading-relaxed">
             Votre adresse a été confirmée. Redirection vers le tableau de bord…
           </p>
-          <Button asChild className="btn-gradient-primary mt-6 w-full hover:opacity-90">
+          <Button
+            asChild
+            className="btn-gradient-primary mt-6 w-full hover:opacity-90"
+          >
             <Link href="/dashboard">Accéder au dashboard</Link>
           </Button>
         </div>
@@ -46,13 +49,17 @@ export default function VerifyEmailPage() {
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/15">
           <XCircle className="h-7 w-7 text-destructive" />
         </div>
-        <h2 className="font-bold text-xl text-foreground tracking-tight">
+        <h2 className="font-bold text-foreground text-xl tracking-tight">
           Lien invalide
         </h2>
         <p className="mx-auto mt-2 max-w-xs text-muted-foreground text-sm leading-relaxed">
-          Ce lien de vérification est invalide ou a expiré. Connectez-vous pour en recevoir un nouveau.
+          Ce lien de vérification est invalide ou a expiré. Connectez-vous pour
+          en recevoir un nouveau.
         </p>
-        <Button asChild className="btn-gradient-primary mt-6 w-full hover:opacity-90">
+        <Button
+          asChild
+          className="btn-gradient-primary mt-6 w-full hover:opacity-90"
+        >
           <Link href="/login">Se connecter</Link>
         </Button>
       </div>

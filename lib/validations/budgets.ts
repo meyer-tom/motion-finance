@@ -5,8 +5,8 @@ const cuid = (message: string) => z.string().regex(cuidRegex, message)
 
 export const budgetSchema = z.object({
   categoryId: cuid("Catégorie invalide"),
-  amount: z
-    .coerce.number()
+  amount: z.coerce
+    .number()
     .positive("Le montant doit être positif")
     .max(10_000_000, "Montant maximum : 10 000 000"),
   month: z.coerce.date(),

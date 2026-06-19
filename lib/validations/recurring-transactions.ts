@@ -10,8 +10,8 @@ export const recurringSchema = z
       .min(1, "Le nom est requis")
       .max(100, "100 caractères maximum"),
     type: z.enum(["EXPENSE", "INCOME", "TRANSFER"]),
-    amount: z
-      .coerce.number()
+    amount: z.coerce
+      .number()
       .positive("Le montant doit être positif")
       .max(10_000_000, "Montant maximum : 10 000 000"),
     description: z.string().max(255, "255 caractères maximum").optional(),

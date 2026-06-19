@@ -70,7 +70,10 @@ export async function sendEmailChangeVerification({
     })
 
     if (error) {
-      console.error("[Email] Erreur lors de l'envoi de l'email de changement:", error)
+      console.error(
+        "[Email] Erreur lors de l'envoi de l'email de changement:",
+        error
+      )
       return
     }
 
@@ -84,9 +87,9 @@ interface SendBugReportEmailParams {
   description: string
   emailPrefix: string
   pageUrl: string
-  reportId: string
   reporterEmail: string
   reporterName: string
+  reportId: string
   screenshotUrl?: string
   severity: string
   title: string

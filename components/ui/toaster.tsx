@@ -1,15 +1,9 @@
 "use client"
 
-import {
-  AlertCircle,
-  AlertTriangle,
-  CheckCircle2,
-  Info,
-  X,
-} from "lucide-react"
 import { AnimatePresence, motion } from "framer-motion"
+import { AlertCircle, AlertTriangle, CheckCircle2, Info, X } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
-import { type ToastItem, subscribeToast } from "@/lib/toast"
+import { subscribeToast, type ToastItem } from "@/lib/toast"
 import { cn } from "@/lib/utils"
 
 const SPRING = { type: "spring" as const, stiffness: 500, damping: 42 }
@@ -59,17 +53,22 @@ function Toast({
       layout
       transition={SPRING}
     >
-      <div className="flex w-full items-center gap-2.5 rounded-xl border border-border bg-card px-3 py-2.5 shadow-lg shadow-black/6 dark:shadow-black/25">
-        <div className={cn("flex size-6 shrink-0 items-center justify-center rounded-lg", bgClass)}>
+      <div className="flex w-full items-center gap-2.5 rounded-xl border border-border bg-card px-3 py-2.5 shadow-black/6 shadow-lg dark:shadow-black/25">
+        <div
+          className={cn(
+            "flex size-6 shrink-0 items-center justify-center rounded-lg",
+            bgClass
+          )}
+        >
           <Icon className={cn("size-3.5", iconClass)} />
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="font-medium text-sm leading-snug text-foreground">
+          <p className="font-medium text-foreground text-sm leading-snug">
             {item.title}
           </p>
           {item.description ? (
-            <p className="text-xs leading-relaxed text-muted-foreground">
+            <p className="text-muted-foreground text-xs leading-relaxed">
               {item.description}
             </p>
           ) : null}
@@ -105,7 +104,8 @@ export function Toaster() {
     <div
       aria-label="Notifications"
       aria-live="polite"
-      className="pointer-events-none fixed right-4 bottom-24 z-50 flex w-72 flex-col-reverse gap-2 md:bottom-6 md:right-6"
+      className="pointer-events-none fixed right-4 bottom-24 z-50 flex w-72 flex-col-reverse gap-2 md:right-6 md:bottom-6"
+      role="status"
     >
       <AnimatePresence initial={false} mode="sync">
         {toasts.map((item) => (

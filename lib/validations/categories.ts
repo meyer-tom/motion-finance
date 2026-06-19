@@ -21,4 +21,6 @@ export const updateSystemCategoryAppearanceSchema = z.object({
 
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>
 export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>
-export type UpdateSystemCategoryAppearanceInput = z.infer<typeof updateSystemCategoryAppearanceSchema>
+export type UpdateSystemCategoryAppearanceInput = z.infer<
+  typeof updateSystemCategoryAppearanceSchema
+>

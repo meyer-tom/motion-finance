@@ -5,7 +5,6 @@ import { Monitor, Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useTransition } from "react"
 import { useForm } from "react-hook-form"
-import { toast } from "@/lib/toast"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import {
@@ -17,9 +16,10 @@ import {
 } from "@/components/ui/select"
 import { updateCurrency } from "@/lib/actions/settings"
 import { useCurrency } from "@/lib/context/currency-context"
+import { toast } from "@/lib/toast"
 import {
-  updateCurrencySchema,
   type UpdateCurrencyInput,
+  updateCurrencySchema,
 } from "@/lib/validations/settings"
 
 const CURRENCIES = [
@@ -37,7 +37,11 @@ const THEMES = [
   { value: "system", label: "Automatique", icon: Monitor },
 ] as const
 
-export function PreferencesSection({ initialCurrency }: { initialCurrency: string }) {
+export function PreferencesSection({
+  initialCurrency,
+}: {
+  initialCurrency: string
+}) {
   const { currency, setCurrency } = useCurrency()
   const { theme, setTheme } = useTheme()
   const [isPending, startTransition] = useTransition()
@@ -56,7 +60,9 @@ export function PreferencesSection({ initialCurrency }: { initialCurrency: strin
         setCurrency(data.currency)
         toast.success("Devise mise à jour")
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Une erreur est survenue")
+        toast.error(
+          err instanceof Error ? err.message : "Une erreur est survenue"
+        )
       }
     })
   }
@@ -65,7 +71,7 @@ export function PreferencesSection({ initialCurrency }: { initialCurrency: strin
     <div className="space-y-6">
       {/* Devise */}
       <div className="overflow-hidden rounded-2xl border border-border bg-card">
-        <div className="border-b border-border/60 px-6 py-5">
+        <div className="border-border/60 border-b px-6 py-5">
           <h2 className="font-semibold text-base">Devise</h2>
           <p className="mt-1 text-muted-foreground text-sm">
             Devise utilisée pour l'affichage de tous les montants
@@ -103,9 +109,11 @@ export function PreferencesSection({ initialCurrency }: { initialCurrency: strin
 
       {/* Thème */}
       <div className="overflow-hidden rounded-2xl border border-border bg-card">
-        <div className="border-b border-border/60 px-6 py-5">
+        <div className="border-border/60 border-b px-6 py-5">
           <h2 className="font-semibold text-base">Thème</h2>
-          <p className="mt-1 text-muted-foreground text-sm">Apparence de l'interface</p>
+          <p className="mt-1 text-muted-foreground text-sm">
+            Apparence de l'interface
+          </p>
         </div>
         <div className="px-6 py-6">
           <div className="flex gap-2">

@@ -78,7 +78,9 @@ export default async function DashboardPage({ searchParams }: Props) {
           <h1 className="font-black text-3xl tracking-tight md:text-4xl">
             {getGreeting()}
             {firstName ? (
-              <>, <span className="text-primary">{firstName}</span></>
+              <>
+                , <span className="text-primary">{firstName}</span>
+              </>
             ) : null}{" "}
             !
           </h1>

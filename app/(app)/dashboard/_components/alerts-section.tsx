@@ -1,12 +1,12 @@
-import type React from "react"
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
+import type React from "react"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { getDashboardData } from "@/lib/actions/dashboard"
 import { getServerCurrency } from "@/lib/actions/settings"
-import { formatAmount } from "@/lib/utils/format"
 import { getCategoryIcon } from "@/lib/utils/category-icons"
+import { formatAmount } from "@/lib/utils/format"
 
 interface Props {
   periodKey: string
@@ -28,11 +28,13 @@ export async function AlertsSection({ periodKey }: Props) {
   if (budgetSummary.total === 0) {
     return (
       <div className="overflow-hidden rounded-3xl border border-border bg-card">
-        <div className="border-b border-border/60 px-5 py-3.5">
+        <div className="border-border/60 border-b px-5 py-3.5">
           <span className="section-title">Budgets</span>
         </div>
         <div className="flex flex-col items-center gap-2 px-5 py-8 text-center">
-          <p className="text-muted-foreground text-sm">Aucun budget configuré</p>
+          <p className="text-muted-foreground text-sm">
+            Aucun budget configuré
+          </p>
           <Link
             className="text-primary text-sm underline-offset-4 hover:underline"
             href="/budgets"
@@ -46,7 +48,7 @@ export async function AlertsSection({ periodKey }: Props) {
 
   return (
     <div className="flex flex-col overflow-hidden rounded-3xl border border-border bg-card">
-      <div className="flex items-center justify-between border-b border-border/60 px-5 py-3.5">
+      <div className="flex items-center justify-between border-border/60 border-b px-5 py-3.5">
         <div className="flex items-center gap-2">
           <span className="section-title">Budgets</span>
           <span className="text-[11px] text-muted-foreground">
@@ -81,7 +83,8 @@ export async function AlertsSection({ periodKey }: Props) {
                 </span>
                 <div className="flex shrink-0 items-center gap-1.5">
                   <span className="text-[11px] text-muted-foreground tabular-nums">
-                    {formatAmount(budget.spent, currency)} / {formatAmount(budget.amount, currency)}
+                    {formatAmount(budget.spent, currency)} /{" "}
+                    {formatAmount(budget.amount, currency)}
                   </span>
                   {budget.status !== "ok" && (
                     <span

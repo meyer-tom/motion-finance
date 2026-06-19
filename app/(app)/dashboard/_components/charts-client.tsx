@@ -34,10 +34,18 @@ const CategoryDonutChart = dynamic(
 )
 
 function getPeriodTitle(periodKey: string): string {
-  if (periodKey === "week") return "Cette semaine"
-  if (periodKey === "quarter") return "Ce trimestre"
-  if (periodKey === "year") return "Cette année"
-  if (periodKey.startsWith("custom:")) return "Période sélectionnée"
+  if (periodKey === "week") {
+    return "Cette semaine"
+  }
+  if (periodKey === "quarter") {
+    return "Ce trimestre"
+  }
+  if (periodKey === "year") {
+    return "Cette année"
+  }
+  if (periodKey.startsWith("custom:")) {
+    return "Période sélectionnée"
+  }
   return "6 derniers mois"
 }
 
@@ -52,23 +60,23 @@ export function ChartsClient({ periodKey, chart, categoryBreakdown }: Props) {
     <div className="grid gap-4 md:grid-cols-2">
       {/* Histogramme */}
       <div className="overflow-hidden rounded-3xl border border-border bg-card">
-        <div className="flex items-center justify-between border-b border-border/60 px-5 py-3.5">
+        <div className="flex items-center justify-between border-border/60 border-b px-5 py-3.5">
           <span className="section-title">Revenus & dépenses</span>
           <span className="rounded-full bg-muted/60 px-2.5 py-0.5 text-[10px] text-muted-foreground">
             {getPeriodTitle(periodKey)}
           </span>
         </div>
-        <div className="px-5 pb-5 pt-4">
+        <div className="px-5 pt-4 pb-5">
           <MonthlyBarChart chart={chart} />
         </div>
       </div>
 
       {/* Anneau */}
       <div className="flex flex-col overflow-hidden rounded-3xl border border-border bg-card">
-        <div className="border-b border-border/60 px-5 py-3.5">
+        <div className="border-border/60 border-b px-5 py-3.5">
           <span className="section-title">Répartition dépenses</span>
         </div>
-        <div className="flex flex-1 flex-col justify-center px-5 pb-5 pt-4">
+        <div className="flex flex-1 flex-col justify-center px-5 pt-4 pb-5">
           <CategoryDonutChart categoryBreakdown={categoryBreakdown} />
         </div>
       </div>

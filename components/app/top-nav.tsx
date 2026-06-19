@@ -65,11 +65,15 @@ function CenteredTabs() {
   )
 
   useEffect(() => {
-    if (activeIndex < 0) return
+    if (activeIndex < 0) {
+      return
+    }
     const tab = tabRefs.current[activeIndex]
-    if (!tab) return
+    if (!tab) {
+      return
+    }
     setPill({ x: tab.offsetLeft, width: tab.offsetWidth })
-  }, [activeIndex, pathname])
+  }, [activeIndex])
 
   return (
     <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 rounded-full border border-border/50 bg-muted/50 px-2 py-2 md:flex">
@@ -86,9 +90,6 @@ function CenteredTabs() {
         const isActive = pathname === href || pathname.startsWith(`${href}/`)
         return (
           <Link
-            ref={(el) => {
-              tabRefs.current[i] = el
-            }}
             aria-current={isActive ? "page" : undefined}
             className={cn(
               "relative z-10 rounded-full px-5 py-2 font-semibold text-sm transition-colors duration-200",
@@ -98,6 +99,9 @@ function CenteredTabs() {
             )}
             href={href}
             key={href}
+            ref={(el) => {
+              tabRefs.current[i] = el
+            }}
           >
             {label}
           </Link>
@@ -106,7 +110,6 @@ function CenteredTabs() {
     </nav>
   )
 }
-
 
 /* ── ProfileDropdownContent ─────────────────────────────────────────────────── */
 
@@ -135,7 +138,9 @@ function ProfileDropdownContent({
     <DropdownMenuContent align="end" className="w-56">
       <DropdownMenuLabel className="font-normal">
         <p className="font-semibold text-foreground text-sm">{displayName}</p>
-        <p className="truncate text-muted-foreground text-xs">{user?.email ?? ""}</p>
+        <p className="truncate text-muted-foreground text-xs">
+          {user?.email ?? ""}
+        </p>
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
       {compact ? (
@@ -159,10 +164,16 @@ function ProfileDropdownContent({
         </DropdownMenuSubTrigger>
         <DropdownMenuSubContent>
           {THEMES.map(({ value, label, icon: Icon }) => (
-            <DropdownMenuItem className="gap-2" key={value} onClick={() => setTheme(value)}>
+            <DropdownMenuItem
+              className="gap-2"
+              key={value}
+              onClick={() => setTheme(value)}
+            >
               <Icon className="h-4 w-4" />
               {label}
-              {theme === value && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />}
+              {theme === value && (
+                <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
+              )}
             </DropdownMenuItem>
           ))}
         </DropdownMenuSubContent>
@@ -206,10 +217,15 @@ export function TopNav({ user }: TopNavProps) {
     router.refresh()
   }
 
-  const actionButtonClass = "flex h-10 w-10 items-center justify-center rounded-full bg-background text-muted-foreground shadow-sm transition-all hover:text-foreground hover:shadow-md"
+  const actionButtonClass =
+    "flex h-10 w-10 items-center justify-center rounded-full bg-background text-muted-foreground shadow-sm transition-all hover:text-foreground hover:shadow-md"
 
-  function openSearch() { setSearchOpen(true) }
-  function openFeedback() { setFeedbackOpen(true) }
+  function openSearch() {
+    setSearchOpen(true)
+  }
+  function openFeedback() {
+    setFeedbackOpen(true)
+  }
 
   return (
     <>
@@ -232,20 +248,43 @@ export function TopNav({ user }: TopNavProps) {
           <div className="ml-auto flex items-center gap-2">
             {/* ── Bulle complète — xl+ ── */}
             <div className="hidden items-center gap-2 rounded-full border border-border/60 bg-muted/50 px-2.5 py-2.5 xl:flex">
-              <button aria-label="Recherche" className={actionButtonClass} onClick={openSearch} type="button">
+              <button
+                aria-label="Recherche"
+                className={actionButtonClass}
+                onClick={openSearch}
+                type="button"
+              >
                 <Search className="h-4.5 w-4.5" />
               </button>
-              <button aria-label="Feedback" className={actionButtonClass} onClick={openFeedback} type="button">
+              <button
+                aria-label="Feedback"
+                className={actionButtonClass}
+                onClick={openFeedback}
+                type="button"
+              >
                 <MessageSquarePlus className="h-4.5 w-4.5" />
               </button>
               <NotificationPopover />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button aria-label={displayName} className="flex items-center rounded-full outline-none ring-2 ring-transparent ring-offset-1 ring-offset-background transition-all focus-visible:ring-ring" type="button">
+                  <button
+                    aria-label={displayName}
+                    className="flex items-center rounded-full outline-none ring-2 ring-transparent ring-offset-1 ring-offset-background transition-all focus-visible:ring-ring"
+                    type="button"
+                  >
                     <UserAvatar size="lg" user={user} />
                   </button>
                 </DropdownMenuTrigger>
-                <ProfileDropdownContent displayName={displayName} user={user} theme={theme} setTheme={setTheme} onSignOut={handleSignOut} onSearch={openSearch} onFeedback={openFeedback} compact={false} />
+                <ProfileDropdownContent
+                  compact={false}
+                  displayName={displayName}
+                  onFeedback={openFeedback}
+                  onSearch={openSearch}
+                  onSignOut={handleSignOut}
+                  setTheme={setTheme}
+                  theme={theme}
+                  user={user}
+                />
               </DropdownMenu>
             </div>
 
@@ -253,30 +292,66 @@ export function TopNav({ user }: TopNavProps) {
             <div className="hidden items-center rounded-full border border-border/60 bg-muted/50 px-2.5 py-2.5 md:flex xl:hidden">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button aria-label={displayName} className="flex items-center rounded-full outline-none ring-2 ring-transparent ring-offset-1 ring-offset-background transition-all focus-visible:ring-ring" type="button">
+                  <button
+                    aria-label={displayName}
+                    className="flex items-center rounded-full outline-none ring-2 ring-transparent ring-offset-1 ring-offset-background transition-all focus-visible:ring-ring"
+                    type="button"
+                  >
                     <UserAvatar size="lg" user={user} />
                   </button>
                 </DropdownMenuTrigger>
-                <ProfileDropdownContent displayName={displayName} user={user} theme={theme} setTheme={setTheme} onSignOut={handleSignOut} onSearch={openSearch} onFeedback={openFeedback} compact={true} />
+                <ProfileDropdownContent
+                  compact={true}
+                  displayName={displayName}
+                  onFeedback={openFeedback}
+                  onSearch={openSearch}
+                  onSignOut={handleSignOut}
+                  setTheme={setTheme}
+                  theme={theme}
+                  user={user}
+                />
               </DropdownMenu>
             </div>
 
             {/* ── Bulle mobile — <md ── */}
             <div className="flex items-center gap-2 rounded-full border border-border/60 bg-muted/50 px-2.5 py-2.5 md:hidden">
-              <button aria-label="Recherche" className={actionButtonClass} onClick={openSearch} type="button">
+              <button
+                aria-label="Recherche"
+                className={actionButtonClass}
+                onClick={openSearch}
+                type="button"
+              >
                 <Search className="h-4.5 w-4.5" />
               </button>
-              <button aria-label="Feedback" className={actionButtonClass} onClick={openFeedback} type="button">
+              <button
+                aria-label="Feedback"
+                className={actionButtonClass}
+                onClick={openFeedback}
+                type="button"
+              >
                 <MessageSquarePlus className="h-4.5 w-4.5" />
               </button>
               <NotificationPopover />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button aria-label={displayName} className="flex items-center rounded-full outline-none ring-2 ring-transparent ring-offset-1 ring-offset-background transition-all focus-visible:ring-ring" type="button">
+                  <button
+                    aria-label={displayName}
+                    className="flex items-center rounded-full outline-none ring-2 ring-transparent ring-offset-1 ring-offset-background transition-all focus-visible:ring-ring"
+                    type="button"
+                  >
                     <UserAvatar size="lg" user={user} />
                   </button>
                 </DropdownMenuTrigger>
-                <ProfileDropdownContent displayName={displayName} user={user} theme={theme} setTheme={setTheme} onSignOut={handleSignOut} onSearch={openSearch} onFeedback={openFeedback} compact={false} />
+                <ProfileDropdownContent
+                  compact={false}
+                  displayName={displayName}
+                  onFeedback={openFeedback}
+                  onSearch={openSearch}
+                  onSignOut={handleSignOut}
+                  setTheme={setTheme}
+                  theme={theme}
+                  user={user}
+                />
               </DropdownMenu>
             </div>
           </div>

@@ -18,13 +18,15 @@ interface EmailChangeProps {
   readonly verifyUrl: string
 }
 
-export function EmailChange({ verifyUrl, userName, newEmail }: EmailChangeProps) {
+export function EmailChange({
+  verifyUrl,
+  userName,
+  newEmail,
+}: EmailChangeProps) {
   return (
     <Html lang="fr">
       <Head />
-      <Preview>
-        Confirmez votre nouvelle adresse email — Motion Finance
-      </Preview>
+      <Preview>Confirmez votre nouvelle adresse email — Motion Finance</Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={header}>

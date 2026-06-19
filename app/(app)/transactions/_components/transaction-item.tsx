@@ -132,7 +132,7 @@ export function TransactionItem({
           <p className="truncate font-semibold text-sm leading-tight">
             {transaction.title}
           </p>
-          <p className="mt-1 truncate text-xs text-muted-foreground leading-tight">
+          <p className="mt-1 truncate text-muted-foreground text-xs leading-tight">
             {subtitle}
           </p>
         </div>

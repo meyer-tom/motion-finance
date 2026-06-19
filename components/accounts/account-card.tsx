@@ -60,13 +60,13 @@ const TYPE_CONFIG: Record<
   CHECKING: {
     label: "Courant",
     dotClass: "bg-amber-400",
-    badgeClass: "bg-amber-500/12 text-amber-500 dark:bg-amber-400/15 dark:text-amber-400",
+    badgeClass:
+      "bg-amber-500/12 text-amber-500 dark:bg-amber-400/15 dark:text-amber-400",
   },
   SAVINGS: {
     label: "Épargne",
     dotClass: "bg-[var(--color-transfer)]",
-    badgeClass:
-      "bg-[var(--color-transfer)]/12 text-[var(--color-transfer)]",
+    badgeClass: "bg-[var(--color-transfer)]/12 text-[var(--color-transfer)]",
   },
 }
 
@@ -115,7 +115,7 @@ export function AccountCard({
         className={[
           "group/account relative overflow-hidden rounded-3xl border border-border bg-card",
           "transition-all duration-200",
-          "hover:border-border-accent hover:shadow-lg hover:shadow-black/8 dark:hover:shadow-black/30",
+          "hover:border-border-accent hover:shadow-black/8 hover:shadow-lg dark:hover:shadow-black/30",
           isDragging
             ? "scale-[0.97] opacity-60 shadow-2xl ring-1 ring-primary/40"
             : "",
@@ -134,7 +134,7 @@ export function AccountCard({
         {dragListeners ? (
           <button
             aria-label="Réorganiser"
-            className="absolute top-2 left-1/2 z-10 -translate-x-1/2 cursor-grab touch-none rounded-md px-2 py-0.5 text-muted-foreground/30 opacity-0 transition-all hover:text-muted-foreground/70 active:cursor-grabbing focus-visible:opacity-100 group-hover/account:opacity-100"
+            className="absolute top-2 left-1/2 z-10 -translate-x-1/2 cursor-grab touch-none rounded-md px-2 py-0.5 text-muted-foreground/30 opacity-0 transition-all hover:text-muted-foreground/70 focus-visible:opacity-100 active:cursor-grabbing group-hover/account:opacity-100"
             type="button"
             {...dragListeners}
           >
@@ -207,7 +207,7 @@ export function AccountCard({
           </div>
 
           {/* Divider */}
-          <div className="my-4 border-t border-border/50" />
+          <div className="my-4 border-border/50 border-t" />
 
           {/* Balance */}
           <div>
@@ -227,7 +227,7 @@ export function AccountCard({
                 <p className="text-[10px] text-muted-foreground">
                   Part du total
                 </p>
-                <p className="font-semibold text-[10px] tabular-nums text-muted-foreground">
+                <p className="font-semibold text-[10px] text-muted-foreground tabular-nums">
                   {proportion.toFixed(0)}&nbsp;%
                 </p>
               </div>

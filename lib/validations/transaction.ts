@@ -12,8 +12,8 @@ export const transactionSchema = z
       .string()
       .min(1, "Le titre est requis")
       .max(100, "100 caractères maximum"),
-    amount: z
-      .coerce.number()
+    amount: z.coerce
+      .number()
       .positive("Le montant doit être positif")
       .max(10_000_000, "Montant maximum : 10 000 000"),
     date: z.coerce.date(),

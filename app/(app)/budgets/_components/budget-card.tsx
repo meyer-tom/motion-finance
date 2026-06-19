@@ -17,9 +17,9 @@ import {
 import type { BudgetWithSpending } from "@/lib/actions/budgets"
 import { deleteBudget } from "@/lib/actions/budgets"
 import { useCurrency } from "@/lib/context/currency-context"
-import { formatAmount } from "@/lib/utils/format"
 import { cn } from "@/lib/utils"
 import { getCategoryIcon } from "@/lib/utils/category-icons"
+import { formatAmount } from "@/lib/utils/format"
 
 interface BudgetCardProps {
   budget: BudgetWithSpending
@@ -30,8 +30,12 @@ interface BudgetCardProps {
 function percentageBadgeVariant(
   percentage: number
 ): "success" | "outline" | "destructive" {
-  if (percentage >= 100) return "destructive"
-  if (percentage >= 80) return "outline"
+  if (percentage >= 100) {
+    return "destructive"
+  }
+  if (percentage >= 80) {
+    return "outline"
+  }
   return "success"
 }
 
@@ -61,7 +65,11 @@ function cardColorClasses(percentage: number): string {
   return "border-border bg-card hover:border-border-accent hover:bg-surface-elevated"
 }
 
-export function BudgetCard({ budget, onEdit, onDeleted }: Readonly<BudgetCardProps>) {
+export function BudgetCard({
+  budget,
+  onEdit,
+  onDeleted,
+}: Readonly<BudgetCardProps>) {
   const [isPending, startTransition] = useTransition()
   const { currency } = useCurrency()
   const CategoryIcon = getCategoryIcon(budget.category.icon)
@@ -81,7 +89,7 @@ export function BudgetCard({ budget, onEdit, onDeleted }: Readonly<BudgetCardPro
     <div
       className={cn(
         "group/budget relative space-y-3 rounded-3xl border p-4 transition-all duration-200",
-        "hover:shadow-md hover:shadow-black/8 dark:hover:shadow-black/25",
+        "hover:shadow-black/8 hover:shadow-md dark:hover:shadow-black/25",
         cardColorClasses(budget.percentage),
         isPending && "pointer-events-none opacity-50"
       )}
@@ -149,24 +157,28 @@ export function BudgetCard({ budget, onEdit, onDeleted }: Readonly<BudgetCardPro
           value={budget.spent}
           variant={budget.percentage >= 100 ? "expense" : "neutral"}
         />
-        <p className="mt-0.5 text-xs text-muted-foreground">
+        <p className="mt-0.5 text-muted-foreground text-xs">
           sur {formatAmount(budget.amount, currency)}
         </p>
       </div>
 
       {/* Barre de progression */}
       <div className="pointer-events-none">
-        <AnimatedProgress progressClassName="h-2" value={capped} variant="auto" />
+        <AnimatedProgress
+          progressClassName="h-2"
+          value={capped}
+          variant="auto"
+        />
       </div>
 
       {/* Restant / Dépassement */}
       <div className="pointer-events-none">
         {budget.percentage >= 100 ? (
-          <span className="font-medium text-xs text-(--color-expense)">
+          <span className="font-medium text-(--color-expense) text-xs">
             Dépassement de {formatAmount(overage, currency)}
           </span>
         ) : (
-          <span className="text-xs text-muted-foreground">
+          <span className="text-muted-foreground text-xs">
             Restant :{" "}
             <span
               className={cn(

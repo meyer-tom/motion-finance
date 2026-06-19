@@ -96,7 +96,9 @@ export function BudgetFormSheet({
     watch,
     formState: { errors },
   } = useForm<BudgetFormValues>({
-    resolver: standardSchemaResolver(budgetFormSchema) as Resolver<BudgetFormValues>,
+    resolver: standardSchemaResolver(
+      budgetFormSchema
+    ) as Resolver<BudgetFormValues>,
     defaultValues: {
       categoryId: "",
       amount: undefined,

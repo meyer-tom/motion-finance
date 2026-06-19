@@ -166,7 +166,7 @@ export function BudgetsClient({
         >
           <ChevronLeft className="size-5" />
         </Button>
-        <span className="font-semibold text-base tabular-nums capitalize">
+        <span className="font-semibold text-base capitalize tabular-nums">
           {monthLabel(month)}
         </span>
         <Button
@@ -283,12 +283,17 @@ function EmptyBudgets({ onAdd }: Readonly<{ onAdd: () => void }>) {
         <Wallet className="size-7 text-muted-foreground" />
       </div>
       <div className="space-y-2">
-        <p className="font-semibold text-foreground text-base">Aucun budget ce mois-ci</p>
+        <p className="font-semibold text-base text-foreground">
+          Aucun budget ce mois-ci
+        </p>
         <p className="text-muted-foreground text-sm">
           Définissez un plafond par catégorie pour suivre vos dépenses.
         </p>
       </div>
-      <Button className="btn-gradient-primary h-11 gap-2 px-6 text-base hover:opacity-90" onClick={onAdd}>
+      <Button
+        className="btn-gradient-primary h-11 gap-2 px-6 text-base hover:opacity-90"
+        onClick={onAdd}
+      >
         <Plus className="size-5" />
         Créer un budget
       </Button>

@@ -5,7 +5,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { ArrowRightLeft, Calendar, Minus, Plus, Trash2, X } from "lucide-react"
 import { useEffect, useRef, useState, useTransition } from "react"
 import { type Resolver, useForm, useWatch } from "react-hook-form"
-import { toast } from "@/lib/toast"
 import { FormStepGuide } from "@/components/app/form-step-guide"
 import { BottomSheet } from "@/components/shared/bottom-sheet"
 import {
@@ -37,6 +36,7 @@ import {
 } from "@/lib/actions/transactions"
 import { useTransactionForm } from "@/lib/context/transaction-form-context"
 import { useIsMobile } from "@/lib/hooks/use-is-mobile"
+import { toast } from "@/lib/toast"
 import { cn } from "@/lib/utils"
 import { getCategoryIcon } from "@/lib/utils/category-icons"
 import {

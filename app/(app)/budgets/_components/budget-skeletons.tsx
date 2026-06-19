@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export function BudgetCardSkeleton() {
   return (
-    <div className="rounded-3xl border bg-card p-4 space-y-3">
+    <div className="space-y-3 rounded-3xl border bg-card p-4">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2.5">
           <Skeleton className="size-10 rounded-xl" />

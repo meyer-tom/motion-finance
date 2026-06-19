@@ -10,8 +10,8 @@ import {
   Target,
   Wallet,
 } from "lucide-react"
-import { useCallback, useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
+import { useCallback, useEffect, useRef, useState } from "react"
 import {
   CommandDialog,
   CommandEmpty,
@@ -48,8 +48,12 @@ function formatAmount(amount: number, type: string, currency: string) {
     currency,
     minimumFractionDigits: 2,
   }).format(amount)
-  if (type === "INCOME") return `+${formatted}`
-  if (type === "EXPENSE") return `-${formatted}`
+  if (type === "INCOME") {
+    return `+${formatted}`
+  }
+  if (type === "EXPENSE") {
+    return `-${formatted}`
+  }
   return formatted
 }
 
@@ -61,8 +65,12 @@ function formatDate(date: Date | string) {
 }
 
 function amountColor(type: string) {
-  if (type === "INCOME") return "text-[color:var(--color-income)]"
-  if (type === "EXPENSE") return "text-[color:var(--color-expense)]"
+  if (type === "INCOME") {
+    return "text-[color:var(--color-income)]"
+  }
+  if (type === "EXPENSE") {
+    return "text-[color:var(--color-expense)]"
+  }
   return "text-[color:var(--color-transfer)]"
 }
 
@@ -101,7 +109,9 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
 
   function handleQueryChange(q: string) {
     setQuery(q)
-    if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current)
+    }
     debounceRef.current = setTimeout(() => search(q), 300)
   }
 
@@ -179,7 +189,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
           </>
         ) : null}
 
-        {!query ? (
+        {query ? null : (
           <>
             <CommandGroup heading="Navigation">
               {NAV_ITEMS.map(({ href, label, Icon }) => (
@@ -204,7 +214,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
               </CommandItem>
             </CommandGroup>
           </>
-        ) : null}
+        )}
       </CommandList>
     </CommandDialog>
   )

@@ -6,20 +6,6 @@ import { cn } from "@/lib/utils"
 type TransactionType = "EXPENSE" | "INCOME" | "TRANSFER"
 
 export interface RecurringSuggestionItem {
-  id: string
-  name: string
-  type: TransactionType
-  amount: number
-  description: string | null
-  categoryId: string | null
-  accountId: string
-  toAccountId: string | null
-  category: {
-    id: string
-    name: string
-    icon: string
-    color: string
-  } | null
   account: {
     id: string
     name: string
@@ -27,6 +13,18 @@ export interface RecurringSuggestionItem {
     icon: string
     type: string
   }
+  accountId: string
+  amount: number
+  category: {
+    id: string
+    name: string
+    icon: string
+    color: string
+  } | null
+  categoryId: string | null
+  description: string | null
+  id: string
+  name: string
   toAccount: {
     id: string
     name: string
@@ -34,6 +32,8 @@ export interface RecurringSuggestionItem {
     icon: string
     type: string
   } | null
+  toAccountId: string | null
+  type: TransactionType
 }
 
 const TYPE_META: Record<TransactionType, { color: string; prefix: string }> = {
@@ -43,9 +43,9 @@ const TYPE_META: Record<TransactionType, { color: string; prefix: string }> = {
 }
 
 interface RecurringSuggestionsProps {
-  suggestions: RecurringSuggestionItem[]
-  onApply: (suggestion: RecurringSuggestionItem) => void
   isLoading: boolean
+  onApply: (suggestion: RecurringSuggestionItem) => void
+  suggestions: RecurringSuggestionItem[]
 }
 
 export function RecurringSuggestions({
@@ -62,10 +62,13 @@ export function RecurringSuggestions({
       <p className="mb-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
         Suggestions
       </p>
-      <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [touch-action:pan-x] overscroll-x-contain [&::-webkit-scrollbar]:hidden">
+      <div className="flex gap-2 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [touch-action:pan-x] [&::-webkit-scrollbar]:hidden">
         {isLoading
           ? [1, 2, 3].map((i) => (
-              <Skeleton className="h-[58px] w-[120px] shrink-0 rounded-xl" key={i} />
+              <Skeleton
+                className="h-[58px] w-[120px] shrink-0 rounded-xl"
+                key={i}
+              />
             ))
           : suggestions.map((s) => (
               <SuggestionChip key={s.id} onApply={onApply} suggestion={s} />

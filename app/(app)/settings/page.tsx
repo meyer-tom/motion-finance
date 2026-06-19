@@ -104,10 +104,10 @@ export default async function SettingsPage() {
           checklistCompleted={checklistState.checklistCompleted}
           checklistDismissed={checklistState.checklistDismissed}
           currency={user.currency}
-          tooltipsSeen={checklistState.tooltipsSeen}
           formCategories={formCategories}
           recurringItems={recurringItems}
           systemCategories={systemCategories.map(serializeCategory)}
+          tooltipsSeen={checklistState.tooltipsSeen}
           user={{
             firstName: user.firstName,
             lastName: user.lastName,
@@ -119,6 +119,5 @@ export default async function SettingsPage() {
         />
       </Suspense>
     </div>
-
   )
 }

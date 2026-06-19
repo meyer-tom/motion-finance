@@ -51,11 +51,12 @@ export default function ForgotPasswordPage() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-income)]/15">
             <CheckCircle2 className="h-7 w-7 text-[var(--color-income)]" />
           </div>
-          <h2 className="font-bold text-xl text-foreground tracking-tight">
+          <h2 className="font-bold text-foreground text-xl tracking-tight">
             Email envoyé
           </h2>
           <p className="mx-auto mt-2 max-w-xs text-muted-foreground text-sm leading-relaxed">
-            Si cette adresse correspond à un compte, vous recevrez un lien de réinitialisation dans quelques instants.
+            Si cette adresse correspond à un compte, vous recevrez un lien de
+            réinitialisation dans quelques instants.
           </p>
           <Link
             className="mt-6 inline-block text-primary text-sm transition-opacity hover:opacity-80"
@@ -86,7 +87,10 @@ export default function ForgotPasswordPage() {
           onSubmit={handleSubmit(onSubmit)}
         >
           <div className="flex flex-col gap-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider" htmlFor="email">
+            <Label
+              className="font-medium text-muted-foreground text-xs uppercase tracking-wider"
+              htmlFor="email"
+            >
               Email
             </Label>
             <div className="relative">
@@ -94,7 +98,7 @@ export default function ForgotPasswordPage() {
               <Input
                 aria-invalid={!!errors.email}
                 autoComplete="email"
-                className="pl-10 h-11 bg-background/50 border-border focus:border-primary"
+                className="h-11 border-border bg-background/50 pl-10 focus:border-primary"
                 id="email"
                 placeholder="vous@exemple.fr"
                 type="email"

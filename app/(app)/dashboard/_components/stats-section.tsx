@@ -9,10 +9,18 @@ interface Props {
 }
 
 function getPrevPeriodLabel(periodKey: string): string {
-  if (periodKey === "week") return "vs sem. préc."
-  if (periodKey === "quarter") return "vs trim. préc."
-  if (periodKey === "year") return "vs an. préc."
-  if (periodKey.startsWith("custom:")) return "vs période préc."
+  if (periodKey === "week") {
+    return "vs sem. préc."
+  }
+  if (periodKey === "quarter") {
+    return "vs trim. préc."
+  }
+  if (periodKey === "year") {
+    return "vs an. préc."
+  }
+  if (periodKey.startsWith("custom:")) {
+    return "vs période préc."
+  }
   return "vs mois préc."
 }
 
@@ -139,7 +147,9 @@ export async function StatsSection({ periodKey }: Props) {
               <Minus className="size-3" />
               {data.savingsRate.toFixed(1)}%
             </span>
-            <span className="text-[10px] text-muted-foreground">taux d'épargne</span>
+            <span className="text-[10px] text-muted-foreground">
+              taux d'épargne
+            </span>
           </div>
         ) : (
           <span className="text-[11px] text-muted-foreground">—</span>

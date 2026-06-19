@@ -2,7 +2,13 @@
 
 import { motion } from "framer-motion"
 import { Search, SlidersHorizontal, Tag, X } from "lucide-react"
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react"
 import { BottomSheet } from "@/components/shared/bottom-sheet"
 import { Input } from "@/components/ui/input"
 import {
@@ -524,9 +530,13 @@ export function TransactionFilters({
   const activePillIndex = TYPE_OPTIONS.findIndex((o) => o.value === value.type)
 
   useLayoutEffect(() => {
-    if (activePillIndex < 0) return
+    if (activePillIndex < 0) {
+      return
+    }
     const tab = pillTabRefs.current[activePillIndex]
-    if (!tab) return
+    if (!tab) {
+      return
+    }
     setPill({ x: tab.offsetLeft, width: tab.offsetWidth })
   }, [activePillIndex])
 
@@ -741,9 +751,6 @@ export function TransactionFilters({
           const active = value.type === opt.value
           return (
             <button
-              ref={(el) => {
-                pillTabRefs.current[i] = el
-              }}
               className={cn(
                 "relative z-10 flex h-9 flex-1 items-center justify-center whitespace-nowrap rounded-full px-4 font-semibold text-sm transition-colors duration-150",
                 active
@@ -752,6 +759,9 @@ export function TransactionFilters({
               )}
               key={opt.value}
               onClick={() => onChange({ type: opt.value })}
+              ref={(el) => {
+                pillTabRefs.current[i] = el
+              }}
               type="button"
             >
               {opt.label}

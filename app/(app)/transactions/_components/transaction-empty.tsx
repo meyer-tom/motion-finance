@@ -19,12 +19,19 @@ export function TransactionEmpty({
           <SearchX className="size-7 text-muted-foreground" />
         </div>
         <div className="space-y-1.5">
-          <p className="font-semibold text-foreground text-sm">Aucun résultat</p>
+          <p className="font-semibold text-foreground text-sm">
+            Aucun résultat
+          </p>
           <p className="text-muted-foreground text-sm">
             Essayez d'élargir vos critères de recherche.
           </p>
         </div>
-        <Button className="border-border" onClick={onClearFilters} size="sm" variant="outline">
+        <Button
+          className="border-border"
+          onClick={onClearFilters}
+          size="sm"
+          variant="outline"
+        >
           Effacer les filtres
         </Button>
       </div>
@@ -37,12 +44,18 @@ export function TransactionEmpty({
         <ReceiptText className="size-7 text-muted-foreground" />
       </div>
       <div className="space-y-1.5">
-        <p className="font-semibold text-foreground text-sm">Aucune transaction</p>
+        <p className="font-semibold text-foreground text-sm">
+          Aucune transaction
+        </p>
         <p className="text-muted-foreground text-sm">
           Commencez par enregistrer votre première transaction.
         </p>
       </div>
-      <Button className="btn-gradient-primary hover:opacity-90" onClick={onAddTransaction} size="sm">
+      <Button
+        className="btn-gradient-primary hover:opacity-90"
+        onClick={onAddTransaction}
+        size="sm"
+      >
         Ajouter une transaction
       </Button>
     </div>

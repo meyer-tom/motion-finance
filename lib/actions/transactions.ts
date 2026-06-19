@@ -27,7 +27,9 @@ async function requireAuth() {
 function buildWhereClause(userId: string, filters: TransactionFilters) {
   const AND: Prisma.TransactionWhereInput[] = [{ userId }]
 
-  if (filters.type) AND.push({ type: filters.type })
+  if (filters.type) {
+    AND.push({ type: filters.type })
+  }
 
   if (filters.accountIds?.length) {
     AND.push({
@@ -45,8 +47,8 @@ function buildWhereClause(userId: string, filters: TransactionFilters) {
   if (filters.amountMin !== undefined || filters.amountMax !== undefined) {
     AND.push({
       amount: {
-        ...(filters.amountMin !== undefined ? { gte: filters.amountMin } : {}),
-        ...(filters.amountMax !== undefined ? { lte: filters.amountMax } : {}),
+        ...(filters.amountMin === undefined ? {} : { gte: filters.amountMin }),
+        ...(filters.amountMax === undefined ? {} : { lte: filters.amountMax }),
       },
     })
   }
@@ -85,7 +87,9 @@ function buildWhereClause(userId: string, filters: TransactionFilters) {
     })
   }
 
-  if (filters.tags?.length) AND.push({ tags: { hasSome: filters.tags } })
+  if (filters.tags?.length) {
+    AND.push({ tags: { hasSome: filters.tags } })
+  }
 
   return { AND }
 }

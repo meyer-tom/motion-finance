@@ -9,7 +9,10 @@ export default function AuthLayout({
 }) {
   return (
     <div className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-background px-4 py-8">
-      <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 -z-10"
+      >
         <div className="blob-float absolute top-[-8%] left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-primary/[0.1] blur-[130px] dark:bg-primary/[0.14]" />
         <div className="blob-float-delayed absolute right-[-8%] bottom-[-8%] h-[420px] w-[420px] rounded-full bg-[var(--color-income)]/[0.06] blur-[120px] dark:bg-[var(--color-income)]/[0.09]" />
         <div className="absolute bottom-[15%] left-[-6%] h-[360px] w-[360px] rounded-full bg-violet-600/[0.06] blur-[120px] dark:bg-violet-600/[0.1]" />

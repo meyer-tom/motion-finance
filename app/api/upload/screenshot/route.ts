@@ -15,7 +15,10 @@ export async function POST(request: Request): Promise<NextResponse> {
     const file = formData.get("file") as File | null
 
     if (!file) {
-      return NextResponse.json({ error: "Aucun fichier fourni" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Aucun fichier fourni" },
+        { status: 400 }
+      )
     }
 
     if (file.type !== "image/png" && file.type !== "image/jpeg") {
@@ -23,7 +26,10 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     if (file.size > MAX_SIZE) {
-      return NextResponse.json({ error: "Fichier trop volumineux (max 4 Mo)" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Fichier trop volumineux (max 4 Mo)" },
+        { status: 400 }
+      )
     }
 
     const arrayBuffer = await file.arrayBuffer()
@@ -38,6 +44,9 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ url: blob.url })
   } catch (error) {
     console.error("[Screenshot Upload] Erreur:", error)
-    return NextResponse.json({ error: "Erreur lors de l'upload" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Erreur lors de l'upload" },
+      { status: 500 }
+    )
   }
 }

@@ -171,6 +171,8 @@ function addFrequency(date: Date, frequency: string): Date {
     case "YEARLY":
       d.setFullYear(d.getFullYear() + 1)
       break
+    default:
+      break
   }
   return d
 }

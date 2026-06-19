@@ -70,7 +70,7 @@ export default function RegisterPage() {
   if (emailSent) {
     return (
       <div className="mx-auto w-full max-w-sm">
-        <div className="rounded-2xl border border-border bg-card p-8 text-center shadow-xl shadow-black/5">
+        <div className="rounded-2xl border border-border bg-card p-8 text-center shadow-black/5 shadow-xl">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/15">
             <MailCheck className="h-7 w-7 text-primary" />
           </div>
@@ -107,7 +107,7 @@ export default function RegisterPage() {
         </p>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-xl shadow-black/5">
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-black/5 shadow-xl">
         <form
           className="flex flex-col gap-5"
           noValidate
@@ -116,7 +116,7 @@ export default function RegisterPage() {
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-2">
               <Label
-                className="text-xs font-medium text-muted-foreground uppercase tracking-wider"
+                className="font-medium text-muted-foreground text-xs uppercase tracking-wider"
                 htmlFor="firstName"
               >
                 Prénom
@@ -141,7 +141,7 @@ export default function RegisterPage() {
 
             <div className="flex flex-col gap-2">
               <Label
-                className="text-xs font-medium text-muted-foreground uppercase tracking-wider"
+                className="font-medium text-muted-foreground text-xs uppercase tracking-wider"
                 htmlFor="lastName"
               >
                 Nom
@@ -166,7 +166,7 @@ export default function RegisterPage() {
 
           <div className="flex flex-col gap-2">
             <Label
-              className="text-xs font-medium text-muted-foreground uppercase tracking-wider"
+              className="font-medium text-muted-foreground text-xs uppercase tracking-wider"
               htmlFor="email"
             >
               Email
@@ -190,7 +190,7 @@ export default function RegisterPage() {
 
           <div className="flex flex-col gap-2">
             <Label
-              className="text-xs font-medium text-muted-foreground uppercase tracking-wider"
+              className="font-medium text-muted-foreground text-xs uppercase tracking-wider"
               htmlFor="password"
             >
               Mot de passe
@@ -200,7 +200,7 @@ export default function RegisterPage() {
               <Input
                 aria-invalid={!!errors.password}
                 autoComplete="new-password"
-                className="h-11 border-border bg-background/80 pl-10 pr-10"
+                className="h-11 border-border bg-background/80 pr-10 pl-10"
                 id="password"
                 placeholder="••••••••"
                 type={showPassword ? "text" : "password"}
@@ -228,7 +228,7 @@ export default function RegisterPage() {
 
           <div className="flex flex-col gap-2">
             <Label
-              className="text-xs font-medium text-muted-foreground uppercase tracking-wider"
+              className="font-medium text-muted-foreground text-xs uppercase tracking-wider"
               htmlFor="confirmPassword"
             >
               Confirmer
@@ -238,7 +238,7 @@ export default function RegisterPage() {
               <Input
                 aria-invalid={!!errors.confirmPassword}
                 autoComplete="new-password"
-                className="h-11 border-border bg-background/80 pl-10 pr-10"
+                className="h-11 border-border bg-background/80 pr-10 pl-10"
                 id="confirmPassword"
                 placeholder="••••••••"
                 type={showConfirm ? "text" : "password"}

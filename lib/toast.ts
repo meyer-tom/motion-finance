@@ -32,12 +32,16 @@ function emit(
 }
 
 export const toast = {
-  success: (title: string, opts?: { description?: string; duration?: number }) =>
-    emit("success", title, opts),
+  success: (
+    title: string,
+    opts?: { description?: string; duration?: number }
+  ) => emit("success", title, opts),
   error: (title: string, opts?: { description?: string; duration?: number }) =>
     emit("error", title, opts),
-  warning: (title: string, opts?: { description?: string; duration?: number }) =>
-    emit("warning", title, opts),
+  warning: (
+    title: string,
+    opts?: { description?: string; duration?: number }
+  ) => emit("warning", title, opts),
   info: (title: string, opts?: { description?: string; duration?: number }) =>
     emit("info", title, opts),
 }

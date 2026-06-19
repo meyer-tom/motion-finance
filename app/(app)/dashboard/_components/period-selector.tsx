@@ -198,7 +198,7 @@ export function PeriodSelector({ periodKey }: Props) {
             {periodKey === key && (
               <motion.span
                 aria-hidden
-                className="absolute inset-0 rounded-full bg-primary shadow-sm shadow-primary/30"
+                className="absolute inset-0 rounded-full bg-primary shadow-primary/30 shadow-sm"
                 layoutId="period-pill"
                 transition={PILL_SPRING}
               />

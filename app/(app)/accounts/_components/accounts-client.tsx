@@ -21,16 +21,14 @@ import {
 import { CSS } from "@dnd-kit/utilities"
 import { Plus } from "lucide-react"
 
-
 import { useCallback, useEffect, useRef, useState, useTransition } from "react"
-import { useIsMobile } from "@/hooks/use-mobile"
-
 import { AccountCard } from "@/components/accounts/account-card"
 import type { AccountEditValues } from "@/components/accounts/account-form-modal"
 import { AccountFormModal } from "@/components/accounts/account-form-modal"
-import { AnimatedAmount } from "@/components/shared/animated-amount"
 import { DiscoveryTooltip } from "@/components/app/discovery-tooltip"
+import { AnimatedAmount } from "@/components/shared/animated-amount"
 import { Button } from "@/components/ui/button"
+import { useIsMobile } from "@/hooks/use-mobile"
 import { reorderAccounts } from "@/lib/actions/accounts"
 import { useCurrency } from "@/lib/context/currency-context"
 import { formatAmount } from "@/lib/utils/format"
@@ -120,7 +118,7 @@ function AccountSection({
 
   const boundsModifier: Modifier = useCallback(
     ({ transform, draggingNodeRect }) => {
-      if (!containerRef.current || !draggingNodeRect) {
+      if (!(containerRef.current && draggingNodeRect)) {
         return isMobile ? { ...transform, x: 0 } : { ...transform, y: 0 }
       }
       const rect = containerRef.current.getBoundingClientRect()
@@ -146,7 +144,9 @@ function AccountSection({
     [isMobile]
   )
 
-  if (accounts.length === 0) return null
+  if (accounts.length === 0) {
+    return null
+  }
 
   const sectionHeader = (
     <div className="flex items-center gap-2.5">
@@ -155,11 +155,11 @@ function AccountSection({
         className={`inline-block size-2 shrink-0 rounded-full ${dotClass}`}
       />
       <span className="section-title">{label}</span>
-      <span className="rounded-full border border-border/60 bg-muted px-1.5 py-0.5 font-medium text-muted-foreground text-[10px] tabular-nums">
+      <span className="rounded-full border border-border/60 bg-muted px-1.5 py-0.5 font-medium text-[10px] text-muted-foreground tabular-nums">
         {accounts.length}
       </span>
       <div className="h-px flex-1 bg-border/40" />
-      <span className="font-mono font-semibold text-[12px] tabular-nums text-muted-foreground">
+      <span className="font-mono font-semibold text-[12px] text-muted-foreground tabular-nums">
         {formatAmount(subtotal, currency)}
       </span>
     </div>
@@ -194,9 +194,13 @@ function AccountSection({
       >
         <SortableContext
           items={accounts.map((a) => a.id)}
-          strategy={isMobile ? verticalListSortingStrategy : horizontalListSortingStrategy}
+          strategy={
+            isMobile
+              ? verticalListSortingStrategy
+              : horizontalListSortingStrategy
+          }
         >
-          <div ref={containerRef} className={CONTAINER_CLASS}>
+          <div className={CONTAINER_CLASS} ref={containerRef}>
             {accounts.map((account) => (
               <SortableAccountCard
                 account={account}
@@ -254,10 +258,15 @@ export function AccountsClient({
 
   function handleDragEndChecking(event: DragEndEvent) {
     const { active, over } = event
-    if (!over || active.id === over.id) return
+    if (!over || active.id === over.id) {
+      return
+    }
     const oldIdx = checkingAccounts.findIndex((a) => a.id === active.id)
     const newIdx = checkingAccounts.findIndex((a) => a.id === over.id)
-    const reordered = [...arrayMove(checkingAccounts, oldIdx, newIdx), ...savingsAccounts]
+    const reordered = [
+      ...arrayMove(checkingAccounts, oldIdx, newIdx),
+      ...savingsAccounts,
+    ]
     setAccounts(reordered)
     startTransition(async () => {
       await reorderAccounts(reordered.map((a) => a.id))
@@ -266,10 +275,15 @@ export function AccountsClient({
 
   function handleDragEndSavings(event: DragEndEvent) {
     const { active, over } = event
-    if (!over || active.id === over.id) return
+    if (!over || active.id === over.id) {
+      return
+    }
     const oldIdx = savingsAccounts.findIndex((a) => a.id === active.id)
     const newIdx = savingsAccounts.findIndex((a) => a.id === over.id)
-    const reordered = [...checkingAccounts, ...arrayMove(savingsAccounts, oldIdx, newIdx)]
+    const reordered = [
+      ...checkingAccounts,
+      ...arrayMove(savingsAccounts, oldIdx, newIdx),
+    ]
     setAccounts(reordered)
     startTransition(async () => {
       await reorderAccounts(reordered.map((a) => a.id))
@@ -283,7 +297,9 @@ export function AccountsClient({
 
   function handleOpenChange(open: boolean) {
     setModalOpen(open)
-    if (!open) setEditValues(undefined)
+    if (!open) {
+      setEditValues(undefined)
+    }
   }
 
   return (
@@ -341,13 +357,13 @@ export function AccountsClient({
               <div className="flex flex-col justify-center px-6 py-5 sm:min-w-[200px] md:min-w-[240px]">
                 <p className="section-title mb-2">Solde total</p>
                 <AnimatedAmount
-                  className="font-black text-3xl leading-none tracking-tight text-gradient-balance"
+                  className="font-black text-3xl text-gradient-balance leading-none tracking-tight"
                   currency={currency}
                   value={totalBalance}
                   variant="neutral"
                 />
                 <p className="mt-2 text-[11px] text-muted-foreground">
-                  {accounts.length} compte{accounts.length !== 1 ? "s" : ""}
+                  {accounts.length} compte{accounts.length === 1 ? "" : "s"}
                 </p>
               </div>
 
@@ -370,7 +386,7 @@ export function AccountsClient({
                     />
                     <p className="mt-2 text-[11px] text-muted-foreground">
                       {checkingAccounts.length} compte
-                      {checkingAccounts.length !== 1 ? "s" : ""}
+                      {checkingAccounts.length === 1 ? "" : "s"}
                     </p>
                   </>
                 ) : (
@@ -399,7 +415,7 @@ export function AccountsClient({
                     />
                     <p className="mt-2 text-[11px] text-muted-foreground">
                       {savingsAccounts.length} compte
-                      {savingsAccounts.length !== 1 ? "s" : ""}
+                      {savingsAccounts.length === 1 ? "" : "s"}
                     </p>
                   </>
                 ) : (
@@ -437,9 +453,7 @@ export function AccountsClient({
       ) : (
         /* ── Empty state ──────────────────────────────────────────────────── */
         <div className="flex flex-col items-center gap-5 rounded-3xl border border-border/50 border-dashed py-24 text-center">
-          <div
-            className="flex size-16 items-center justify-center rounded-3xl border border-border bg-card shadow-sm"
-          >
+          <div className="flex size-16 items-center justify-center rounded-3xl border border-border bg-card shadow-sm">
             <Plus className="size-6 text-muted-foreground" />
           </div>
           <div className="space-y-1.5">

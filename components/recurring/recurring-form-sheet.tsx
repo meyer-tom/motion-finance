@@ -346,7 +346,9 @@ function RecurringFormBody({
     formState: { errors },
   } = useForm<RecurringInput>({
     // Cast nécessaire : standardSchemaResolver infère amount: unknown avec z.coerce.number() en Zod v4
-    resolver: standardSchemaResolver(recurringSchema) as Resolver<RecurringInput>,
+    resolver: standardSchemaResolver(
+      recurringSchema
+    ) as Resolver<RecurringInput>,
     defaultValues: {
       name: initialValues?.name ?? "",
       type: initialValues?.type ?? "EXPENSE",
