@@ -36,6 +36,10 @@ export default async function AppLayout({
     }),
   ])
 
+  if (accounts.length === 0) {
+    redirect("/onboarding")
+  }
+
   const currency = userRecord?.currency ?? "EUR"
 
   return (
