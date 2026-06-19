@@ -1,7 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { headers } from "next/headers"
+import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { cache } from "react"
 import { markChecklistStep } from "@/lib/actions/onboarding"
@@ -105,6 +105,17 @@ export async function deleteUserAccount(data: DeleteAccountInput) {
 
   // Supprimer l'utilisateur — cascade supprime sessions, comptes, transactions, etc.
   await prisma.user.delete({ where: { id: user.id } })
+
+  // Effacer les cookies de session pour éviter la boucle de redirections
+  const cookieStore = await cookies()
+  for (const name of [
+    "better-auth.session_token",
+    "better-auth.session_data",
+    "__Secure-better-auth.session_token",
+    "__Secure-better-auth.session_data",
+  ]) {
+    cookieStore.delete(name)
+  }
 
   redirect("/login?deleted=1")
 }
