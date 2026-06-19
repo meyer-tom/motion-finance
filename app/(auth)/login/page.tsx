@@ -52,31 +52,44 @@ export default function LoginPage() {
       return
     }
 
-    const { error } = await authClient.signIn.email({
-      email: data.email,
-      password: data.password,
-      rememberMe: data.rememberMe ?? false,
-    })
+    try {
+      const { error } = await authClient.signIn.email({
+        email: data.email,
+        password: data.password,
+        rememberMe: data.rememberMe ?? false,
+      })
 
-    if (error) {
-      if (
-        error.code === "EMAIL_NOT_VERIFIED" ||
-        error.message?.toLowerCase().includes("email not verified")
-      ) {
-        setUnverifiedEmail(data.email)
+      if (error) {
+        const msg = error.message ?? ""
+        const code = error.code ?? ""
+
+        if (
+          code === "EMAIL_NOT_VERIFIED" ||
+          code === "email_not_verified" ||
+          msg.toLowerCase().includes("email not verified")
+        ) {
+          setUnverifiedEmail(data.email)
+          return
+        }
+
+        if (error.status === 429 || code === "TOO_MANY_REQUESTS") {
+          setRootError("Trop de tentatives. Attendez quelques instants avant de réessayer.")
+          return
+        }
+
+        setRootError(
+          msg === "Invalid email or password"
+            ? "Email ou mot de passe incorrect"
+            : msg || "Une erreur est survenue. Réessayez."
+        )
         return
       }
 
-      setRootError(
-        error.message === "Invalid email or password"
-          ? "Email ou mot de passe incorrect"
-          : "Une erreur est survenue. Réessayez."
-      )
-      return
+      router.push("/dashboard")
+      router.refresh()
+    } catch {
+      setRootError("Une erreur est survenue. Vérifiez votre connexion et réessayez.")
     }
-
-    router.push("/dashboard")
-    router.refresh()
   }
 
   async function handleResendVerification() {

@@ -7,7 +7,11 @@ export function proxy(request: NextRequest) {
   // Routes publiques (pas de protection)
   const isPublicRoute = pathname === "/"
   const isAuthRoute =
-    pathname.startsWith("/login") || pathname.startsWith("/register")
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/register") ||
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/reset-password") ||
+    pathname.startsWith("/verify-email")
 
   // Si pas de session et route protégée → redirection /login
   if (!(sessionToken || isPublicRoute || isAuthRoute)) {

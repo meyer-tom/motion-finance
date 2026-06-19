@@ -30,26 +30,26 @@ export default function ForgotPasswordPage() {
   async function onSubmit(data: ForgotPasswordInput) {
     setRootError(null)
 
-    const result = await forgotPasswordAction(data)
+    try {
+      const result = await forgotPasswordAction(data)
 
-    if (!result.success) {
-      if (result.errors.email) {
-        setRootError(result.errors.email)
-      } else {
-        setRootError("Une erreur est survenue. Réessayez.")
+      if (!result.success) {
+        setRootError(result.errors.email ?? "Une erreur est survenue. Réessayez.")
+        return
       }
-      return
-    }
 
-    setSent(true)
+      setSent(true)
+    } catch {
+      setRootError("Une erreur est survenue. Vérifiez votre connexion et réessayez.")
+    }
   }
 
   if (sent) {
     return (
       <div className="w-full max-w-sm">
         <div className="rounded-2xl border border-border bg-card/60 p-8 text-center backdrop-blur-sm">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-income)]/15">
-            <CheckCircle2 className="h-7 w-7 text-[var(--color-income)]" />
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-(--color-income)/15">
+            <CheckCircle2 className="h-7 w-7 text-(--color-income)" />
           </div>
           <h2 className="font-bold text-foreground text-xl tracking-tight">
             Email envoyé
