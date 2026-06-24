@@ -1,9 +1,8 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { headers } from "next/headers"
 import { markChecklistStep } from "@/lib/actions/onboarding"
-import { auth } from "@/lib/auth"
+import { getAuthSession } from "@/lib/auth/session"
 import { prisma } from "@/lib/db"
 import {
   type CreateGoalInput,
@@ -13,7 +12,7 @@ import {
 } from "@/lib/validations/goals"
 
 async function requireAuth() {
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await getAuthSession()
   if (!session) {
     throw new Error("Non authentifié")
   }

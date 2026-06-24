@@ -1,4 +1,4 @@
-import { cookies, headers } from "next/headers"
+import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import type { ReactNode } from "react"
 import { AppShell } from "@/components/app/app-shell"
@@ -6,7 +6,7 @@ import { QueryProvider } from "@/components/providers/query-provider"
 import { getAccounts } from "@/lib/actions/accounts"
 import { getCategoriesForUser } from "@/lib/actions/categories"
 import { getUsedTags } from "@/lib/actions/transactions"
-import { auth } from "@/lib/auth"
+import { getAuthSession } from "@/lib/auth/session"
 import { CurrencyProvider } from "@/lib/context/currency-context"
 import { prisma } from "@/lib/db"
 
@@ -22,9 +22,7 @@ export default async function AppLayout({
 }: {
   readonly children: ReactNode
 }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
+  const session = await getAuthSession()
 
   if (!session) {
     // Supprime les cookies de session directement (évite la boucle /api/clear-session → /login)

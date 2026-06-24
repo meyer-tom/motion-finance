@@ -5,11 +5,11 @@ import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { cache } from "react"
 import { markChecklistStep } from "@/lib/actions/onboarding"
-import { auth } from "@/lib/auth"
+import { getAuthSession } from "@/lib/auth/session"
 import { prisma } from "@/lib/db"
 
 export const getServerCurrency = cache(async (): Promise<string> => {
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await getAuthSession()
   if (!session) {
     return "EUR"
   }
@@ -30,7 +30,7 @@ import {
 } from "@/lib/validations/settings"
 
 async function requireAuth() {
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await getAuthSession()
   if (!session) {
     throw new Error("Non authentifié")
   }

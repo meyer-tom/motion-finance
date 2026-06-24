@@ -1,8 +1,7 @@
 "use server"
 
-import { headers } from "next/headers"
 import { cache } from "react"
-import { auth } from "@/lib/auth"
+import { getAuthSession } from "@/lib/auth/session"
 import { prisma } from "@/lib/db"
 
 // ─────────────────────────────────────────────────────────────
@@ -123,7 +122,7 @@ interface PeriodRange {
 }
 
 async function requireAuth() {
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await getAuthSession()
   if (!session) {
     throw new Error("Non authentifié")
   }

@@ -2,10 +2,9 @@
 
 import type { Prisma } from "@prisma/client"
 import { revalidatePath } from "next/cache"
-import { headers } from "next/headers"
 import { checkBudgetAlerts } from "@/lib/actions/budgets"
 import { markChecklistStep } from "@/lib/actions/onboarding"
-import { auth } from "@/lib/auth"
+import { getAuthSession } from "@/lib/auth/session"
 import { prisma } from "@/lib/db"
 import {
   type TransactionFilters,
@@ -17,7 +16,7 @@ import {
 const PAGE_SIZE = 20
 
 async function requireAuth() {
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await getAuthSession()
   if (!session) {
     throw new Error("Non authentifié")
   }

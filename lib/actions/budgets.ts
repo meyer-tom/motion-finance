@@ -2,9 +2,8 @@
 
 import { Prisma } from "@prisma/client"
 import { revalidatePath } from "next/cache"
-import { headers } from "next/headers"
 import { markChecklistStep } from "@/lib/actions/onboarding"
-import { auth } from "@/lib/auth"
+import { getAuthSession } from "@/lib/auth/session"
 import { prisma } from "@/lib/db"
 import { type BudgetInput, budgetSchema } from "@/lib/validations/budgets"
 
@@ -176,7 +175,7 @@ export interface BudgetWithSpending {
 }
 
 async function requireAuth() {
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await getAuthSession()
   if (!session) {
     throw new Error("Non authentifié")
   }

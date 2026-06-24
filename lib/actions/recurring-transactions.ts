@@ -1,8 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { headers } from "next/headers"
-import { auth } from "@/lib/auth"
+import { getAuthSession } from "@/lib/auth/session"
 import { markChecklistStep } from "@/lib/actions/onboarding"
 import { prisma } from "@/lib/db"
 import {
@@ -11,7 +10,7 @@ import {
 } from "@/lib/validations/recurring-transactions"
 
 async function requireAuth() {
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await getAuthSession()
   if (!session) {
     throw new Error("Non authentifié")
   }
