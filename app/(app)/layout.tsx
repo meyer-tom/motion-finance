@@ -1,4 +1,4 @@
-import { headers } from "next/headers"
+import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 import type { ReactNode } from "react"
 import { AppShell } from "@/components/app/app-shell"
@@ -10,6 +10,13 @@ import { auth } from "@/lib/auth"
 import { CurrencyProvider } from "@/lib/context/currency-context"
 import { prisma } from "@/lib/db"
 
+const SESSION_COOKIES = [
+  "better-auth.session_token",
+  "better-auth.session_data",
+  "__Secure-better-auth.session_token",
+  "__Secure-better-auth.session_data",
+] as const
+
 export default async function AppLayout({
   children,
 }: {
@@ -20,8 +27,12 @@ export default async function AppLayout({
   })
 
   if (!session) {
-    // Passe par le Route Handler pour supprimer les cookies stales avant la redirection
-    redirect("/api/clear-session")
+    // Supprime les cookies de session directement (évite la boucle /api/clear-session → /login)
+    const cookieStore = await cookies()
+    for (const name of SESSION_COOKIES) {
+      cookieStore.delete(name)
+    }
+    redirect("/login")
   }
 
   const userId = session.user.id

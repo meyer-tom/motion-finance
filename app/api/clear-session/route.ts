@@ -5,15 +5,23 @@ const SESSION_COOKIES = [
   "better-auth.session_data",
   "__Secure-better-auth.session_token",
   "__Secure-better-auth.session_data",
-]
+] as const
 
 export function GET(request: NextRequest) {
-  // Utilise l'URL de la requête comme base pour le redirect, pas BETTER_AUTH_URL.
-  // BETTER_AUTH_URL vaut "http://localhost:3000" en dev, ce qui enverrait
-  // les appareils mobiles vers le localhost du téléphone (injoignable).
   const response = NextResponse.redirect(new URL("/login", request.url))
+  const isSecure = request.url.startsWith("https://")
+
   for (const name of SESSION_COOKIES) {
-    response.cookies.delete(name)
+    // __Secure- préfixe exige Secure:true pour être supprimé en production
+    response.cookies.set({
+      name,
+      value: "",
+      expires: new Date(0),
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+      secure: isSecure || name.startsWith("__Secure-"),
+    })
   }
   return response
 }

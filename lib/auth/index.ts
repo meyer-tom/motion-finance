@@ -47,10 +47,8 @@ export const auth = betterAuth({
   session: {
     expiresIn: 60 * 60 * 24 * 30, // 30 jours
     updateAge: 60 * 60 * 24, // 1 jour
-    cookieCache: {
-      enabled: true,
-      maxAge: 5 * 60, // 5 minutes
-    },
+    // cookieCache désactivé : en production il retournait une session depuis
+    // le cookie signé sans vérifier la DB, causant des redirections en boucle.
   },
   user: {
     additionalFields: {
