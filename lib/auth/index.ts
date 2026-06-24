@@ -47,8 +47,10 @@ export const auth = betterAuth({
   session: {
     expiresIn: 60 * 60 * 24 * 30, // 30 jours
     updateAge: 60 * 60 * 24, // 1 jour
-    // cookieCache désactivé : en production il retournait une session depuis
-    // le cookie signé sans vérifier la DB, causant des redirections en boucle.
+    cookieCache: {
+      enabled: true,
+      maxAge: 60, // 1 minute — réduit les DB calls Neon en serverless
+    },
   },
   user: {
     additionalFields: {

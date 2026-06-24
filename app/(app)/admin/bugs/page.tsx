@@ -1,11 +1,10 @@
-import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { getBugReports } from "@/lib/actions/bug-reports"
-import { auth } from "@/lib/auth"
+import { getAuthSession } from "@/lib/auth/session"
 import { BugsClient } from "./_components/bugs-client"
 
 export default async function AdminBugsPage() {
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await getAuthSession()
 
   if (!session || session.user.role !== "ADMIN") {
     redirect("/dashboard")

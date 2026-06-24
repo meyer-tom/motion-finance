@@ -1,15 +1,14 @@
-import { headers } from "next/headers"
 import { Suspense } from "react"
 import { getAccounts } from "@/lib/actions/accounts"
 import { getSettingsCategories } from "@/lib/actions/categories"
 import { getChecklistState } from "@/lib/actions/onboarding"
 import { getRecurringTransactions } from "@/lib/actions/recurring-transactions"
-import { auth } from "@/lib/auth"
+import { getAuthSession } from "@/lib/auth/session"
 import { prisma } from "@/lib/db"
 import { SettingsTabs } from "./_components/settings-tabs"
 
 export default async function SettingsPage() {
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await getAuthSession()
   const userId = session!.user.id
 
   const [

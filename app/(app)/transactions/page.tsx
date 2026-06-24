@@ -1,15 +1,14 @@
-import { headers } from "next/headers"
 import { Suspense } from "react"
 import { getAccounts } from "@/lib/actions/accounts"
 import { getCategoriesForUser } from "@/lib/actions/categories"
 import { getChecklistState } from "@/lib/actions/onboarding"
 import { getTransactions } from "@/lib/actions/transactions"
-import { auth } from "@/lib/auth"
+import { getAuthSession } from "@/lib/auth/session"
 import { TransactionListSkeleton } from "./_components/transaction-skeletons"
 import { TransactionsClient } from "./_components/transactions-client"
 
 export default async function TransactionsPage() {
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await getAuthSession()
   const userId = session?.user.id ?? ""
 
   const [initialData, accounts, categories, checklistState] = await Promise.all(

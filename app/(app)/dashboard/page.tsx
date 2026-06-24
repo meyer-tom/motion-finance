@@ -1,8 +1,7 @@
-import { headers } from "next/headers"
 import { Suspense } from "react"
 import { getDashboardData } from "@/lib/actions/dashboard"
 import { getServerCurrency } from "@/lib/actions/settings"
-import { auth } from "@/lib/auth"
+import { getAuthSession } from "@/lib/auth/session"
 import { AlertsSection } from "./_components/alerts-section"
 import { BalanceSection } from "./_components/balance-section"
 import { ChartsSection } from "./_components/charts-section"
@@ -64,7 +63,7 @@ export default async function DashboardPage({ searchParams }: Props) {
       ? `custom:${sp.from}:${sp.to}`
       : rawPeriod
 
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await getAuthSession()
   const firstName = session?.user?.firstName ?? ""
   const dateLabel = new Intl.DateTimeFormat("fr-FR", {
     weekday: "long",

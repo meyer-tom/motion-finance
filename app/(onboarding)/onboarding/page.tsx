@@ -1,10 +1,9 @@
-import { headers } from "next/headers"
 import { redirect } from "next/navigation"
-import { auth } from "@/lib/auth"
+import { getAuthSession } from "@/lib/auth/session"
 import { OnboardingStepper } from "./_components/onboarding-stepper"
 
 export default async function OnboardingPage() {
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await getAuthSession()
 
   if (!session) {
     redirect("/login")

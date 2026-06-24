@@ -1,14 +1,13 @@
-import { headers } from "next/headers"
 import { Suspense } from "react"
 import { getBudgetsWithSpending } from "@/lib/actions/budgets"
 import { getCategoriesForUser } from "@/lib/actions/categories"
 import { getChecklistState } from "@/lib/actions/onboarding"
-import { auth } from "@/lib/auth"
+import { getAuthSession } from "@/lib/auth/session"
 import { BudgetListSkeleton } from "./_components/budget-skeletons"
 import { BudgetsClient } from "./_components/budgets-client"
 
 export default async function BudgetsPage() {
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await getAuthSession()
   const userId = session?.user.id ?? ""
 
   const now = new Date()
