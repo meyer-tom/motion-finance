@@ -275,7 +275,7 @@ export function TransactionsClient({
               onClick={() => openForm()}
             >
               <Plus className="size-4" />
-              <span className="hidden sm:inline">Ajouter</span>
+              Ajouter
             </Button>
           </motion.div>
         </div>

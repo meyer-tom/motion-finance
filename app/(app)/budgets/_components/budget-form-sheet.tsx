@@ -4,6 +4,20 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useEffect, useState, useTransition } from "react"
 import { type Resolver, useForm } from "react-hook-form"
 import type { z } from "zod"
+
+function liveFormatAmount(raw: string): string {
+  if (!raw) {
+    return ""
+  }
+  const dotIdx = raw.indexOf(".")
+  const intPart = dotIdx === -1 ? raw : raw.slice(0, dotIdx)
+  const decPart = dotIdx === -1 ? null : raw.slice(dotIdx + 1)
+  const intFormatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, " ")
+  if (decPart !== null) {
+    return `${intFormatted},${decPart}`
+  }
+  return intFormatted
+}
 import { FormStepGuide } from "@/components/app/form-step-guide"
 import { BottomSheet } from "@/components/shared/bottom-sheet"
 import { Button } from "@/components/ui/button"
@@ -13,7 +27,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
   Select,
@@ -89,7 +102,6 @@ export function BudgetFormSheet({
   const isEditing = Boolean(editBudget)
 
   const {
-    register,
     handleSubmit,
     setValue,
     reset,
@@ -106,17 +118,21 @@ export function BudgetFormSheet({
   })
 
   const selectedCategoryId = watch("categoryId")
-  const watchedAmount = watch("amount")
 
   const [guideStep, setGuideStep] = useState(showGuide && !isEditing ? 0 : -1)
+  const [amountDisplay, setAmountDisplay] = useState(
+    editBudget ? String(editBudget.amount) : ""
+  )
 
   useEffect(() => {
     if (open) {
       setServerError(null)
       if (editBudget) {
         reset({ categoryId: editBudget.categoryId, amount: editBudget.amount })
+        setAmountDisplay(String(editBudget.amount))
       } else {
         reset({ categoryId: "", amount: undefined })
+        setAmountDisplay("")
       }
       setGuideStep(showGuide && !isEditing ? 0 : -1)
     }
@@ -144,10 +160,27 @@ export function BudgetFormSheet({
 
   const monthLabel = `${MONTH_LABELS[month.getUTCMonth()]} ${month.getUTCFullYear()}`
   const categoryValid = !!selectedCategoryId
-  const amountValid =
-    typeof watchedAmount === "number" &&
-    !Number.isNaN(watchedAmount) &&
-    watchedAmount > 0
+  const amountNum = Number.parseFloat((amountDisplay || "").replace(",", "."))
+  const amountValid = amountDisplay !== "" && !Number.isNaN(amountNum) && amountNum > 0
+
+  function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const clean = e.target.value
+      .replace(/\s/g, "")
+      .replace(",", ".")
+      .replace(/[^\d.]/g, "")
+    const firstDot = clean.indexOf(".")
+    const raw =
+      firstDot === -1
+        ? clean
+        : clean.slice(0, firstDot + 1) + clean.slice(firstDot + 1).replaceAll(".", "").slice(0, 2)
+    setAmountDisplay(raw)
+    const num = Number.parseFloat(raw)
+    setValue(
+      "amount",
+      Number.isNaN(num) ? (undefined as unknown as number) : num,
+      { shouldValidate: true }
+    )
+  }
 
   const formContent = (
     <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
@@ -241,20 +274,18 @@ export function BudgetFormSheet({
             *
           </span>
         </Label>
-        <div className="relative">
-          <Input
-            className="pr-8"
+        <div className="flex h-10 items-center gap-1.5 rounded-md border border-input bg-input/30 px-3 transition-colors focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50">
+          <input
+            aria-label="Montant en euros"
+            className="min-w-0 flex-1 bg-transparent font-medium text-sm tabular-nums outline-none placeholder:text-muted-foreground/50"
             id="amount"
             inputMode="decimal"
-            min={0.01}
-            placeholder="0"
-            step="0.01"
-            type="number"
-            {...register("amount")}
+            onChange={handleAmountChange}
+            onFocus={(e) => e.target.select()}
+            placeholder="0,00"
+            value={liveFormatAmount(amountDisplay)}
           />
-          <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground text-sm">
-            €
-          </span>
+          <span className="shrink-0 text-muted-foreground text-sm">€</span>
         </div>
         {errors.amount ? (
           <p className="text-destructive text-xs">{errors.amount.message}</p>

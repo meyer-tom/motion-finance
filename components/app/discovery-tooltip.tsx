@@ -22,6 +22,7 @@ interface DiscoveryTooltipProps {
   checklistStep: string
   children: React.ReactNode
   description?: string
+  initialStep?: number
   onAction?: () => void
   onComplete?: () => void
   side?: "bottom" | "left" | "right" | "top"
@@ -38,6 +39,7 @@ export function DiscoveryTooltip({
   checklistStep,
   children,
   description,
+  initialStep = 0,
   onAction,
   onComplete,
   side = "bottom",
@@ -49,7 +51,7 @@ export function DiscoveryTooltip({
   const [skipped, setSkipped] = useState(() =>
     tooltipsSeen.includes(checklistStep)
   )
-  const [tooltipStep, setTooltipStep] = useState(0)
+  const [tooltipStep, setTooltipStep] = useState(initialStep)
 
   const isMultiStep = Boolean(steps?.length)
   const taskDone =

@@ -66,6 +66,7 @@ function CenteredTabs() {
 
   useEffect(() => {
     if (activeIndex < 0) {
+      setPill(null)
       return
     }
     const tab = tabRefs.current[activeIndex]

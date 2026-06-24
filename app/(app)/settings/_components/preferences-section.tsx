@@ -3,7 +3,7 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { Monitor, Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
-import { useTransition } from "react"
+import { useEffect, useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { markChecklistStepCurrent } from "@/lib/actions/onboarding"
 import { updateCurrency } from "@/lib/actions/settings"
 import { useCurrency } from "@/lib/context/currency-context"
 import { toast } from "@/lib/toast"
@@ -45,6 +46,11 @@ export function PreferencesSection({
   const { currency, setCurrency } = useCurrency()
   const { theme, setTheme } = useTheme()
   const [isPending, startTransition] = useTransition()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+    markChecklistStepCurrent("preferences")
+  }, [])
 
   const { handleSubmit, setValue, watch } = useForm<UpdateCurrencyInput>({
     resolver: standardSchemaResolver(updateCurrencySchema),
@@ -123,7 +129,7 @@ export function PreferencesSection({
                 key={value}
                 onClick={() => setTheme(value)}
                 type="button"
-                variant={theme === value ? "default" : "outline"}
+                variant={mounted && theme === value ? "default" : "outline"}
               >
                 <Icon className="h-4 w-4" />
                 {label}

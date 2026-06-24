@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
 import { auth } from "@/lib/auth"
+import { SYSTEM_CATEGORIES } from "@/lib/data/system-categories"
 import { prisma } from "@/lib/db"
 import {
   type CompleteOnboardingInput,
@@ -130,6 +131,12 @@ export async function completeOnboarding(data: CompleteOnboardingInput) {
   const parsed = completeOnboardingSchema.safeParse(data)
   if (!parsed.success) {
     throw new Error(parsed.error.issues[0].message)
+  }
+
+  // Garantit que les catégories système existent (seed non lancé en prod)
+  const systemCount = await prisma.category.count({ where: { isSystem: true } })
+  if (systemCount === 0) {
+    await prisma.category.createMany({ data: SYSTEM_CATEGORIES })
   }
 
   await prisma.$transaction([

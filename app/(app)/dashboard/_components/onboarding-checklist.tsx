@@ -19,6 +19,11 @@ const STEPS = [
   { id: "savings", label: "Ajouter un compte épargne", href: "/accounts" },
   { id: "profile", label: "Compléter votre profil", href: "/settings" },
   {
+    id: "preferences",
+    label: "Choisir votre devise",
+    href: "/settings?tab=preferences",
+  },
+  {
     id: "categories",
     label: "Créer une catégorie personnalisée",
     href: "/settings?tab=categories",
@@ -27,6 +32,11 @@ const STEPS = [
     id: "first-expense",
     label: "Enregistrer votre première dépense",
     href: "/transactions",
+  },
+  {
+    id: "recurring",
+    label: "Ajouter une transaction récurrente",
+    href: "/settings?tab=recurring",
   },
   { id: "budget", label: "Créer votre premier budget", href: "/budgets" },
   { id: "goal", label: "Définir un objectif d'épargne", href: "/goals" },

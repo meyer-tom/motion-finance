@@ -68,6 +68,7 @@ export interface DashboardData {
   expensesTrend: number | null
 
   forecastedBalance: number
+  upcomingRecurringExpenses: number
 
   goals: Array<{
     id: string
@@ -547,7 +548,7 @@ function computeForecastedBalance(
   totalBalance: number,
   now: Date,
   monthEnd: Date
-): number {
+): { forecastedBalance: number; upcomingExpenses: number } {
   const lastTxMap = new Map<string, Date>()
   for (const g of lastTxRows) {
     if (g._max.date) {
@@ -579,7 +580,7 @@ function computeForecastedBalance(
     }
   }
 
-  return totalBalance + income - expenses
+  return { forecastedBalance: totalBalance + income - expenses, upcomingExpenses: expenses }
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -907,7 +908,7 @@ export const getDashboardData = cache(
     } = buildBudgetAlerts(currentMonthBudgets, monthSpendingMap)
 
     // ── Solde prévisionnel ────────────────────────────────────
-    const forecastedBalance = computeForecastedBalance(
+    const { forecastedBalance, upcomingExpenses: upcomingRecurringExpenses } = computeForecastedBalance(
       activeRecurrings,
       lastTxByPattern,
       totalBalance,
@@ -941,6 +942,7 @@ export const getDashboardData = cache(
       incomeTrend,
       expensesTrend,
       forecastedBalance,
+      upcomingRecurringExpenses,
       transfers: { total: transfersTotal, items: transferItems },
       chart,
       categoryBreakdown: mainCategories,

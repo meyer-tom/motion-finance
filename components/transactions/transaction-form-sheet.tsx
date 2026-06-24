@@ -97,6 +97,20 @@ const TX_GUIDE_STEPS = 5
 // Hoissé au niveau module pour éviter la recréation à chaque appel
 const TRAILING_COMMA_RE = /,$/
 
+function liveFormatAmount(raw: string): string {
+  if (!raw) {
+    return ""
+  }
+  const dotIdx = raw.indexOf(".")
+  const intPart = dotIdx === -1 ? raw : raw.slice(0, dotIdx)
+  const decPart = dotIdx === -1 ? null : raw.slice(dotIdx + 1)
+  const intFormatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, " ")
+  if (decPart !== null) {
+    return `${intFormatted},${decPart}`
+  }
+  return intFormatted
+}
+
 /** Convertit "YYYY-MM-DD" en Date locale (sans décalage UTC). */
 function parseLocalDate(str: string): Date {
   const [y, m, d] = str.split("-").map(Number)
@@ -592,7 +606,18 @@ function TransactionFormBody({
   /* ── Handlers ─────────────────────────────────────────────────────────── */
 
   function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const raw = e.target.value.replace(",", ".")
+    // Strip thousand-separator spaces and normalize decimal comma → period
+    const clean = e.target.value
+      .replace(/\s/g, "")
+      .replace(",", ".")
+      .replace(/[^\d.]/g, "")
+    // Keep only the first decimal point, limit to 2 decimal digits
+    const firstDot = clean.indexOf(".")
+    const raw =
+      firstDot === -1
+        ? clean
+        : clean.slice(0, firstDot + 1) +
+          clean.slice(firstDot + 1).replaceAll(".", "").slice(0, 2)
     setAmountDisplay(raw)
     const num = Number.parseFloat(raw)
     setValue(
@@ -728,9 +753,10 @@ function TransactionFormBody({
               id="tx-amount"
               inputMode="decimal"
               onChange={handleAmountChange}
+              onFocus={(e) => e.target.select()}
               placeholder="0,00"
               style={{ color: hasValidAmount ? activeTypeColor : undefined }}
-              value={amountDisplay}
+              value={liveFormatAmount(amountDisplay)}
             />
             <span className="shrink-0 font-semibold text-base text-muted-foreground">
               €
@@ -784,23 +810,6 @@ function TransactionFormBody({
               <p className="text-destructive text-xs">{errors.title.message}</p>
             ) : null}
           </div>
-          {guideStep === 2 ? (
-            <FormStepGuide
-              checklistStep="first-expense"
-              className="-mt-2"
-              description="Donnez un titre clair à cette transaction (ex : Courses, Loyer, Salaire…)."
-              isFirst={false}
-              isLast={false}
-              isValid={!!selectedTitle?.trim()}
-              onDismiss={() => setGuideStep(-1)}
-              onNext={() => setGuideStep(3)}
-              onPrev={() => setGuideStep(1)}
-              stepIndex={2}
-              title="Titre de la transaction"
-              totalSteps={TX_GUIDE_STEPS}
-              validationMessage="Saisissez un titre pour continuer"
-            />
-          ) : null}
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="tx-account">
               {selectedType === "TRANSFER" ? "Compte source" : "Compte"}
@@ -845,6 +854,22 @@ function TransactionFormBody({
             ) : null}
           </div>
         </div>
+        {guideStep === 2 ? (
+          <FormStepGuide
+            checklistStep="first-expense"
+            description="Donnez un titre clair à cette transaction (ex : Courses, Loyer, Salaire…)."
+            isFirst={false}
+            isLast={false}
+            isValid={!!selectedTitle?.trim()}
+            onDismiss={() => setGuideStep(-1)}
+            onNext={() => setGuideStep(3)}
+            onPrev={() => setGuideStep(1)}
+            stepIndex={2}
+            title="Titre de la transaction"
+            totalSteps={TX_GUIDE_STEPS}
+            validationMessage="Saisissez un titre pour continuer"
+          />
+        ) : null}
 
         {/* Date + Compte destination (virements desktop : côte à côte) */}
         {selectedType === "TRANSFER" && wide ? (

@@ -85,6 +85,8 @@ export function SettingsTabs({
   const rawTab = searchParams.get("tab")
   const activeTab: Tab = isValidTab(rawTab) ? rawTab : "profil"
   const tabIndex = TABS.indexOf(activeTab)
+  // Les steps du tooltip correspondent aux 4 premiers onglets (profil→0, preferences→1, categories→2, donnees→3)
+  const tooltipInitialStep = Math.min(tabIndex, 3)
 
   const handleTabChange = useCallback(
     (value: Tab) => {
@@ -103,6 +105,7 @@ export function SettingsTabs({
         checklistCompleted={checklistCompleted}
         checklistDismissed={checklistDismissed}
         checklistStep="profile"
+        initialStep={tooltipInitialStep}
         onComplete={() => {
           markChecklistStepCurrent("profile")
         }}

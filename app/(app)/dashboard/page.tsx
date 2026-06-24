@@ -18,9 +18,11 @@ import {
   ChecklistSkeleton,
   GoalsSkeleton,
   RecentTransactionsSkeleton,
+  SpendingPowerSkeleton,
   StatsSkeleton,
   TransfersSkeleton,
 } from "./_components/skeletons"
+import { SpendingPowerSection } from "./_components/spending-power-section"
 import { StatsSection } from "./_components/stats-section"
 import { TransfersSection } from "./_components/transfers-section"
 
@@ -73,7 +75,7 @@ export default async function DashboardPage({ searchParams }: Props) {
   return (
     <div className="space-y-5">
       {/* Header: salutation + contrôles période */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <h1 className="font-black text-3xl tracking-tight md:text-4xl">
             {getGreeting()}
@@ -108,6 +110,11 @@ export default async function DashboardPage({ searchParams }: Props) {
       {/* Solde total — pleine largeur */}
       <Suspense fallback={<BalanceSkeleton />}>
         <BalanceSection periodKey={periodKey} />
+      </Suspense>
+
+      {/* Vue rapide — comptes courants + charges prévues */}
+      <Suspense fallback={<SpendingPowerSkeleton />}>
+        <SpendingPowerSection periodKey={periodKey} />
       </Suspense>
 
       {/* Revenus / Dépenses / Net */}

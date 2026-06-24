@@ -173,6 +173,29 @@ export function GoalsSkeleton() {
   )
 }
 
+export function SpendingPowerSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-3xl border border-border bg-card">
+      <div className="flex items-center gap-2 border-border/60 border-b px-5 py-3.5">
+        <Skeleton className="size-4 rounded" />
+        <Skeleton className="h-2.5 w-40" />
+      </div>
+      <div className="grid grid-cols-1 divide-y divide-border/40 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+        {(["checking", "upcoming", "margin"] as const).map((col) => (
+          <div className="flex flex-col gap-2 px-5 py-4" key={col}>
+            <div className="flex items-center gap-1.5">
+              <Skeleton className="size-2 rounded-full" />
+              <Skeleton className="h-2.5 w-24" />
+            </div>
+            <Skeleton className="h-7 w-32" />
+            <Skeleton className="h-3 w-28" />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export function AlertsSkeleton() {
   return (
     <div className="overflow-hidden rounded-3xl border border-border bg-card">

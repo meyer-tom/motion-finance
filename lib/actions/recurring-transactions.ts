@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
 import { auth } from "@/lib/auth"
+import { markChecklistStep } from "@/lib/actions/onboarding"
 import { prisma } from "@/lib/db"
 import {
   type RecurringInput,
@@ -86,6 +87,7 @@ export async function createRecurring(data: RecurringInput) {
     select: { id: true },
   })
 
+  await markChecklistStep(user.id, "recurring")
   revalidatePath("/settings")
   return item
 }
