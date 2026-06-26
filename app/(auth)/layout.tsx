@@ -1,12 +1,19 @@
+import { redirect } from "next/navigation"
 import type { ReactNode } from "react"
 
 import { BarChartSvg } from "@/components/app/sidebar"
+import { getAuthSession } from "@/lib/auth/session"
 
-export default function AuthLayout({
+export default async function AuthLayout({
   children,
 }: {
   readonly children: ReactNode
 }) {
+  const session = await getAuthSession()
+  if (session) {
+    redirect("/dashboard")
+  }
+
   return (
     <div className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-background px-4 py-8">
       <div

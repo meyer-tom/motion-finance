@@ -7,8 +7,6 @@ export function proxy(request: NextRequest) {
     request.cookies.get("better-auth.session_token")
   const { pathname } = request.nextUrl
 
-  // Routes publiques (pas de protection)
-  const isPublicRoute = pathname === "/"
   const isAuthRoute =
     pathname.startsWith("/login") ||
     pathname.startsWith("/register") ||
@@ -16,14 +14,11 @@ export function proxy(request: NextRequest) {
     pathname.startsWith("/reset-password") ||
     pathname.startsWith("/verify-email")
 
-  // Si pas de session et route protégée → redirection /login
-  if (!(sessionToken || isPublicRoute || isAuthRoute)) {
-    return NextResponse.redirect(new URL("/login", request.url))
-  }
+  const isPublicRoute = pathname === "/" || isAuthRoute
 
-  // Si session existante et route auth → redirection /dashboard
-  if (sessionToken && isAuthRoute) {
-    return NextResponse.redirect(new URL("/dashboard", request.url))
+  // Si pas de session et route protégée → redirection /login
+  if (!sessionToken && !isPublicRoute) {
+    return NextResponse.redirect(new URL("/login", request.url))
   }
 
   return NextResponse.next()

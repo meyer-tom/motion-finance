@@ -86,7 +86,6 @@ export default function LoginPage() {
       }
 
       router.push("/dashboard")
-      router.refresh()
     } catch {
       setRootError("Une erreur est survenue. Vérifiez votre connexion et réessayez.")
     }
